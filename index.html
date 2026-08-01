@@ -1,5 +1,7 @@
-<div id="game-root" style="--bg:#14121f; --panel:#1e1b2e; --grid:#2a2640; --ink:#f2eefc; --dim:#8b84ab; --c1:#ff5d73; --c2:#3ddad7; --c3:#ffd23f; --c4:#9d7bff; --combo:#ff5d73;">
+<div id="game-root" style="--bg:#14121f; --panel:#1e1b2e; --grid:#2a2640; --ink:#f2eefc; --dim:#8b84ab; --c1:#ff5d73; --c2:#3ddad7; --c3:#ffd23f; --c4:#9d7bff;">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
     #game-root{
       font-family:'Press Start 2P','Courier New',monospace;
       background:var(--bg);
@@ -7,105 +9,200 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      padding:18px 10px 26px;
+      padding:16px 8px 22px;
       border-radius:10px;
       user-select:none;
-      image-rendering:pixelated;
+      width:100%;
     }
-    #game-root *{box-sizing:border-box;}
+    #game-root *{ box-sizing:border-box; }
+
     #hud{
       width:100%;
       max-width:520px;
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:10px;
-      font-size:10px;
-      letter-spacing:0.5px;
+      margin-bottom:8px;
+      font-size:clamp(8px, 2.6vw, 10px);
+      letter-spacing:.5px;
+      gap:6px 10px;
+      flex-wrap:wrap;
     }
-    #hud .stat{color:var(--dim);}
-    #hud .val{color:var(--ink); margin-left:4px;}
-    #target-wrap{
-      display:flex;
-      align-items:center;
-      gap:6px;
+    #hud .stat{ color:var(--dim); }
+    #hud .val{ color:var(--ink); margin-left:4px; }
+
+    #target-wrap{ display:flex; align-items:center; gap:7px; position:relative; flex-wrap:wrap; }
+    #target-badge{ position:relative; width:20px; height:20px; display:flex; align-items:center; justify-content:center; flex:none; }
+    #target-ping{
+      position:absolute; inset:-6px;
+      border-radius:50%;
+      background:var(--ink);
+      opacity:0;
+      pointer-events:none;
     }
+    #target-ping.ping{ animation: pingpulse .55s ease-out; }
     #target-swatch{
-      width:16px; height:16px;
-      border:2px solid var(--ink);
-      box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+      position:relative;
+      width:18px; height:18px;
+      background:var(--c1);
+      z-index:1;
     }
+    #target-swatch.pop{ animation: pop-scale .45s ease; }
+    #target-label{ font-size:clamp(7px, 2.2vw, 8px); color:var(--dim); white-space:nowrap; }
+
+    #hud2{
+      width:100%;
+      max-width:520px;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .mini-btn{
+      font-family:inherit;
+      font-size:clamp(9px, 2.6vw, 10px);
+      background:transparent;
+      color:var(--dim);
+      border:1px solid var(--grid);
+      padding:9px 12px;
+      min-height:36px;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    .mini-btn:hover{ color:var(--ink); border-color:var(--dim); }
+    .mini-btn:active{ transform:translate(1px,1px); }
+
+    #combo-mult{ display:inline-block; color:var(--c3); }
+    #combo-mult.pop{ animation: pop-scale .45s ease; }
+
+    #countdown-track{
+      width:100%; max-width:520px;
+      height:4px;
+      background:var(--grid);
+      margin-bottom:8px;
+      overflow:hidden;
+    }
+    #countdown-fill{
+      height:100%;
+      width:100%;
+      background:var(--c1);
+      transition:width .05s linear, background-color .2s ease;
+    }
+
     #canvas-wrap{
       position:relative;
       width:100%;
       max-width:520px;
       border:3px solid var(--grid);
-      background:
-        linear-gradient(var(--panel), var(--panel)) padding-box;
+      background:var(--panel);
       box-shadow: 0 0 0 4px var(--bg), 6px 6px 0 rgba(0,0,0,.35);
     }
     canvas{
       display:block;
       width:100%;
-      height:auto;
+      aspect-ratio: 13 / 9;
       cursor:crosshair;
       touch-action:none;
     }
-    #combo-flash{
-      position:absolute;
-      top:8px; left:50%;
-      transform:translateX(-50%);
-      font-size:11px;
-      color:var(--combo);
+    @media (max-width: 480px){
+      canvas{ aspect-ratio: 4 / 3; }
+    }
+
+    #flash-overlay{
+      position:absolute; inset:0;
+      background:var(--c1);
       opacity:0;
       pointer-events:none;
-      text-shadow:2px 2px 0 rgba(0,0,0,.5);
+      mix-blend-mode:screen;
     }
+    #flash-overlay.flash{ animation: flash-fade .35s ease-out; }
+
+    #banner{
+      position:absolute;
+      top:10px; left:50%;
+      transform:translate(-50%,-10px);
+      font-size:10px;
+      color:var(--ink);
+      background:rgba(20,18,31,.85);
+      border:1px solid var(--grid);
+      padding:6px 10px;
+      opacity:0;
+      pointer-events:none;
+      white-space:nowrap;
+    }
+    #banner.show{ animation: banner-in 1.1s ease; }
+
     #overlay{
       position:absolute; inset:0;
-      background:rgba(20,18,31,.88);
+      background:rgba(20,18,31,.92);
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
       gap:14px; text-align:center; padding:20px;
     }
-    #overlay h2{ font-size:14px; margin:0; color:var(--c3); }
-    #overlay p{ font-size:9px; color:var(--dim); line-height:1.8; margin:0; max-width:340px;}
+    #overlay h2{ font-size:clamp(12px, 4vw, 14px); margin:0; color:var(--c3); }
+    #overlay p{ font-size:clamp(8px, 2.6vw, 9px); color:var(--dim); line-height:1.9; margin:0; max-width:360px; }
     #overlay button{
-      font-family:inherit;
-      font-size:11px;
-      background:var(--c1);
-      color:#14121f;
-      border:none;
-      padding:12px 20px;
-      cursor:pointer;
+      font-family:inherit; font-size:clamp(10px, 3vw, 11px);
+      background:var(--c1); color:#14121f;
+      border:none; padding:14px 22px; cursor:pointer;
       box-shadow:3px 3px 0 rgba(0,0,0,.4);
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
     }
-    #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4);}
-    #foot-note{
-      margin-top:10px;
-      font-size:8px;
-      color:var(--dim);
-      text-align:center;
-      max-width:480px;
-      line-height:1.7;
+    #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
+
+    #foot-note{ margin-top:10px; font-size:clamp(7px, 2vw, 8px); color:var(--dim); text-align:center; max-width:480px; line-height:1.8; }
+
+    @keyframes pop-scale{
+      0%{ transform:scale(1); }
+      40%{ transform:scale(1.6) rotate(-8deg); }
+      70%{ transform:scale(.9); }
+      100%{ transform:scale(1); }
+    }
+    @keyframes pingpulse{
+      0%{ transform:scale(.5); opacity:.8; }
+      100%{ transform:scale(2.2); opacity:0; }
+    }
+    @keyframes flash-fade{
+      0%{ opacity:.4; }
+      100%{ opacity:0; }
+    }
+    @keyframes banner-in{
+      0%{ opacity:0; transform:translate(-50%,-10px); }
+      15%{ opacity:1; transform:translate(-50%,0); }
+      82%{ opacity:1; transform:translate(-50%,0); }
+      100%{ opacity:0; transform:translate(-50%,-10px); }
     }
   </style>
 
   <div id="hud">
     <div id="target-wrap">
       <span class="stat">OBJETIVO</span>
-      <span id="target-swatch"></span>
+      <div id="target-badge">
+        <div id="target-ping"></div>
+        <div id="target-swatch"></div>
+      </div>
+      <span id="target-label">-</span>
     </div>
-    <div><span class="stat">COMBO</span><span class="val" id="combo-val">0</span></div>
+    <div><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
     <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
   </div>
 
+  <div id="hud2">
+    <button class="mini-btn" id="mute-btn">SONIDO: ON</button>
+    <button class="mini-btn" id="restart-btn">REINICIAR</button>
+  </div>
+
+  <div id="countdown-track"><div id="countdown-fill"></div></div>
+
   <div id="canvas-wrap">
-    <canvas id="game-canvas" width="520" height="360"></canvas>
-    <div id="combo-flash">+COMBO</div>
+    <canvas id="game-canvas"></canvas>
+    <div id="flash-overlay"></div>
+    <div id="banner">¡NUEVO OBJETIVO!</div>
     <div id="overlay">
-      <h2>TOCA EL COLOR OBJETIVO</h2>
-      <p>Los bloques cruzan la pantalla sin parar. Toca solo los del color indicado arriba antes de que se escapen. Encadenar aciertos sube el combo. El objetivo cambia cada cierto tiempo. Sin final, solo puntuación.</p>
+      <h2>TOCA COLOR + FORMA</h2>
+      <p>El objetivo combina un color y una forma. Toca solo los bloques que coincidan en ambos antes de que crucen la pantalla. Los que coinciden brillan un poco para ayudarte a encontrarlos. Encadena aciertos para subir el multiplicador. Sin final, solo puntuación.</p>
       <button id="start-btn">EMPEZAR</button>
     </div>
   </div>
@@ -120,83 +217,219 @@
   const ctx = canvas.getContext('2d');
   const overlay = document.getElementById('overlay');
   const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const muteBtn = document.getElementById('mute-btn');
   const targetSwatch = document.getElementById('target-swatch');
+  const targetPing = document.getElementById('target-ping');
+  const targetLabel = document.getElementById('target-label');
   const scoreEl = document.getElementById('score-val');
   const comboEl = document.getElementById('combo-val');
-  const comboFlash = document.getElementById('combo-flash');
+  const comboMultEl = document.getElementById('combo-mult');
+  const flashOverlay = document.getElementById('flash-overlay');
+  const banner = document.getElementById('banner');
+  const countdownFill = document.getElementById('countdown-fill');
 
-  const COLORS = [
-    getVar('--c1'), getVar('--c2'), getVar('--c3'), getVar('--c4')
-  ];
   function getVar(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
 
-  const W = canvas.width, H = canvas.height;
-  let blocks = [];
-  let score = 0, combo = 0, best = 0;
-  let target = COLORS[0];
+  const COLORS = [
+    { hex:getVar('--c1'), name:'coral' },
+    { hex:getVar('--c2'), name:'turquesa' },
+    { hex:getVar('--c3'), name:'amarillo' },
+    { hex:getVar('--c4'), name:'violeta' }
+  ];
+  const SHAPES = [
+    { id:'square', name:'cuadrado' },
+    { id:'circle', name:'círculo' },
+    { id:'triangle', name:'triángulo' },
+    { id:'diamond', name:'rombo' }
+  ];
+  const CLIP = {
+    square:'none',
+    circle:'circle(50% at 50% 50%)',
+    triangle:'polygon(50% 0%, 0% 100%, 100% 100%)',
+    diamond:'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+  };
+
+  let W = 0, H = 0;
+  const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+  function setupCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  setupCanvas();
+  let resizeQueued = false;
+  window.addEventListener('resize', ()=>{
+    if(resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(()=>{
+      resizeQueued = false;
+      setupCanvas();
+      if(running){ blocks = []; particles = []; popups = []; }
+    });
+  });
+
+  let blocks = [], particles = [], popups = [];
+  let score = 0, combo = 0, lastMult = 1;
+  let target = { color:COLORS[0], shape:SHAPES[0] };
   let spawnTimer = 0, spawnInterval = 70;
   let targetTimer = 0, targetInterval = 260;
   let elapsed = 0;
   let running = false;
   let rafId = null;
+  let muted = false;
+  let audioCtx = null;
+  let framesSinceMatchSpawn = 0;
+  const TARGET_SPAWN_CHANCE = 0.32;
+  const TARGET_FORCE_FRAMES = 95;
 
   function rnd(a,b){ return a + Math.random()*(b-a); }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  function ensureAudio(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ audioCtx = null; }
+    }
+  }
+
+  function beep(freq, dur, type, vol){
+    if(muted || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = vol || 0.06;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.start(now);
+    osc.stop(now + dur);
+  }
+
+  function sfxHit(){ beep(720, 0.09, 'square', 0.05); }
+  function sfxMiss(){ beep(140, 0.16, 'sawtooth', 0.05); }
+  function sfxTarget(){ beep(500, 0.08, 'triangle', 0.05); setTimeout(()=>beep(760, 0.1, 'triangle', 0.05), 70); }
+  function sfxMult(){ beep(900, 0.07, 'square', 0.05); setTimeout(()=>beep(1200, 0.09, 'square', 0.05), 60); }
+
+  function replay(el, className){
+    el.classList.remove(className);
+    void el.offsetWidth;
+    el.classList.add(className);
+  }
+
   function resetGame(){
-    blocks = [];
-    score = 0; combo = 0;
+    blocks = []; particles = []; popups = [];
+    score = 0; combo = 0; lastMult = 1;
     spawnTimer = 0; spawnInterval = 70;
     targetTimer = 0; targetInterval = 260;
     elapsed = 0;
-    target = pick(COLORS);
+    framesSinceMatchSpawn = 0;
+    target = { color: pick(COLORS), shape: pick(SHAPES) };
     updateHUD();
+    applyTargetVisual(false);
+  }
+
+  function multiplierFor(c){
+    if(c >= 20) return 3;
+    if(c >= 10) return 2;
+    if(c >= 5) return 1.5;
+    return 1;
   }
 
   function updateHUD(){
     scoreEl.textContent = score;
     comboEl.textContent = combo;
-    targetSwatch.style.background = target;
+    const m = multiplierFor(combo);
+    comboMultEl.textContent = m > 1 ? ' x' + m : '';
+  }
+
+  function applyTargetVisual(animate){
+    targetSwatch.style.background = target.color.hex;
+    targetSwatch.style.clipPath = CLIP[target.shape.id];
+    targetLabel.textContent = target.color.name + ' \u00b7 ' + target.shape.name;
+    if(animate){
+      replay(targetSwatch, 'pop');
+      replay(targetPing, 'ping');
+      targetPing.style.background = target.color.hex;
+      flashOverlay.style.background = target.color.hex;
+      replay(flashOverlay, 'flash');
+      banner.style.color = target.color.hex;
+      replay(banner, 'show');
+      sfxTarget();
+    }
   }
 
   function spawnBlock(){
-    const size = rnd(26, 36);
+    const size = rnd(28, 40);
     const dir = Math.random() < 0.5 ? 1 : -1;
     const y = rnd(size, H - size);
     const speed = rnd(1.4, 2.2) + Math.min(elapsed/900, 2.2);
+
+    const forceMatch = framesSinceMatchSpawn >= TARGET_FORCE_FRAMES;
+    const wantsMatch = forceMatch || Math.random() < TARGET_SPAWN_CHANCE;
+    let color, shape;
+    if(wantsMatch){
+      color = target.color; shape = target.shape;
+    } else {
+      color = pick(COLORS); shape = pick(SHAPES);
+    }
+    if(color === target.color && shape === target.shape){
+      framesSinceMatchSpawn = 0;
+    }
+
     blocks.push({
       x: dir === 1 ? -size : W + size,
       y, size,
       vx: dir * speed,
-      color: pick(COLORS),
-      dead: false
+      color, shape,
+      dead:false
     });
   }
 
-  function flashCombo(){
-    comboFlash.style.transition = 'none';
-    comboFlash.style.opacity = '1';
-    comboFlash.style.transform = 'translateX(-50%) translateY(0px)';
-    requestAnimationFrame(()=>{
-      comboFlash.style.transition = 'opacity .5s ease, transform .5s ease';
-      comboFlash.style.opacity = '0';
-      comboFlash.style.transform = 'translateX(-50%) translateY(-14px)';
-    });
+  function spawnParticles(x, y, color, n){
+    for(let i=0;i<n;i++){
+      const a = rnd(0, Math.PI*2);
+      const speed = rnd(1,3.4);
+      particles.push({ x, y, vx:Math.cos(a)*speed, vy:Math.sin(a)*speed, life:1, decay:rnd(0.03,0.06), color, size:rnd(2,4) });
+    }
   }
 
-  function handlePick(mx, my){
+  function spawnPopup(x, y, text, color){
+    popups.push({ x, y, text, color, life:1, vy:-0.6 });
+  }
+
+  function handlePick(mx,my){
     if(!running) return;
+    const TAP_PADDING = 9;
     for(let i = blocks.length - 1; i >= 0; i--){
       const b = blocks[i];
       if(b.dead) continue;
-      const half = b.size/2;
-      if(mx >= b.x - half && mx <= b.x + half && my >= b.y - half && my <= b.y + half){
-        if(b.color === target){
+      const half = b.size/2 + TAP_PADDING;
+      if(mx >= b.x-half && mx <= b.x+half && my >= b.y-half && my <= b.y+half){
+        const isMatch = b.color === target.color && b.shape === target.shape;
+        if(isMatch){
           combo++;
-          score += 10 + combo * 2;
-          if(combo > 0 && combo % 5 === 0) flashCombo();
+          const mult = multiplierFor(combo);
+          const gain = Math.round((10 + combo*2) * mult);
+          score += gain;
+          spawnParticles(b.x, b.y, b.color.hex, 10);
+          spawnPopup(b.x, b.y, '+'+gain, b.color.hex);
+          sfxHit();
+          if(mult > lastMult){
+            replay(comboMultEl, 'pop');
+            sfxMult();
+          }
+          lastMult = mult;
         } else {
-          combo = 0;
+          combo = 0; lastMult = 1;
+          spawnParticles(b.x, b.y, '#ff5d73', 6);
+          sfxMiss();
         }
         b.dead = true;
         updateHUD();
@@ -207,13 +440,8 @@
 
   function pointerFromEvent(e){
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     const p = e.touches ? e.touches[0] : e;
-    return {
-      x: (p.clientX - rect.left) * scaleX,
-      y: (p.clientY - rect.top) * scaleY
-    };
+    return { x:p.clientX-rect.left, y:p.clientY-rect.top };
   }
 
   canvas.addEventListener('pointerdown', (e)=>{
@@ -221,17 +449,41 @@
     handlePick(p.x, p.y);
   });
 
-  function drawBlock(b){
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+  function drawShape(shape, x, y, size, color, glow){
+    ctx.save();
+    if(glow){
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 14;
+    }
+    ctx.fillStyle = color;
     ctx.strokeStyle = 'rgba(0,0,0,0.35)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+    const h = size/2;
+    switch(shape){
+      case 'circle':
+        ctx.beginPath(); ctx.arc(x,y,h,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        break;
+      case 'triangle':
+        ctx.beginPath();
+        ctx.moveTo(x, y-h); ctx.lineTo(x-h, y+h); ctx.lineTo(x+h, y+h); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        break;
+      case 'diamond':
+        ctx.beginPath();
+        ctx.moveTo(x, y-h); ctx.lineTo(x+h, y); ctx.lineTo(x, y+h); ctx.lineTo(x-h, y); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        break;
+      default:
+        ctx.fillRect(x-h, y-h, size, size);
+        ctx.strokeRect(x-h, y-h, size, size);
+    }
+    ctx.restore();
   }
 
   function loop(){
     if(!running) return;
     elapsed++;
+    framesSinceMatchSpawn++;
 
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle = getVar('--panel');
@@ -243,39 +495,64 @@
     spawnTimer++;
     if(spawnTimer >= spawnInterval){
       spawnTimer = 0;
-      spawnInterval = Math.max(28, spawnInterval - 0.6);
+      spawnInterval = Math.max(26, spawnInterval - 0.6);
       spawnBlock();
     }
 
     targetTimer++;
+    countdownFill.style.width = Math.max(0, 100 - (targetTimer/targetInterval)*100) + '%';
     if(targetTimer >= targetInterval){
       targetTimer = 0;
-      let next = pick(COLORS);
-      while(next === target && COLORS.length > 1) next = pick(COLORS);
+      let next;
+      do { next = { color: pick(COLORS), shape: pick(SHAPES) }; }
+      while(next.color === target.color && next.shape === target.shape);
       target = next;
-      updateHUD();
+      framesSinceMatchSpawn = 0;
+      applyTargetVisual(true);
     }
 
     for(let i = blocks.length - 1; i >= 0; i--){
       const b = blocks[i];
       b.x += b.vx;
-      if(!b.dead) drawBlock(b);
-      const off = b.x < -60 || b.x > W + 60;
+      const isMatch = !b.dead && b.color === target.color && b.shape === target.shape;
+      if(!b.dead) drawShape(b.shape.id, b.x, b.y, b.size, b.color.hex, isMatch);
+      const off = b.x < -60 || b.x > W+60;
       if(off){
-        if(!b.dead && b.color === target){
-          combo = 0;
-          updateHUD();
-        }
+        if(!b.dead && isMatch){ combo = 0; lastMult = 1; updateHUD(); }
         blocks.splice(i,1);
       } else if(b.dead){
         blocks.splice(i,1);
       }
     }
 
+    for(let i = particles.length-1; i>=0; i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if(p.life <= 0){ particles.splice(i,1); continue; }
+      ctx.globalAlpha = Math.max(p.life,0);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    for(let i = popups.length-1; i>=0; i--){
+      const s = popups[i];
+      s.y += s.vy; s.life -= 0.02;
+      if(s.life <= 0){ popups.splice(i,1); continue; }
+      ctx.globalAlpha = Math.max(s.life,0);
+      ctx.fillStyle = s.color;
+      ctx.fillText(s.text, s.x, s.y);
+      ctx.globalAlpha = 1;
+    }
+
     rafId = requestAnimationFrame(loop);
   }
 
   function startGame(){
+    ensureAudio();
+    setupCanvas();
     resetGame();
     overlay.style.display = 'none';
     running = true;
@@ -284,5 +561,12 @@
   }
 
   startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    muteBtn.textContent = 'SONIDO: ' + (muted ? 'OFF' : 'ON');
+  });
+
+  updateHUD();
 })();
 </script>
