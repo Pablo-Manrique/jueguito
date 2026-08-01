@@ -1,0 +1,288 @@
+<div id="game-root" style="--bg:#14121f; --panel:#1e1b2e; --grid:#2a2640; --ink:#f2eefc; --dim:#8b84ab; --c1:#ff5d73; --c2:#3ddad7; --c3:#ffd23f; --c4:#9d7bff; --combo:#ff5d73;">
+  <style>
+    #game-root{
+      font-family:'Press Start 2P','Courier New',monospace;
+      background:var(--bg);
+      color:var(--ink);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:18px 10px 26px;
+      border-radius:10px;
+      user-select:none;
+      image-rendering:pixelated;
+    }
+    #game-root *{box-sizing:border-box;}
+    #hud{
+      width:100%;
+      max-width:520px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+      font-size:10px;
+      letter-spacing:0.5px;
+    }
+    #hud .stat{color:var(--dim);}
+    #hud .val{color:var(--ink); margin-left:4px;}
+    #target-wrap{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    #target-swatch{
+      width:16px; height:16px;
+      border:2px solid var(--ink);
+      box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+    }
+    #canvas-wrap{
+      position:relative;
+      width:100%;
+      max-width:520px;
+      border:3px solid var(--grid);
+      background:
+        linear-gradient(var(--panel), var(--panel)) padding-box;
+      box-shadow: 0 0 0 4px var(--bg), 6px 6px 0 rgba(0,0,0,.35);
+    }
+    canvas{
+      display:block;
+      width:100%;
+      height:auto;
+      cursor:crosshair;
+      touch-action:none;
+    }
+    #combo-flash{
+      position:absolute;
+      top:8px; left:50%;
+      transform:translateX(-50%);
+      font-size:11px;
+      color:var(--combo);
+      opacity:0;
+      pointer-events:none;
+      text-shadow:2px 2px 0 rgba(0,0,0,.5);
+    }
+    #overlay{
+      position:absolute; inset:0;
+      background:rgba(20,18,31,.88);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:14px; text-align:center; padding:20px;
+    }
+    #overlay h2{ font-size:14px; margin:0; color:var(--c3); }
+    #overlay p{ font-size:9px; color:var(--dim); line-height:1.8; margin:0; max-width:340px;}
+    #overlay button{
+      font-family:inherit;
+      font-size:11px;
+      background:var(--c1);
+      color:#14121f;
+      border:none;
+      padding:12px 20px;
+      cursor:pointer;
+      box-shadow:3px 3px 0 rgba(0,0,0,.4);
+    }
+    #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4);}
+    #foot-note{
+      margin-top:10px;
+      font-size:8px;
+      color:var(--dim);
+      text-align:center;
+      max-width:480px;
+      line-height:1.7;
+    }
+  </style>
+
+  <div id="hud">
+    <div id="target-wrap">
+      <span class="stat">OBJETIVO</span>
+      <span id="target-swatch"></span>
+    </div>
+    <div><span class="stat">COMBO</span><span class="val" id="combo-val">0</span></div>
+    <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="game-canvas" width="520" height="360"></canvas>
+    <div id="combo-flash">+COMBO</div>
+    <div id="overlay">
+      <h2>TOCA EL COLOR OBJETIVO</h2>
+      <p>Los bloques cruzan la pantalla sin parar. Toca solo los del color indicado arriba antes de que se escapen. Encadenar aciertos sube el combo. El objetivo cambia cada cierto tiempo. Sin final, solo puntuación.</p>
+      <button id="start-btn">EMPEZAR</button>
+    </div>
+  </div>
+
+  <div id="foot-note">prototipo &middot; sin guardado de partida &middot; toque/click</div>
+</div>
+
+<script>
+(function(){
+  const root = document.getElementById('game-root');
+  const canvas = document.getElementById('game-canvas');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('start-btn');
+  const targetSwatch = document.getElementById('target-swatch');
+  const scoreEl = document.getElementById('score-val');
+  const comboEl = document.getElementById('combo-val');
+  const comboFlash = document.getElementById('combo-flash');
+
+  const COLORS = [
+    getVar('--c1'), getVar('--c2'), getVar('--c3'), getVar('--c4')
+  ];
+  function getVar(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
+
+  const W = canvas.width, H = canvas.height;
+  let blocks = [];
+  let score = 0, combo = 0, best = 0;
+  let target = COLORS[0];
+  let spawnTimer = 0, spawnInterval = 70;
+  let targetTimer = 0, targetInterval = 260;
+  let elapsed = 0;
+  let running = false;
+  let rafId = null;
+
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function resetGame(){
+    blocks = [];
+    score = 0; combo = 0;
+    spawnTimer = 0; spawnInterval = 70;
+    targetTimer = 0; targetInterval = 260;
+    elapsed = 0;
+    target = pick(COLORS);
+    updateHUD();
+  }
+
+  function updateHUD(){
+    scoreEl.textContent = score;
+    comboEl.textContent = combo;
+    targetSwatch.style.background = target;
+  }
+
+  function spawnBlock(){
+    const size = rnd(26, 36);
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const y = rnd(size, H - size);
+    const speed = rnd(1.4, 2.2) + Math.min(elapsed/900, 2.2);
+    blocks.push({
+      x: dir === 1 ? -size : W + size,
+      y, size,
+      vx: dir * speed,
+      color: pick(COLORS),
+      dead: false
+    });
+  }
+
+  function flashCombo(){
+    comboFlash.style.transition = 'none';
+    comboFlash.style.opacity = '1';
+    comboFlash.style.transform = 'translateX(-50%) translateY(0px)';
+    requestAnimationFrame(()=>{
+      comboFlash.style.transition = 'opacity .5s ease, transform .5s ease';
+      comboFlash.style.opacity = '0';
+      comboFlash.style.transform = 'translateX(-50%) translateY(-14px)';
+    });
+  }
+
+  function handlePick(mx, my){
+    if(!running) return;
+    for(let i = blocks.length - 1; i >= 0; i--){
+      const b = blocks[i];
+      if(b.dead) continue;
+      const half = b.size/2;
+      if(mx >= b.x - half && mx <= b.x + half && my >= b.y - half && my <= b.y + half){
+        if(b.color === target){
+          combo++;
+          score += 10 + combo * 2;
+          if(combo > 0 && combo % 5 === 0) flashCombo();
+        } else {
+          combo = 0;
+        }
+        b.dead = true;
+        updateHUD();
+        return;
+      }
+    }
+  }
+
+  function pointerFromEvent(e){
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const p = e.touches ? e.touches[0] : e;
+    return {
+      x: (p.clientX - rect.left) * scaleX,
+      y: (p.clientY - rect.top) * scaleY
+    };
+  }
+
+  canvas.addEventListener('pointerdown', (e)=>{
+    const p = pointerFromEvent(e);
+    handlePick(p.x, p.y);
+  });
+
+  function drawBlock(b){
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+  }
+
+  function loop(){
+    if(!running) return;
+    elapsed++;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = getVar('--panel');
+    ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    for(let gx=0; gx<W; gx+=26){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
+    for(let gy=0; gy<H; gy+=26){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
+
+    spawnTimer++;
+    if(spawnTimer >= spawnInterval){
+      spawnTimer = 0;
+      spawnInterval = Math.max(28, spawnInterval - 0.6);
+      spawnBlock();
+    }
+
+    targetTimer++;
+    if(targetTimer >= targetInterval){
+      targetTimer = 0;
+      let next = pick(COLORS);
+      while(next === target && COLORS.length > 1) next = pick(COLORS);
+      target = next;
+      updateHUD();
+    }
+
+    for(let i = blocks.length - 1; i >= 0; i--){
+      const b = blocks[i];
+      b.x += b.vx;
+      if(!b.dead) drawBlock(b);
+      const off = b.x < -60 || b.x > W + 60;
+      if(off){
+        if(!b.dead && b.color === target){
+          combo = 0;
+          updateHUD();
+        }
+        blocks.splice(i,1);
+      } else if(b.dead){
+        blocks.splice(i,1);
+      }
+    }
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startGame(){
+    resetGame();
+    overlay.style.display = 'none';
+    running = true;
+    cancelAnimationFrame(rafId);
+    loop();
+  }
+
+  startBtn.addEventListener('click', startGame);
+})();
+</script>
