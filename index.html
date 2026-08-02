@@ -51,6 +51,16 @@
     border-radius:50% / 100% 100% 0 0;
     opacity:.5;
   }
+
+  /* icono: encaja y despeja */
+  .icon-encaja{ display:flex; align-items:center; justify-content:center; }
+  .icon-encaja .mini-grid{
+    display:grid;
+    grid-template-columns:repeat(6, 8px);
+    grid-template-rows:repeat(4, 8px);
+    gap:2px;
+  }
+  .icon-encaja .mini-grid div{ background:var(--grid); }
 </style>
 </head>
 <body>
@@ -92,6 +102,24 @@
         <span class="tag">un botón</span>
       </div>
       <a class="play-btn" href="juegos/salto-sin-fin.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-encaja">
+        <div class="mini-grid">
+          <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
+          <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
+          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>
+          <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
+        </div>
+      </div>
+      <h2>ENCAJA Y DESPEJA</h2>
+      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida termina.</p>
+      <div class="tag-row">
+        <span class="tag">arrastrar</span>
+        <span class="tag">estrategia</span>
+      </div>
+      <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
     </div>
 
   </div>
