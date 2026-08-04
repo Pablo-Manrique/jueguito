@@ -1,10 +1,13 @@
-const CACHE_NAME = 'mini-arcade-v1';
+const CACHE_NAME = 'mini-arcade-v2';
 
 const ASSETS = [
   './',
   'index.html',
+  'companion.html',
   'manifest.json',
   'assets/theme.css',
+  'assets/companion.css',
+  'assets/companion.js',
   'assets/icon-192.png',
   'assets/icon-512.png',
   'assets/icon-180.png',

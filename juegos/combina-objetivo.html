@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mini Arcade">
 <link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
 <style>
   #game-root{
     display:flex;
@@ -158,6 +159,13 @@
 
   #foot-note{ margin-top:10px; font-size:clamp(7px, 2vw, 8px); color:var(--dim); text-align:center; max-width:480px; line-height:1.8; }
 
+  .blip-corner{
+    position:absolute;
+    left:8px; bottom:8px;
+    z-index:4;
+    pointer-events:none;
+  }
+
   @keyframes pop-scale{
     0%{ transform:scale(1); }
     40%{ transform:scale(1.6) rotate(-8deg); }
@@ -210,6 +218,7 @@
 
     <div id="canvas-wrap">
       <canvas id="game-canvas"></canvas>
+      <div id="blip-slot" class="blip-corner"></div>
       <div id="flash-overlay"></div>
       <div id="banner">¡NUEVO OBJETIVO!</div>
       <div id="overlay">
@@ -436,12 +445,14 @@
           if(mult > lastMult){
             replay(comboMultEl, 'pop');
             sfxMult();
+            if(window.Companion) Companion.play('cheer');
           }
           lastMult = mult;
         } else {
           combo = 0; lastMult = 1;
           spawnParticles(b.x, b.y, '#ff5d73', 6);
           sfxMiss();
+          if(window.Companion) Companion.play('sad');
         }
         b.dead = true;
         updateHUD();
@@ -581,6 +592,11 @@
 
   updateHUD();
 })();
+</script>
+
+<script src="../assets/companion.js"></script>
+<script>
+  Companion.mount(document.getElementById('blip-slot'), { size: 40 });
 </script>
 
 <script>

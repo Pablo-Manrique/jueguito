@@ -1,0 +1,187 @@
+.blip{
+  --blip-size: 56px;
+  position:relative;
+  width:var(--blip-size);
+  height:calc(var(--blip-size) * 1.05);
+  display:inline-block;
+  animation: blip-hop 6s ease-in-out infinite;
+  cursor:default;
+  user-select:none;
+}
+
+.blip-body{
+  position:absolute;
+  inset:0;
+  background:var(--c4);
+  border:2px solid rgba(0,0,0,.4);
+  border-radius:34% 34% 40% 40% / 40% 40% 34% 34%;
+  box-shadow:3px 3px 0 rgba(0,0,0,.3);
+  animation: blip-breathe 2.6s ease-in-out infinite;
+}
+
+.blip-belly{
+  position:absolute;
+  left:26%; right:26%; bottom:14%;
+  height:22%;
+  background:var(--c3);
+  border-radius:50% 50% 40% 40%;
+  opacity:.9;
+}
+
+.blip-eye{
+  position:absolute;
+  top:36%;
+  width:12%; height:12%;
+  background:#14121f;
+  border-radius:50%;
+  animation: blip-blink 4.4s ease-in-out infinite;
+}
+.blip-eye.left{ left:28%; }
+.blip-eye.right{ right:28%; }
+
+.blip-mouth{
+  position:absolute;
+  top:56%; left:50%;
+  width:22%; height:8%;
+  transform:translateX(-50%);
+  border-bottom:2px solid rgba(0,0,0,.5);
+  border-radius:0 0 60% 60%;
+}
+
+.blip-arm{
+  position:absolute;
+  top:44%;
+  width:14%; height:26%;
+  background:var(--c4);
+  border:2px solid rgba(0,0,0,.4);
+  border-radius:40%;
+  transform-origin:top center;
+}
+.blip-arm.left{ left:-8%; }
+.blip-arm.right{ right:-8%; }
+
+.blip-fx{
+  position:absolute;
+  top:-34%; left:50%;
+  transform:translateX(-50%);
+  font-family:'Press Start 2P','Courier New',monospace;
+  font-size:calc(var(--blip-size) * 0.22);
+  color:var(--c3);
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- animaciones idle (siempre activas) ---------- */
+@keyframes blip-hop{
+  0%, 88%, 100%{ transform:translateY(0); }
+  92%{ transform:translateY(-10%); }
+  96%{ transform:translateY(0); }
+}
+@keyframes blip-breathe{
+  0%, 100%{ transform:scale(1,1); }
+  50%{ transform:scale(1.04, 0.96); }
+}
+@keyframes blip-blink{
+  0%, 92%, 100%{ transform:scaleY(1); }
+  95%{ transform:scaleY(0.15); }
+}
+
+/* ---------- gestos (activados por Companion.play) ---------- */
+
+.g-wave .blip-arm.right{
+  animation: blip-wave .8s ease-in-out;
+}
+@keyframes blip-wave{
+  0%, 100%{ transform:rotate(0deg); }
+  25%{ transform:rotate(-35deg); }
+  50%{ transform:rotate(-10deg); }
+  75%{ transform:rotate(-35deg); }
+}
+
+.blip.g-cheer{ animation: blip-cheer-jump .9s ease; }
+.g-cheer .blip-arm{ animation: blip-cheer-arms .9s ease; }
+.g-cheer .blip-fx{ animation: blip-fx-pop .9s ease; }
+@keyframes blip-cheer-jump{
+  0%, 100%{ transform:translateY(0); }
+  30%{ transform:translateY(-26%); }
+  55%{ transform:translateY(0); }
+  70%{ transform:translateY(-8%); }
+}
+@keyframes blip-cheer-arms{
+  0%, 100%{ transform:rotate(0deg); }
+  30%{ transform:rotate(-60deg); }
+  70%{ transform:rotate(-45deg); }
+}
+@keyframes blip-fx-pop{
+  0%{ opacity:0; transform:translate(-50%,10%) scale(.6); }
+  30%{ opacity:1; transform:translate(-50%,0) scale(1); }
+  80%{ opacity:1; }
+  100%{ opacity:0; transform:translate(-50%,-30%) scale(1); }
+}
+
+.g-think .blip-body{ animation: blip-tilt 1s ease; }
+.g-think .blip-fx{ animation: blip-fx-pop 1s ease; }
+@keyframes blip-tilt{
+  0%, 100%{ transform:rotate(0deg); }
+  30%{ transform:rotate(-8deg); }
+  70%{ transform:rotate(-6deg); }
+}
+
+.g-sleep .blip-eye{ animation:none; transform:scaleY(0.15); }
+.g-sleep .blip-fx{ animation: blip-fx-float 1.6s ease; }
+@keyframes blip-fx-float{
+  0%{ opacity:0; transform:translate(-50%,10%); }
+  25%{ opacity:1; }
+  100%{ opacity:0; transform:translate(-50%,-60%); }
+}
+
+.blip.g-surprise{ animation: blip-jolt .5s ease; }
+.g-surprise .blip-eye{ transform:scale(1.5); }
+@keyframes blip-jolt{
+  0%{ transform:translateY(0) scale(1); }
+  30%{ transform:translateY(-14%) scale(1.08,0.92); }
+  100%{ transform:translateY(0) scale(1); }
+}
+
+.g-sad .blip-body{ animation: blip-droop 1.1s ease forwards; }
+.g-sad .blip-mouth{ border-bottom:none; border-top:2px solid rgba(0,0,0,.5); border-radius:60% 60% 0 0; top:60%; }
+@keyframes blip-droop{
+  0%{ transform:translateY(0); }
+  50%{ transform:translateY(6%) scale(1,0.94); }
+  100%{ transform:translateY(4%) scale(1,0.96); }
+}
+
+/* ---------- página propia del compañero ---------- */
+.blip-stage{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  max-width:480px;
+  aspect-ratio:4/3;
+  border:3px solid var(--grid);
+  background:var(--panel);
+  box-shadow: 0 0 0 4px var(--bg), 6px 6px 0 rgba(0,0,0,.35);
+  margin-bottom:16px;
+}
+.blip-gestures{
+  width:100%;
+  max-width:480px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));
+  gap:8px;
+}
+.blip-gestures button{
+  font-family:inherit;
+  font-size:clamp(8px, 2.4vw, 9px);
+  background:var(--panel);
+  color:var(--ink);
+  border:2px solid var(--grid);
+  padding:12px 8px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.blip-gestures button:hover{ border-color:var(--dim); }
+.blip-gestures button:active{ transform:translate(1px,1px); }

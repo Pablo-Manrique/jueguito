@@ -12,7 +12,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mini Arcade">
 <link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/companion.css">
 <style>
+  .hero-blip{ display:flex; justify-content:center; margin-bottom:10px; }
+  .blip-link{
+    display:inline-block;
+    margin-top:12px;
+    font-size:clamp(8px, 2.4vw, 9px);
+    color:var(--c4);
+    border-bottom:1px solid var(--c4);
+    padding-bottom:2px;
+  }
+  .blip-link:hover{ color:var(--ink); border-color:var(--ink); }
+</style>
   /* iconos decorativos de cada tarjeta, hechos solo con CSS */
   .icon-shape{ position:absolute; }
 
@@ -73,8 +85,10 @@
 <body>
 
   <div class="hero">
+    <div class="hero-blip" id="hero-blip-slot"></div>
     <h1>MINI ARCADE</h1>
     <p>Juegos rápidos para pasar el rato. Sin registro, sin guardar partidas: entras, juegas un rato y ya.</p>
+    <a class="blip-link" href="companion.html">Conoce a BLIP →</a>
   </div>
 
   <div class="game-grid">
@@ -132,6 +146,11 @@
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
+
+<script src="assets/companion.js"></script>
+<script>
+  Companion.mount(document.getElementById('hero-blip-slot'), { size: 64, autoGesture: 'wave', autoGestureDelay: 600 });
+</script>
 
 <script>
   if('serviceWorker' in navigator){

@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mini Arcade">
 <link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
 <style>
   #game-root{
     display:flex;
@@ -180,6 +181,8 @@
 
   #foot-note{ margin-top:6px; font-size:clamp(7px, 2vw, 8px); color:var(--dim); text-align:center; max-width:480px; line-height:1.8; }
 
+  .hud-blip{ display:flex; align-items:center; }
+
   @keyframes pop-scale{
     0%{ transform:scale(1); }
     40%{ transform:scale(1.6) rotate(-8deg); }
@@ -215,6 +218,7 @@
 
   <div id="game-root">
     <div id="hud">
+      <div id="blip-slot" class="hud-blip"></div>
       <div><span class="stat">RACHA</span><span class="val" id="streak-val">0</span><span class="val" id="streak-mult"></span></div>
       <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
     </div>
@@ -467,6 +471,7 @@
     startBtn.textContent = 'REINTENTAR';
     overlay.style.display = 'flex';
     sfxGameOver();
+    if(window.Companion) Companion.play('sad');
   }
 
   function spawnScorePopup(text, color){
@@ -520,6 +525,7 @@
       banner.textContent = '¡RACHA x' + mult + '!';
       replay(banner, 'show');
       sfxMult();
+      if(window.Companion) Companion.play('cheer');
     }
     lastMult = mult;
     updateHUD();
@@ -693,6 +699,11 @@
 
   updateHUD();
 })();
+</script>
+
+<script src="../assets/companion.js"></script>
+<script>
+  Companion.mount(document.getElementById('blip-slot'), { size: 32 });
 </script>
 
 <script>
