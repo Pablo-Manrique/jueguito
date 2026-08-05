@@ -24,7 +24,7 @@
     padding-bottom:2px;
   }
   .blip-link:hover{ color:var(--ink); border-color:var(--ink); }
-</style>
+
   /* iconos decorativos de cada tarjeta, hechos solo con CSS */
   .icon-shape{ position:absolute; }
 
@@ -80,6 +80,41 @@
     gap:2px;
   }
   .icon-encaja .mini-grid div{ background:var(--grid); }
+
+
+  /* icono: desliza y esquiva */
+.icon-desliza{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.icon-desliza::before{
+    content:"";
+    position:absolute;
+    width:28px;
+    height:38px;
+    background:
+        linear-gradient(to right,
+            transparent 8px,
+            var(--c3) 8px,
+            var(--c3) 9px,
+            transparent 9px,
+            transparent 18px,
+            var(--c3) 18px,
+            var(--c3) 19px,
+            transparent 19px);
+    opacity:.7;
+}
+
+.icon-desliza .mini-grid{
+    display:grid;
+    grid-template-columns:repeat(3,8px);
+    grid-template-rows:repeat(4,8px);
+    gap:2px;
+    position:relative;
+}
 </style>
 </head>
 <body>
@@ -128,9 +163,9 @@
     <div class="game-card">
       <div class="icon-box icon-encaja">
         <div class="mini-grid">
-          <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
+        <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
           <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
-          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>
+          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>  
           <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
         </div>
       </div>
@@ -141,6 +176,27 @@
         <span class="tag">estrategia</span>
       </div>
       <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-desliza">
+        <div class="mini-grid">
+  <div></div><div style="background:var(--c1)"></div><div></div>
+
+  <div></div><div></div><div></div>
+
+  <div></div><div></div><div style="background:var(--c1)"></div>
+
+  <div style="background:var(--c2)"></div><div></div><div></div>
+</div>
+      </div>
+      <h2>DESLIZA Y ESQUIVA</h2>
+      <p>Que no te choquen.</p>
+      <div class="tag-row">
+        <span class="tag">arrastrar</span>
+        <span class="tag">reflejos</span>
+      </div>
+      <a class="play-btn" href="juegos/desliza-esquiva.html">JUGAR →</a>
     </div>
 
   </div>

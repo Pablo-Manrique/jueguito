@@ -14,6 +14,14 @@
 <link rel="stylesheet" href="../assets/theme.css">
 <link rel="stylesheet" href="../assets/companion.css">
 <style>
+  #player-slot{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:5;
+    pointer-events:none;
+}
+
   #game-root{
     display:flex;
     flex-direction:column;
@@ -179,7 +187,7 @@
 
     <div id="canvas-wrap">
       <canvas id="game-canvas"></canvas>
-      <div id="blip-slot" class="blip-corner"></div>
+      <div id="player-slot"></div>
       <div id="flash-overlay"></div>
       <div id="banner">¡RACHA!</div>
       <div id="overlay">
@@ -356,6 +364,7 @@
       const s = scaleF();
       player.vy = -13.5 * s;
       player.grounded = false;
+      Companion.play('cheer')
       sfxJump();
     }
   }
@@ -409,28 +418,12 @@
   }
 
   function drawPlayer(){
-    const s = scaleF();
-    const baseSize = 26 * s;
-    let sx = 1, sy = 1;
-    if(player.squashTimer > 0){
-      const t = player.squashTimer / 8;
-      sy = 0.65 + 0.35 * (1 - t);
-      sx = 1.35 - 0.35 * (1 - t);
-      player.squashTimer--;
-    } else if(!player.grounded){
-      if(player.vy < 0){ sy = 1.18; sx = 0.88; }
-      else { sy = 0.94; sx = 1.06; }
-    }
-    const px = W * PLAYER_X_RATIO;
-    const w = baseSize * sx, h = baseSize * sy;
-    const x = px - w/2, y = player.y - h;
-    ctx.fillStyle = COL_C1();
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 2;
-    ctx.fillRect(x, y, w, h);
-    ctx.strokeRect(x, y, w, h);
-    ctx.fillStyle = COL_PANEL();
-    ctx.fillRect(x + w*0.58, y + h*0.22, w*0.18, h*0.18);
+    const playerSlot = document.getElementById("player-slot");
+
+    const size = 30;
+
+    playerSlot.style.left = (W * PLAYER_X_RATIO - size/2) + "px";
+    playerSlot.style.top  = (player.y - size) + "px";
   }
 
   function loop(){
@@ -494,7 +487,7 @@
     }
 
     const playerX = W * PLAYER_X_RATIO;
-    const playerTop = player.y - 26*s;
+    const playerTop = player.y - 30*s;
 
     for(let i = obstacles.length-1; i>=0; i--){
       const o = obstacles[i];
@@ -507,7 +500,7 @@
       ctx.strokeRect(o.x, top, o.w, o.h);
 
       if(!o.hit && !o.cleared){
-        const halfW = 13*s;
+        const halfW = 15*s;
         const overlapX = (playerX + halfW > o.x) && (playerX - halfW < o.x + o.w);
         const overlapY = player.y > (groundY - o.h);
         if(overlapX && overlapY){
@@ -517,7 +510,11 @@
           flashColor(COL_C1());
           shakeScreen();
           sfxStumble();
-          if(window.Companion) Companion.play('sad');
+          running = false;
+          cancelAnimationFrame(rafId);
+          if(window.Companion) Companion.play('sleep');
+          setTimeout(startGame, 0);
+          return;
         }
       }
       if(!o.hit && !o.cleared && o.x + o.w < playerX - 13*s){
@@ -535,7 +532,7 @@
           banner.textContent = '¡RACHA x' + mult + '!';
           replay(banner, 'show');
           sfxMult();
-          if(window.Companion) Companion.play('cheer');
+          if(window.Companion) Companion.play('surprise');
         }
         lastMult = mult;
         updateHUD();
@@ -567,7 +564,9 @@
       ctx.globalAlpha = 1;
     }
 
-    rafId = requestAnimationFrame(loop);
+    if(running){
+      rafId = requestAnimationFrame(loop);
+    }
   }
 
   function startGame(){
@@ -577,7 +576,7 @@
     overlay.style.display = 'none';
     running = true;
     cancelAnimationFrame(rafId);
-    loop();
+    rafId = requestAnimationFrame(loop);
   }
 
   startBtn.addEventListener('click', startGame);
@@ -593,7 +592,8 @@
 
 <script src="../assets/companion.js"></script>
 <script>
-  Companion.mount(document.getElementById('blip-slot'), { size: 40 });
+  const playerSlot = document.getElementById('player-slot');
+  Companion.mount(playerSlot, { size: 30 });
 </script>
 
 <script>
