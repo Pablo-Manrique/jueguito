@@ -36,6 +36,7 @@
   #hud .val{ color:var(--ink); margin-left:4px; }
   #streak-mult{ display:inline-block; color:var(--c3); }
   #streak-mult.pop{ animation: pop-scale .45s ease; }
+  #best-val.pop{ animation: pop-scale .45s ease; }
 
   #hud2{
     width:100%;
@@ -168,6 +169,7 @@
     <div id="hud">
       <div><span class="stat">RACHA</span><span class="val" id="streak-val">0</span><span class="val" id="streak-mult"></span></div>
       <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+      <div><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
     </div>
 
     <div id="hud2">
@@ -182,7 +184,7 @@
       <div id="banner">¡RACHA!</div>
       <div id="overlay">
         <h2>UN TOQUE, UN SALTO</h2>
-        <p>Corres sin parar. Toca la pantalla (o pulsa ESPACIO) para saltar los obstáculos. Si tropiezas solo pierdes la racha — la partida sigue, sin final.</p>
+        <p>Corres sin parar. Toca la pantalla (o pulsa ESPACIO) para saltar — mantén pulsado para saltar más alto, suelta rápido para un salto corto. Si tropiezas solo pierdes la racha — la partida sigue, sin final.</p>
         <button id="start-btn">EMPEZAR</button>
       </div>
     </div>
@@ -200,6 +202,7 @@
   const restartBtn = document.getElementById('restart-btn');
   const muteBtn = document.getElementById('mute-btn');
   const scoreEl = document.getElementById('score-val');
+  const bestEl = document.getElementById('best-val');
   const streakEl = document.getElementById('streak-val');
   const streakMultEl = document.getElementById('streak-mult');
   const flashOverlay = document.getElementById('flash-overlay');
@@ -249,6 +252,7 @@
   let elapsed = 0;
 
   let score = 0, streak = 0, lastMult = 1;
+  let sessionBest = 0;
   let obstacles = [], particles = [], popups = [];
 
   let spawnTimer = 0, spawnInterval = 95;
@@ -307,6 +311,11 @@
     streakEl.textContent = streak;
     const m = multiplierFor(streak);
     streakMultEl.textContent = m > 1 ? ' x' + m : '';
+    if(score > sessionBest){
+      sessionBest = score;
+      bestEl.textContent = sessionBest;
+      replay(bestEl, 'pop');
+    }
   }
 
   function flashColor(hex){
@@ -351,11 +360,25 @@
     }
   }
 
+  function jumpCut(){
+    if(!running) return;
+    if(!player.grounded && player.vy < -3){
+      player.vy *= 0.45;
+    }
+  }
+
   canvas.addEventListener('pointerdown', jump);
+  canvas.addEventListener('pointerup', jumpCut);
+  canvas.addEventListener('pointercancel', jumpCut);
   window.addEventListener('keydown', (e)=>{
     if(e.code === 'Space' || e.code === 'ArrowUp'){
       if(running) e.preventDefault();
       jump();
+    }
+  });
+  window.addEventListener('keyup', (e)=>{
+    if(e.code === 'Space' || e.code === 'ArrowUp'){
+      jumpCut();
     }
   });
 
@@ -494,7 +517,6 @@
           flashColor(COL_C1());
           shakeScreen();
           sfxStumble();
-          startGame();
           if(window.Companion) Companion.play('sad');
         }
       }

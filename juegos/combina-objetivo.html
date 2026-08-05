@@ -80,6 +80,7 @@
 
   #combo-mult{ display:inline-block; color:var(--c3); }
   #combo-mult.pop{ animation: pop-scale .45s ease; }
+  #best-val.pop{ animation: pop-scale .45s ease; }
 
   #countdown-track{
     width:100%; max-width:520px;
@@ -207,6 +208,7 @@
       </div>
       <div><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
       <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+      <div><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
     </div>
 
     <div id="hud2">
@@ -244,6 +246,7 @@
   const targetPing = document.getElementById('target-ping');
   const targetLabel = document.getElementById('target-label');
   const scoreEl = document.getElementById('score-val');
+  const bestEl = document.getElementById('best-val');
   const comboEl = document.getElementById('combo-val');
   const comboMultEl = document.getElementById('combo-mult');
   const flashOverlay = document.getElementById('flash-overlay');
@@ -295,6 +298,7 @@
 
   let blocks = [], particles = [], popups = [];
   let score = 0, combo = 0, lastMult = 1;
+  let sessionBest = 0;
   let target = { color:COLORS[0], shape:SHAPES[0] };
   let spawnTimer = 0, spawnInterval = 70;
   let targetTimer = 0, targetInterval = 260;
@@ -368,6 +372,11 @@
     comboEl.textContent = combo;
     const m = multiplierFor(combo);
     comboMultEl.textContent = m > 1 ? ' x' + m : '';
+    if(score > sessionBest){
+      sessionBest = score;
+      bestEl.textContent = sessionBest;
+      replay(bestEl, 'pop');
+    }
   }
 
   function applyTargetVisual(animate){
@@ -472,15 +481,15 @@
     handlePick(p.x, p.y);
   });
 
-  function drawShape(shape, x, y, size, color, glow){
+  function drawShape(shape, x, y, size, color, glow, warn){
     ctx.save();
     if(glow){
       ctx.shadowColor = color;
-      ctx.shadowBlur = 14;
+      ctx.shadowBlur = warn ? (16 + 8*Math.abs(Math.sin(elapsed*0.25))) : 14;
     }
     ctx.fillStyle = color;
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = warn ? 'rgba(255,255,255,' + (0.4+0.35*Math.abs(Math.sin(elapsed*0.25))) + ')' : 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = warn ? 3 : 2;
     const h = size/2;
     switch(shape){
       case 'circle':
@@ -538,7 +547,8 @@
       const b = blocks[i];
       b.x += b.vx;
       const isMatch = !b.dead && b.color === target.color && b.shape === target.shape;
-      if(!b.dead) drawShape(b.shape.id, b.x, b.y, b.size, b.color.hex, isMatch);
+      const nearEdge = isMatch && (b.x < 55 || b.x > W - 55);
+      if(!b.dead) drawShape(b.shape.id, b.x, b.y, b.size, b.color.hex, isMatch, nearEdge);
       const off = b.x < -60 || b.x > W+60;
       if(off){
         if(!b.dead && isMatch){ combo = 0; lastMult = 1; updateHUD(); }

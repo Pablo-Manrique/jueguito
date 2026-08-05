@@ -36,6 +36,7 @@
   #hud .val{ color:var(--ink); margin-left:4px; }
   #streak-mult{ display:inline-block; color:var(--c3); }
   #streak-mult.pop{ animation: pop-scale .45s ease; }
+  #best-val.pop{ animation: pop-scale .45s ease; }
 
   #hud2{
     width:100%;
@@ -207,6 +208,15 @@
     0%{ opacity:1; transform:translate(-50%,-50%); }
     100%{ opacity:0; transform:translate(-50%,-140%); }
   }
+  @keyframes shake{
+    0%{ transform:translateX(0); }
+    20%{ transform:translateX(-5px); }
+    40%{ transform:translateX(4px); }
+    60%{ transform:translateX(-3px); }
+    80%{ transform:translateX(2px); }
+    100%{ transform:translateX(0); }
+  }
+  .tray-slot.shake{ animation: shake .28s ease; }
 </style>
 </head>
 <body>
@@ -221,6 +231,7 @@
       <div id="blip-slot" class="hud-blip"></div>
       <div><span class="stat">RACHA</span><span class="val" id="streak-val">0</span><span class="val" id="streak-mult"></span></div>
       <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+      <div><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
     </div>
 
     <div id="hud2">
@@ -260,6 +271,7 @@
   const restartBtn = document.getElementById('restart-btn');
   const muteBtn = document.getElementById('mute-btn');
   const scoreEl = document.getElementById('score-val');
+  const bestEl = document.getElementById('best-val');
   const streakEl = document.getElementById('streak-val');
   const streakMultEl = document.getElementById('streak-mult');
   const flashOverlay = document.getElementById('flash-overlay');
@@ -300,6 +312,7 @@
   let muted = false;
   let audioCtx = null;
   let score = 0, streak = 0, lastMult = 1;
+  let sessionBest = 0;
 
   function rnd(a,b){ return a + Math.random()*(b-a); }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -426,6 +439,11 @@
     streakEl.textContent = streak;
     const m = multiplierFor(streak);
     streakMultEl.textContent = m > 1 ? ' x' + m : '';
+    if(score > sessionBest){
+      sessionBest = score;
+      bestEl.textContent = sessionBest;
+      replay(bestEl, 'pop');
+    }
   }
   function multiplierFor(s){
     if(s >= 20) return 3;
@@ -467,7 +485,7 @@
     overlay.querySelector('h2').textContent = 'SIN HUECO';
     overlay.querySelector('p').textContent = 'Ninguna pieza disponible cabe ya en el tablero.';
     overlayScore.style.display = 'block';
-    overlayScore.textContent = 'PUNTOS: ' + score;
+    overlayScore.textContent = 'PUNTOS: ' + score + '   ·   MEJOR: ' + sessionBest;
     startBtn.textContent = 'REINTENTAR';
     overlay.style.display = 'flex';
     sfxGameOver();
@@ -505,8 +523,11 @@
     fullRows.forEach(r=>{ for(let c=0;c<GRID;c++) toClear.add(r+'_'+c); });
     fullCols.forEach(c=>{ for(let r=0;r<GRID;r++) toClear.add(r+'_'+c); });
 
+    // Libera el estado lógico YA (para que gameOverCheck vea el hueco real),
+    // y deja solo la animación visual para el pequeño retraso de abajo.
     toClear.forEach(key=>{
       const [r,c] = key.split('_').map(Number);
+      board[r][c] = null;
       cellEls[r][c].classList.add('clearing');
     });
 
@@ -533,7 +554,6 @@
     setTimeout(()=>{
       toClear.forEach(key=>{
         const [r,c] = key.split('_').map(Number);
-        board[r][c] = null;
         const el = cellEls[r][c];
         el.classList.remove('filled','clearing');
         el.style.background = '';
@@ -658,6 +678,7 @@
       commitPlacement(dragging);
     } else {
       sfxInvalid();
+      replay(traySlotEls[dragging.slotIndex], 'shake');
     }
     dragging = null;
   }
