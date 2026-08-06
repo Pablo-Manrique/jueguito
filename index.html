@@ -1,122 +1,209 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Arcade</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="assets/favicon-48.png">
-<link rel="apple-touch-icon" href="assets/icon-180.png">
-<meta name="theme-color" content="#14121f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mini Arcade">
-<link rel="stylesheet" href="assets/theme.css">
-<link rel="stylesheet" href="assets/companion.css">
-<style>
-  .hero-blip{ display:flex; justify-content:center; margin-bottom:10px; }
-  .blip-link{
-    display:inline-block;
-    margin-top:12px;
-    font-size:clamp(8px, 2.4vw, 9px);
-    color:var(--c4);
-    border-bottom:1px solid var(--c4);
-    padding-bottom:2px;
-  }
-  .blip-link:hover{ color:var(--ink); border-color:var(--ink); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Arcade</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/favicon-48.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <meta name="theme-color" content="#14121f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mini Arcade">
+  <link rel="stylesheet" href="assets/theme.css">
+  <link rel="stylesheet" href="assets/companion.css">
+  <style>
+    .hero-blip {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
 
-  /* iconos decorativos de cada tarjeta, hechos solo con CSS */
-  .icon-shape{ position:absolute; }
+    .blip-link {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: clamp(8px, 2.4vw, 9px);
+      color: var(--c4);
+      border-bottom: 1px solid var(--c4);
+      padding-bottom: 2px;
+    }
 
-  /* icono: combina objetivo */
-  .icon-combina .shape-a{
-    top:14px; left:20px; width:16px; height:16px;
-    background:var(--c2); border-radius:50%;
-  }
-  .icon-combina .shape-b{
-    top:30px; left:44px; width:16px; height:16px;
-    background:var(--c4);
-    clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  }
-  .icon-combina .shape-c{
-    top:10px; left:70px; width:14px; height:14px;
-    background:var(--c3);
-    clip-path:polygon(50% 0%, 0% 100%, 100% 100%);
-  }
-  .icon-combina .shape-d{
-    top:34px; left:98px; width:14px; height:14px;
-    background:var(--c1);
-  }
+    .blip-link:hover {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
 
-  /* icono: salto sin fin */
-  .icon-salto .ground{
-    left:0; right:0; bottom:12px; height:2px;
-    background:var(--grid);
-  }
-  .icon-salto .runner{
-    left:26px; bottom:14px; width:14px; height:14px;
-    background:var(--c1);
-  }
-  .icon-salto .runner::after{
-    content:'';
-  }
-  .icon-salto .obstacle{
-    left:96px; bottom:14px; width:10px; height:20px;
-    background:var(--c2);
-  }
-  .icon-salto .arc{
-    left:30px; bottom:14px; width:60px; height:26px;
-    border-top:2px dashed var(--dim);
-    border-radius:50% / 100% 100% 0 0;
-    opacity:.5;
-  }
+    /* iconos decorativos de cada tarjeta, hechos solo con CSS */
+    .icon-shape {
+      position: absolute;
+    }
 
-  /* icono: encaja y despeja */
-  .icon-encaja{ display:flex; align-items:center; justify-content:center; }
-  .icon-encaja .mini-grid{
-    display:grid;
-    grid-template-columns:repeat(6, 8px);
-    grid-template-rows:repeat(4, 8px);
-    gap:2px;
-  }
-  .icon-encaja .mini-grid div{ background:var(--grid); }
+    /* icono: combina objetivo */
+    .icon-combina .shape-a {
+      top: 14px;
+      left: 20px;
+      width: 16px;
+      height: 16px;
+      background: var(--c2);
+      border-radius: 50%;
+    }
+
+    .icon-combina .shape-b {
+      top: 30px;
+      left: 44px;
+      width: 16px;
+      height: 16px;
+      background: var(--c4);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .icon-combina .shape-c {
+      top: 10px;
+      left: 70px;
+      width: 14px;
+      height: 14px;
+      background: var(--c3);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+
+    .icon-combina .shape-d {
+      top: 34px;
+      left: 98px;
+      width: 14px;
+      height: 14px;
+      background: var(--c1);
+    }
+
+    /* icono: salto sin fin */
+    .icon-salto .ground {
+      left: 0;
+      right: 0;
+      bottom: 12px;
+      height: 2px;
+      background: var(--grid);
+    }
+
+    .icon-salto .runner {
+      left: 26px;
+      bottom: 14px;
+      width: 14px;
+      height: 14px;
+      background: var(--c1);
+    }
+
+    .icon-salto .runner::after {
+      content: '';
+    }
+
+    .icon-salto .obstacle {
+      left: 96px;
+      bottom: 14px;
+      width: 10px;
+      height: 20px;
+      background: var(--c2);
+    }
+
+    .icon-salto .arc {
+      left: 30px;
+      bottom: 14px;
+      width: 60px;
+      height: 26px;
+      border-top: 2px dashed var(--dim);
+      border-radius: 50% / 100% 100% 0 0;
+      opacity: .5;
+    }
+
+    /* icono: encaja y despeja */
+    .icon-encaja {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-encaja .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 8px);
+      grid-template-rows: repeat(4, 8px);
+      gap: 2px;
+    }
+
+    .icon-encaja .mini-grid div {
+      background: var(--grid);
+    }
 
 
-  /* icono: desliza y esquiva */
-.icon-desliza{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-}
+    /* icono: desliza y esquiva */
+    .icon-desliza {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-.icon-desliza::before{
-    content:"";
-    position:absolute;
-    width:28px;
-    height:38px;
-    background:
+    .icon-desliza::before {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 38px;
+      background:
         linear-gradient(to right,
-            transparent 8px,
-            var(--c3) 8px,
-            var(--c3) 9px,
-            transparent 9px,
-            transparent 18px,
-            var(--c3) 18px,
-            var(--c3) 19px,
-            transparent 19px);
-    opacity:.7;
-}
+          transparent 8px,
+          var(--c3) 8px,
+          var(--c3) 9px,
+          transparent 9px,
+          transparent 18px,
+          var(--c3) 18px,
+          var(--c3) 19px,
+          transparent 19px);
+      opacity: .7;
+    }
 
-.icon-desliza .mini-grid{
-    display:grid;
-    grid-template-columns:repeat(3,8px);
-    grid-template-rows:repeat(4,8px);
-    gap:2px;
-    position:relative;
-}
-</style>
+    .icon-desliza .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 8px);
+      grid-template-rows: repeat(4, 8px);
+      gap: 2px;
+      position: relative;
+    }
+
+    /* icono: atrapa con blip */
+    .icon-atrapa {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .icon-atrapa .gem {
+      width: 14px;
+      height: 14px;
+    }
+
+    .icon-atrapa .gem.g1 {
+      background: var(--c2);
+      clip-path: circle(50% at 50% 50%);
+      margin-top: -14px;
+    }
+
+    .icon-atrapa .gem.g2 {
+      background: var(--c3);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      margin-top: 4px;
+    }
+
+    .icon-atrapa .blip-mini {
+      width: 20px;
+      height: 20px;
+      background: var(--c4);
+      border: 2px solid rgba(0, 0, 0, .4);
+      border-radius: 34% 34% 40% 40% / 40% 40% 34% 34%;
+      margin-top: 10px;
+    }
+  </style>
 </head>
+
 <body>
 
   <div class="hero">
@@ -136,7 +223,8 @@
         <div class="icon-shape shape-d"></div>
       </div>
       <h2>COMBINA EL OBJETIVO</h2>
-      <p>Bloques de colores y formas cruzan la pantalla sin parar. Toca solo los que coinciden con el objetivo antes de que se escapen.</p>
+      <p>Bloques de colores y formas cruzan la pantalla sin parar. Toca solo los que coinciden con el objetivo antes de
+        que se escapen.</p>
       <div class="tag-row">
         <span class="tag">reflejos</span>
         <span class="tag">infinito</span>
@@ -152,7 +240,8 @@
         <div class="icon-shape obstacle"></div>
       </div>
       <h2>SALTO SIN FIN</h2>
-      <p>Corres sin parar por un mundo que no acaba. Un solo botón para saltar obstáculos y estirar tu racha lo máximo posible.</p>
+      <p>Corres sin parar por un mundo que no acaba. Un solo botón para saltar obstáculos y estirar tu racha lo máximo
+        posible.</p>
       <div class="tag-row">
         <span class="tag">ritmo</span>
         <span class="tag">un botón</span>
@@ -163,14 +252,35 @@
     <div class="game-card">
       <div class="icon-box icon-encaja">
         <div class="mini-grid">
-        <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
-          <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
-          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>  
-          <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
+          <div></div>
+          <div></div>
+          <div style="background:var(--c3)"></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div style="background:var(--c1)"></div>
+          <div style="background:var(--c1)"></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div style="background:var(--c2)"></div>
+          <div style="background:var(--c2)"></div>
+          <div></div>
+          <div></div>
+          <div style="background:var(--c4)"></div>
+          <div style="background:var(--c4)"></div>
+          <div style="background:var(--c4)"></div>
+          <div style="background:var(--c4)"></div>
+          <div style="background:var(--c4)"></div>
+          <div style="background:var(--c4)"></div>
         </div>
       </div>
       <h2>ENCAJA Y DESPEJA</h2>
-      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida termina.</p>
+      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida
+        termina.</p>
       <div class="tag-row">
         <span class="tag">arrastrar</span>
         <span class="tag">estrategia</span>
@@ -181,14 +291,22 @@
     <div class="game-card">
       <div class="icon-box icon-desliza">
         <div class="mini-grid">
-  <div></div><div style="background:var(--c1)"></div><div></div>
+          <div></div>
+          <div style="background:var(--c1)"></div>
+          <div></div>
 
-  <div></div><div></div><div></div>
+          <div></div>
+          <div></div>
+          <div></div>
 
-  <div></div><div></div><div style="background:var(--c1)"></div>
+          <div></div>
+          <div></div>
+          <div style="background:var(--c1)"></div>
 
-  <div style="background:var(--c2)"></div><div></div><div></div>
-</div>
+          <div style="background:var(--c2)"></div>
+          <div></div>
+          <div></div>
+        </div>
       </div>
       <h2>DESLIZA Y ESQUIVA</h2>
       <p>Que no te choquen.</p>
@@ -199,22 +317,39 @@
       <a class="play-btn" href="juegos/desliza-esquiva.html">JUGAR →</a>
     </div>
 
+    <div class="game-card">
+      <div class="icon-box icon-atrapa">
+        <div class="gem g1"></div>
+        <div class="blip-mini"></div>
+        <div class="gem g2"></div>
+      </div>
+      <h2>ATRAPA CON BLIP</h2>
+      <p>Mueve a BLIP arrastrando para atrapar las gemas de colores y esquivar las bolas oscuras. Si fallas solo pierdes
+        la racha.</p>
+      <div class="tag-row">
+        <span class="tag">arrastrar</span>
+        <span class="tag">infinito</span>
+      </div>
+      <a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a>
+    </div>
+
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
 
-<script src="assets/companion.js"></script>
-<script>
-  Companion.mount(document.getElementById('hero-blip-slot'), { size: 64, autoGesture: 'wave', autoGestureDelay: 600 });
-</script>
+  <script src="assets/companion.js"></script>
+  <script>
+    Companion.mount(document.getElementById('hero-blip-slot'), { size: 64, autoGesture: 'wave', autoGestureDelay: 600 });
+  </script>
 
-<script>
-  if('serviceWorker' in navigator){
-    window.addEventListener('load', ()=>{
-      navigator.serviceWorker.register('sw.js').catch(()=>{});
-    });
-  }
-</script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => { });
+      });
+    }
+  </script>
 
 </body>
+
 </html>

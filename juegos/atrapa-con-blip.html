@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atrapa con BLIP · Mini Arcade</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" type="image/png" href="../assets/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icon-180.png">
+<meta name="theme-color" content="#14121f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mini Arcade">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
+<style>
+  #game-root{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+  }
+
+  #hud{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    font-size:clamp(8px, 2.6vw, 10px);
+    letter-spacing:.5px;
+    gap:6px 10px;
+  }
+  #hud .stat{ color:var(--dim); }
+  #hud .val{ color:var(--ink); margin-left:4px; }
+  #streak-mult{ display:inline-block; color:var(--c3); }
+  #streak-mult.pop{ animation: pop-scale .45s ease; }
+  #best-val.pop{ animation: pop-scale .45s ease; }
+
+  #hud2{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .mini-btn{
+    font-family:inherit;
+    font-size:clamp(9px, 2.6vw, 10px);
+    background:transparent;
+    color:var(--dim);
+    border:1px solid var(--grid);
+    padding:9px 12px;
+    min-height:36px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .mini-btn:hover{ color:var(--ink); border-color:var(--dim); }
+  .mini-btn:active{ transform:translate(1px,1px); }
+
+  #play-wrap{
+    position:relative;
+    width:100%;
+    max-width:480px;
+  }
+  #play-area{
+    position:relative;
+    width:100%;
+    aspect-ratio: 4 / 5;
+    border:3px solid var(--grid);
+    background:var(--panel);
+    box-shadow: 0 0 0 4px var(--bg), 6px 6px 0 rgba(0,0,0,.35);
+    overflow:hidden;
+    touch-action:none;
+    cursor:grab;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #catch-line{
+    position:absolute;
+    left:0; right:0;
+    bottom:14%;
+    height:1px;
+    background:rgba(255,255,255,0.07);
+    z-index:1;
+  }
+  #blip-wrapper{
+    position:absolute;
+    bottom:6%;
+    z-index:3;
+  }
+  .fall-item{
+    position:absolute;
+    z-index:2;
+  }
+  .fall-item.bad{
+    background:#1a1730;
+    border:2px solid var(--c1);
+    border-radius:50%;
+    color:var(--c1);
+    font-family:'Press Start 2P','Courier New',monospace;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .fall-item.good{
+    border:2px solid rgba(0,0,0,.4);
+  }
+
+  .score-popup{
+    position:absolute;
+    bottom:16%;
+    font-size:13px;
+    pointer-events:none;
+    transform:translateX(-50%);
+    animation: pop-float-up .8s ease forwards;
+    z-index:4;
+  }
+
+  #flash-overlay{
+    position:absolute; inset:0;
+    opacity:0;
+    pointer-events:none;
+    mix-blend-mode:screen;
+    z-index:5;
+  }
+  #flash-overlay.flash{ animation: flash-fade .35s ease-out; }
+
+  #banner{
+    position:absolute;
+    top:10px; left:50%;
+    transform:translate(-50%,-10px);
+    font-size:10px;
+    color:var(--ink);
+    background:rgba(20,18,31,.85);
+    border:1px solid var(--grid);
+    padding:6px 10px;
+    opacity:0;
+    pointer-events:none;
+    white-space:nowrap;
+    z-index:6;
+  }
+  #banner.show{ animation: banner-in 1.1s ease; }
+
+  #overlay{
+    position:absolute; inset:0;
+    background:rgba(20,18,31,.92);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:14px; text-align:center; padding:20px;
+    z-index:7;
+  }
+  #overlay h2{ font-size:clamp(12px, 4vw, 14px); margin:0; color:var(--c3); }
+  #overlay p{ font-size:clamp(8px, 2.6vw, 9px); color:var(--dim); line-height:1.9; margin:0; max-width:360px; }
+  #overlay button{
+    font-family:inherit; font-size:clamp(10px, 3vw, 11px);
+    background:var(--c2); color:#14121f;
+    border:none; padding:14px 22px; cursor:pointer;
+    box-shadow:3px 3px 0 rgba(0,0,0,.4);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
+
+  #foot-note{ margin-top:10px; font-size:clamp(7px, 2vw, 8px); color:var(--dim); text-align:center; max-width:480px; line-height:1.8; }
+
+  @keyframes pop-scale{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.6) rotate(-8deg); }
+    70%{ transform:scale(.9); }
+    100%{ transform:scale(1); }
+  }
+  @keyframes flash-fade{
+    0%{ opacity:.35; }
+    100%{ opacity:0; }
+  }
+  @keyframes banner-in{
+    0%{ opacity:0; transform:translate(-50%,-10px); }
+    15%{ opacity:1; transform:translate(-50%,0); }
+    82%{ opacity:1; transform:translate(-50%,0); }
+    100%{ opacity:0; transform:translate(-50%,-10px); }
+  }
+  @keyframes pop-float-up{
+    0%{ opacity:1; transform:translateX(-50%) translateY(0); }
+    100%{ opacity:0; transform:translateX(-50%) translateY(-60px); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a class="back-link" href="../index.html">← MENÚ</a>
+    <span class="page-title">ATRAPA CON BLIP</span>
+  </div>
+
+  <div id="game-root">
+    <div id="hud">
+      <div><span class="stat">RACHA</span><span class="val" id="streak-val">0</span><span class="val" id="streak-mult"></span></div>
+      <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+      <div><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+    </div>
+
+    <div id="hud2">
+      <button class="mini-btn" id="mute-btn">SONIDO: ON</button>
+      <button class="mini-btn" id="restart-btn">REINICIAR</button>
+    </div>
+
+    <div id="play-wrap">
+      <div id="play-area">
+        <div id="catch-line"></div>
+        <div id="blip-wrapper"></div>
+      </div>
+      <div id="flash-overlay"></div>
+      <div id="banner">¡RACHA!</div>
+      <div id="overlay">
+        <h2>ATRAPA CON BLIP</h2>
+        <p>Arrastra dentro del tablero para mover a BLIP. Atrapa las gemas de colores, esquiva las bolas oscuras con ×. Si fallas solo pierdes la racha — la partida sigue, sin final.</p>
+        <button id="start-btn">EMPEZAR</button>
+      </div>
+    </div>
+
+    <div id="foot-note">sin guardado de partida &middot; arrastra con el dedo, el ratón o usa las flechas</div>
+  </div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const playArea = document.getElementById('play-area');
+  const blipWrapper = document.getElementById('blip-wrapper');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const muteBtn = document.getElementById('mute-btn');
+  const scoreEl = document.getElementById('score-val');
+  const bestEl = document.getElementById('best-val');
+  const streakEl = document.getElementById('streak-val');
+  const streakMultEl = document.getElementById('streak-mult');
+  const flashOverlay = document.getElementById('flash-overlay');
+  const banner = document.getElementById('banner');
+
+  function getVar(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
+  const GOOD_COLORS = [getVar('--c2'), getVar('--c3'), getVar('--c4')];
+  const SHAPE_CLIP = {
+    square:'none',
+    circle:'circle(50% at 50% 50%)',
+    triangle:'polygon(50% 0%, 0% 100%, 100% 100%)',
+    diamond:'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+  };
+  const SHAPE_IDS = ['square','circle','triangle','diamond'];
+
+  const BLIP_SIZE = 44;
+  const REF_H = 600;
+
+  let W = 0, H = 0;
+  function measure(){
+    const rect = playArea.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+  }
+  function scaleF(){ return H / REF_H; }
+
+  let running = false;
+  let rafId = null;
+  let muted = false;
+  let audioCtx = null;
+  let elapsed = 0;
+
+  let score = 0, streak = 0, lastMult = 1;
+  let sessionBest = 0;
+
+  let items = [];
+  let spawnTimer = 0, spawnInterval = 60;
+
+  let blipX = 0;
+  let targetX = 0;
+  let steering = false;
+  const keys = {};
+
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function ensureAudio(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ audioCtx = null; }
+    }
+  }
+  function beep(freq, dur, type, vol, glideTo){
+    if(muted || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = vol || 0.06;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    if(glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, now + dur);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.start(now);
+    osc.stop(now + dur);
+  }
+  function sfxCatch(){ beep(760, 0.08, 'square', 0.05); }
+  function sfxBad(){ beep(150, 0.18, 'sawtooth', 0.055, 70); }
+  function sfxMiss(){ beep(220, 0.08, 'sine', 0.035); }
+  function sfxMult(){ beep(900, 0.07, 'square', 0.05); setTimeout(()=>beep(1200, 0.09, 'square', 0.05), 60); }
+
+  function replay(el, cls){
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+  function flashColor(hex){
+    flashOverlay.style.background = hex;
+    replay(flashOverlay, 'flash');
+  }
+
+  function multiplierFor(s){
+    if(s >= 20) return 3;
+    if(s >= 10) return 2;
+    if(s >= 5) return 1.5;
+    return 1;
+  }
+
+  function updateHUD(){
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+    const m = multiplierFor(streak);
+    streakMultEl.textContent = m > 1 ? ' x' + m : '';
+    if(score > sessionBest){
+      sessionBest = score;
+      bestEl.textContent = sessionBest;
+      replay(bestEl, 'pop');
+    }
+  }
+
+  function clampBlipX(x){
+    const half = BLIP_SIZE/2;
+    return Math.max(half, Math.min(W - half, x));
+  }
+  function setBlipVisualX(x){
+    blipWrapper.style.left = (x - BLIP_SIZE/2) + 'px';
+  }
+
+  function spawnItem(){
+    const isBad = Math.random() < 0.24;
+    const size = rnd(26, 34);
+    const x = rnd(0, Math.max(0, W - size));
+    const el = document.createElement('div');
+    el.className = 'fall-item ' + (isBad ? 'bad' : 'good');
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    if(isBad){
+      el.textContent = '\u00d7';
+      el.style.fontSize = Math.round(size*0.5) + 'px';
+    } else {
+      el.style.background = pick(GOOD_COLORS);
+      el.style.clipPath = SHAPE_CLIP[pick(SHAPE_IDS)];
+    }
+    playArea.appendChild(el);
+    items.push({ el, x, y:-size, size, bad:isBad, resolved:false });
+  }
+
+  function spawnScorePopup(text, color){
+    const el = document.createElement('div');
+    el.className = 'score-popup';
+    el.style.color = color;
+    el.style.left = blipX + 'px';
+    el.textContent = text;
+    playArea.appendChild(el);
+    setTimeout(()=>el.remove(), 820);
+  }
+
+  function resolveCatch(item){
+    item.resolved = true;
+    item.el.remove();
+    if(item.bad){
+      streak = 0; lastMult = 1;
+      flashColor(getVar('--c1'));
+      sfxBad();
+      if(window.Companion) Companion.play('sad');
+    } else {
+      streak++;
+      const mult = multiplierFor(streak);
+      const gain = Math.round((8 + streak*2) * mult);
+      score += gain;
+      spawnScorePopup('+'+gain, getVar('--c3'));
+      sfxCatch();
+      if(mult > lastMult){
+        replay(streakMultEl, 'pop');
+        banner.style.color = getVar('--c3');
+        banner.textContent = '¡RACHA x' + mult + '!';
+        replay(banner, 'show');
+        sfxMult();
+        if(window.Companion) Companion.play('cheer');
+      }
+      lastMult = mult;
+    }
+    updateHUD();
+  }
+
+  function resolveMiss(item){
+    item.resolved = true;
+    item.el.remove();
+    if(!item.bad){
+      streak = 0; lastMult = 1;
+      sfxMiss();
+      updateHUD();
+    }
+  }
+
+  function resetGame(){
+    items.forEach(it=>it.el.remove());
+    items = [];
+    score = 0; streak = 0; lastMult = 1;
+    elapsed = 0;
+    spawnTimer = 0; spawnInterval = 60;
+    measure();
+    blipX = W/2;
+    targetX = blipX;
+    setBlipVisualX(blipX);
+    updateHUD();
+  }
+
+  let resizeQueued = false;
+  window.addEventListener('resize', ()=>{
+    if(resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(()=>{
+      resizeQueued = false;
+      measure();
+      blipX = clampBlipX(blipX);
+      setBlipVisualX(blipX);
+    });
+  });
+
+  function pointerXInArea(clientX){
+    const rect = playArea.getBoundingClientRect();
+    return clientX - rect.left;
+  }
+  playArea.addEventListener('pointerdown', (e)=>{
+    if(!running) return;
+    steering = true;
+    targetX = clampBlipX(pointerXInArea(e.clientX));
+  });
+  window.addEventListener('pointermove', (e)=>{
+    if(!steering) return;
+    targetX = clampBlipX(pointerXInArea(e.clientX));
+  });
+  window.addEventListener('pointerup', ()=>{ steering = false; });
+  window.addEventListener('pointercancel', ()=>{ steering = false; });
+
+  window.addEventListener('keydown', (e)=>{
+    if(['ArrowLeft','ArrowRight','a','A','d','D'].indexOf(e.key) !== -1){
+      keys[e.key] = true;
+      if(running) e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', (e)=>{ keys[e.key] = false; });
+
+  function loop(){
+    if(!running) return;
+    elapsed++;
+
+    const kSpeed = 5.5 * scaleF();
+    const usingKeyboard = keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['ArrowRight'] || keys['d'] || keys['D'];
+    if(usingKeyboard){
+      if(keys['ArrowLeft'] || keys['a'] || keys['A']) blipX = clampBlipX(blipX - kSpeed);
+      if(keys['ArrowRight'] || keys['d'] || keys['D']) blipX = clampBlipX(blipX + kSpeed);
+      targetX = blipX;
+    } else if(steering){
+      blipX += (targetX - blipX) * 0.28;
+    }
+    setBlipVisualX(blipX);
+
+    const speed = (1.7 + Math.min(elapsed/500, 2.6)) * scaleF();
+    const catchLine = H * 0.86;
+
+    spawnTimer++;
+    if(spawnTimer >= spawnInterval){
+      spawnTimer = 0;
+      spawnInterval = Math.max(26, 60 - elapsed/20) + rnd(-6,6);
+      spawnItem();
+    }
+
+    for(let i=items.length-1; i>=0; i--){
+      const it = items[i];
+      it.y += speed;
+      it.el.style.top = it.y + 'px';
+      it.el.style.left = it.x + 'px';
+
+      if(!it.resolved && it.y + it.size >= catchLine){
+        const itemCenterX = it.x + it.size/2;
+        const overlap = Math.abs(itemCenterX - blipX) < (it.size/2 + BLIP_SIZE/2);
+        if(overlap) resolveCatch(it);
+        else resolveMiss(it);
+      }
+      if(it.resolved){
+        items.splice(i,1);
+      } else if(it.y > H + 10){
+        resolveMiss(it);
+        items.splice(i,1);
+      }
+    }
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startGame(){
+    ensureAudio();
+    resetGame();
+    overlay.style.display = 'none';
+    running = true;
+    cancelAnimationFrame(rafId);
+    loop();
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    muteBtn.textContent = 'SONIDO: ' + (muted ? 'OFF' : 'ON');
+  });
+
+  measure();
+  updateHUD();
+})();
+</script>
+
+<script src="../assets/companion.js"></script>
+<script>
+  Companion.mount(document.getElementById('blip-wrapper'), { size: 44 });
+</script>
+
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('../sw.js').catch(()=>{});
+    });
+  }
+</script>
+
+</body>
+</html>
