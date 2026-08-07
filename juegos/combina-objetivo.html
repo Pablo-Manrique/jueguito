@@ -298,7 +298,15 @@
 
   let blocks = [], particles = [], popups = [];
   let score = 0, combo = 0, lastMult = 1;
-  let sessionBest = 0;
+  const BEST_KEY = 'miniArcade.combina.best';
+  function loadBest(){
+    try{ const v = sessionStorage.getItem(BEST_KEY); return v ? (parseInt(v,10)||0) : 0; }
+    catch(e){ return 0; }
+  }
+  function saveBest(v){
+    try{ sessionStorage.setItem(BEST_KEY, String(v)); } catch(e){}
+  }
+  let sessionBest = loadBest();
   let target = { color:COLORS[0], shape:SHAPES[0] };
   let spawnTimer = 0, spawnInterval = 70;
   let targetTimer = 0, targetInterval = 260;
@@ -374,9 +382,10 @@
     comboMultEl.textContent = m > 1 ? ' x' + m : '';
     if(score > sessionBest){
       sessionBest = score;
-      bestEl.textContent = sessionBest;
+      saveBest(sessionBest);
       replay(bestEl, 'pop');
     }
+    bestEl.textContent = sessionBest;
   }
 
   function applyTargetVisual(animate){

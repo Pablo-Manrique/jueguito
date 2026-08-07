@@ -153,7 +153,9 @@
     z-index:7;
   }
   #overlay h2{ font-size:clamp(12px, 4vw, 14px); margin:0; color:var(--c3); }
+  #overlay.lost h2{ color:var(--c1); }
   #overlay p{ font-size:clamp(8px, 2.6vw, 9px); color:var(--dim); line-height:1.9; margin:0; max-width:360px; }
+  #overlay-score{ display:none; font-size:clamp(10px,3vw,12px); color:var(--ink); }
   #overlay button{
     font-family:inherit; font-size:clamp(10px, 3vw, 11px);
     background:var(--c2); color:#14121f;
@@ -215,8 +217,9 @@
       <div id="flash-overlay"></div>
       <div id="banner">¡RACHA!</div>
       <div id="overlay">
-        <h2>ATRAPA CON BLIP</h2>
-        <p>Arrastra dentro del tablero para mover a BLIP. Atrapa las gemas de colores, esquiva las bolas oscuras con ×. Si fallas solo pierdes la racha — la partida sigue, sin final.</p>
+        <h2 id="overlay-title">ATRAPA CON BLIP</h2>
+        <p id="overlay-text">Arrastra dentro del tablero para mover a BLIP. Atrapa las gemas de colores y evita las bolas oscuras con × — si atrapas una, pierdes.</p>
+        <div id="overlay-score"></div>
         <button id="start-btn">EMPEZAR</button>
       </div>
     </div>
@@ -230,6 +233,9 @@
   const playArea = document.getElementById('play-area');
   const blipWrapper = document.getElementById('blip-wrapper');
   const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlay-title');
+  const overlayText = document.getElementById('overlay-text');
+  const overlayScore = document.getElementById('overlay-score');
   const startBtn = document.getElementById('start-btn');
   const restartBtn = document.getElementById('restart-btn');
   const muteBtn = document.getElementById('mute-btn');
@@ -268,7 +274,15 @@
   let elapsed = 0;
 
   let score = 0, streak = 0, lastMult = 1;
-  let sessionBest = 0;
+  const BEST_KEY = 'miniArcade.atrapa.best';
+  function loadBest(){
+    try{ const v = sessionStorage.getItem(BEST_KEY); return v ? (parseInt(v,10)||0) : 0; }
+    catch(e){ return 0; }
+  }
+  function saveBest(v){
+    try{ sessionStorage.setItem(BEST_KEY, String(v)); } catch(e){}
+  }
+  let sessionBest = loadBest();
 
   let items = [];
   let spawnTimer = 0, spawnInterval = 60;
@@ -325,6 +339,17 @@
     return 1;
   }
 
+  function triggerGameOver(){
+    running = false;
+    overlay.classList.add('lost');
+    overlayTitle.textContent = 'TE HAN PILLADO';
+    overlayText.textContent = 'Atrapaste una ficha prohibida.';
+    overlayScore.style.display = 'block';
+    overlayScore.textContent = 'PUNTOS: ' + score + '   ·   MEJOR: ' + sessionBest;
+    startBtn.textContent = 'REINTENTAR';
+    overlay.style.display = 'flex';
+  }
+
   function updateHUD(){
     scoreEl.textContent = score;
     streakEl.textContent = streak;
@@ -332,9 +357,10 @@
     streakMultEl.textContent = m > 1 ? ' x' + m : '';
     if(score > sessionBest){
       sessionBest = score;
-      bestEl.textContent = sessionBest;
+      saveBest(sessionBest);
       replay(bestEl, 'pop');
     }
+    bestEl.textContent = sessionBest;
   }
 
   function clampBlipX(x){
@@ -378,27 +404,28 @@
     item.resolved = true;
     item.el.remove();
     if(item.bad){
-      streak = 0; lastMult = 1;
       flashColor(getVar('--c1'));
       sfxBad();
       if(window.Companion) Companion.play('sad');
-    } else {
-      streak++;
-      const mult = multiplierFor(streak);
-      const gain = Math.round((8 + streak*2) * mult);
-      score += gain;
-      spawnScorePopup('+'+gain, getVar('--c3'));
-      sfxCatch();
-      if(mult > lastMult){
-        replay(streakMultEl, 'pop');
-        banner.style.color = getVar('--c3');
-        banner.textContent = '¡RACHA x' + mult + '!';
-        replay(banner, 'show');
-        sfxMult();
-        if(window.Companion) Companion.play('cheer');
-      }
-      lastMult = mult;
+      updateHUD();
+      triggerGameOver();
+      return;
     }
+    streak++;
+    const mult = multiplierFor(streak);
+    const gain = Math.round((8 + streak*2) * mult);
+    score += gain;
+    spawnScorePopup('+'+gain, getVar('--c3'));
+    sfxCatch();
+    if(mult > lastMult){
+      replay(streakMultEl, 'pop');
+      banner.style.color = getVar('--c3');
+      banner.textContent = '¡RACHA x' + mult + '!';
+      replay(banner, 'show');
+      sfxMult();
+      if(window.Companion) Companion.play('cheer');
+    }
+    lastMult = mult;
     updateHUD();
   }
 
@@ -422,6 +449,11 @@
     blipX = W/2;
     targetX = blipX;
     setBlipVisualX(blipX);
+    overlay.classList.remove('lost');
+    overlayTitle.textContent = 'ATRAPA CON BLIP';
+    overlayText.textContent = 'Arrastra dentro del tablero para mover a BLIP. Atrapa las gemas de colores y evita las bolas oscuras con × — si atrapas una, pierdes.';
+    overlayScore.style.display = 'none';
+    startBtn.textContent = 'EMPEZAR';
     updateHUD();
   }
 

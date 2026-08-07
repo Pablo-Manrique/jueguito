@@ -14,14 +14,6 @@
 <link rel="stylesheet" href="../assets/theme.css">
 <link rel="stylesheet" href="../assets/companion.css">
 <style>
-  #player-slot{
-    position:absolute;
-    left:0;
-    top:0;
-    z-index:5;
-    pointer-events:none;
-}
-
   #game-root{
     display:flex;
     flex-direction:column;
@@ -187,7 +179,7 @@
 
     <div id="canvas-wrap">
       <canvas id="game-canvas"></canvas>
-      <div id="player-slot"></div>
+      <div id="blip-slot" class="blip-corner"></div>
       <div id="flash-overlay"></div>
       <div id="banner">¡RACHA!</div>
       <div id="overlay">
@@ -260,7 +252,15 @@
   let elapsed = 0;
 
   let score = 0, streak = 0, lastMult = 1;
-  let sessionBest = 0;
+  const BEST_KEY = 'miniArcade.salto.best';
+  function loadBest(){
+    try{ const v = sessionStorage.getItem(BEST_KEY); return v ? (parseInt(v,10)||0) : 0; }
+    catch(e){ return 0; }
+  }
+  function saveBest(v){
+    try{ sessionStorage.setItem(BEST_KEY, String(v)); } catch(e){}
+  }
+  let sessionBest = loadBest();
   let obstacles = [], particles = [], popups = [];
 
   let spawnTimer = 0, spawnInterval = 95;
@@ -321,9 +321,10 @@
     streakMultEl.textContent = m > 1 ? ' x' + m : '';
     if(score > sessionBest){
       sessionBest = score;
-      bestEl.textContent = sessionBest;
+      saveBest(sessionBest);
       replay(bestEl, 'pop');
     }
+    bestEl.textContent = sessionBest;
   }
 
   function flashColor(hex){
@@ -364,7 +365,6 @@
       const s = scaleF();
       player.vy = -13.5 * s;
       player.grounded = false;
-      Companion.play('cheer')
       sfxJump();
     }
   }
@@ -418,12 +418,28 @@
   }
 
   function drawPlayer(){
-    const playerSlot = document.getElementById("player-slot");
-
-    const size = 30;
-
-    playerSlot.style.left = (W * PLAYER_X_RATIO - size/2) + "px";
-    playerSlot.style.top  = (player.y - size) + "px";
+    const s = scaleF();
+    const baseSize = 26 * s;
+    let sx = 1, sy = 1;
+    if(player.squashTimer > 0){
+      const t = player.squashTimer / 8;
+      sy = 0.65 + 0.35 * (1 - t);
+      sx = 1.35 - 0.35 * (1 - t);
+      player.squashTimer--;
+    } else if(!player.grounded){
+      if(player.vy < 0){ sy = 1.18; sx = 0.88; }
+      else { sy = 0.94; sx = 1.06; }
+    }
+    const px = W * PLAYER_X_RATIO;
+    const w = baseSize * sx, h = baseSize * sy;
+    const x = px - w/2, y = player.y - h;
+    ctx.fillStyle = COL_C1();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 2;
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = COL_PANEL();
+    ctx.fillRect(x + w*0.58, y + h*0.22, w*0.18, h*0.18);
   }
 
   function loop(){
@@ -487,7 +503,7 @@
     }
 
     const playerX = W * PLAYER_X_RATIO;
-    const playerTop = player.y - 30*s;
+    const playerTop = player.y - 26*s;
 
     for(let i = obstacles.length-1; i>=0; i--){
       const o = obstacles[i];
@@ -500,7 +516,7 @@
       ctx.strokeRect(o.x, top, o.w, o.h);
 
       if(!o.hit && !o.cleared){
-        const halfW = 15*s;
+        const halfW = 13*s;
         const overlapX = (playerX + halfW > o.x) && (playerX - halfW < o.x + o.w);
         const overlapY = player.y > (groundY - o.h);
         if(overlapX && overlapY){
@@ -510,11 +526,7 @@
           flashColor(COL_C1());
           shakeScreen();
           sfxStumble();
-          running = false;
-          cancelAnimationFrame(rafId);
-          if(window.Companion) Companion.play('sleep');
-          setTimeout(startGame, 0);
-          return;
+          if(window.Companion) Companion.play('sad');
         }
       }
       if(!o.hit && !o.cleared && o.x + o.w < playerX - 13*s){
@@ -532,7 +544,7 @@
           banner.textContent = '¡RACHA x' + mult + '!';
           replay(banner, 'show');
           sfxMult();
-          if(window.Companion) Companion.play('surprise');
+          if(window.Companion) Companion.play('cheer');
         }
         lastMult = mult;
         updateHUD();
@@ -564,9 +576,7 @@
       ctx.globalAlpha = 1;
     }
 
-    if(running){
-      rafId = requestAnimationFrame(loop);
-    }
+    rafId = requestAnimationFrame(loop);
   }
 
   function startGame(){
@@ -576,7 +586,7 @@
     overlay.style.display = 'none';
     running = true;
     cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(loop);
+    loop();
   }
 
   startBtn.addEventListener('click', startGame);
@@ -592,8 +602,7 @@
 
 <script src="../assets/companion.js"></script>
 <script>
-  const playerSlot = document.getElementById('player-slot');
-  Companion.mount(playerSlot, { size: 30 });
+  Companion.mount(document.getElementById('blip-slot'), { size: 40 });
 </script>
 
 <script>

@@ -312,7 +312,15 @@
   let muted = false;
   let audioCtx = null;
   let score = 0, streak = 0, lastMult = 1;
-  let sessionBest = 0;
+  const BEST_KEY = 'miniArcade.encaja.best';
+  function loadBest(){
+    try{ const v = sessionStorage.getItem(BEST_KEY); return v ? (parseInt(v,10)||0) : 0; }
+    catch(e){ return 0; }
+  }
+  function saveBest(v){
+    try{ sessionStorage.setItem(BEST_KEY, String(v)); } catch(e){}
+  }
+  let sessionBest = loadBest();
 
   function rnd(a,b){ return a + Math.random()*(b-a); }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -441,9 +449,10 @@
     streakMultEl.textContent = m > 1 ? ' x' + m : '';
     if(score > sessionBest){
       sessionBest = score;
-      bestEl.textContent = sessionBest;
+      saveBest(sessionBest);
       replay(bestEl, 'pop');
     }
+    bestEl.textContent = sessionBest;
   }
   function multiplierFor(s){
     if(s >= 20) return 3;
