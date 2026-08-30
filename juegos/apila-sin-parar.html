@@ -46,24 +46,24 @@
 
   /* ---------- cabina arcade ---------- */
   #cabinet{
-    width:100%;
-    max-width:400px;
+    width:min(94vw, 420px);
     background:linear-gradient(180deg, #201c38, #14121f);
     border:4px solid var(--grid);
     border-radius:10px;
-    padding:14px;
+    padding:clamp(10px, 3vw, 16px);
     box-shadow: 0 0 0 4px var(--bg), 8px 8px 0 rgba(0,0,0,.4);
   }
 
   .board-row{
     display:flex;
-    gap:10px;
+    gap:clamp(6px, 2vw, 10px);
     align-items:flex-start;
   }
 
   #canvas-wrap{
     position:relative;
-    flex:0 0 66%;
+    flex:1 1 auto;
+    min-width:0;
     border:3px solid var(--grid);
     background:var(--panel);
     box-shadow:0 0 0 3px var(--bg);
@@ -74,13 +74,6 @@
     touch-action:none;
   }
   #game-canvas{ aspect-ratio: 1 / 2; }
-
-  .blip-corner{
-    position:absolute;
-    left:6px; bottom:6px;
-    z-index:4;
-    pointer-events:none;
-  }
 
   #flash-overlay{
     position:absolute; inset:0;
@@ -129,27 +122,27 @@
   #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
 
   .side-panel{
-    flex:1 1 auto;
+    flex:0 0 clamp(74px, 24vw, 108px);
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:clamp(5px, 1.5vw, 8px);
     min-width:0;
   }
   .side-box{
     border:2px solid var(--grid);
     background:var(--panel);
-    padding:6px;
+    padding:clamp(4px, 1.5vw, 6px);
     text-align:center;
   }
   .side-box .stat{
     display:block;
-    font-size:6.5px;
+    font-size:clamp(5.5px, 1.8vw, 6.5px);
     letter-spacing:.5px;
     color:var(--dim);
   }
   .side-box .val{
     display:block;
-    font-size:clamp(11px, 3.4vw, 13px);
+    font-size:clamp(10px, 3.2vw, 13px);
     color:var(--ink);
     margin-top:3px;
   }
@@ -165,21 +158,25 @@
   .controls-row{
     display:flex;
     justify-content:space-between;
-    align-items:center;
+    align-items:flex-end;
+    gap:6px;
     margin-top:16px;
-    padding:0 4px;
+    padding:clamp(10px, 3vw, 14px) clamp(6px, 2vw, 10px) 6px;
+    background:rgba(0,0,0,.18);
+    border-radius:8px;
   }
-  .dpad{
-    display:grid;
-    grid-template-columns:repeat(3, 34px);
-    grid-template-rows:repeat(3, 34px);
-    gap:3px;
+
+  .move-cluster{
+    display:flex;
+    gap:clamp(6px, 2vw, 10px);
   }
-  .dpad-btn{
+  .move-btn{
+    width:clamp(50px, 15vw, 68px);
+    height:clamp(50px, 15vw, 68px);
     background:var(--panel);
     border:2px solid var(--grid);
     color:var(--ink);
-    font-size:15px;
+    font-size:clamp(18px, 5.5vw, 24px);
     line-height:1;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
@@ -187,30 +184,60 @@
     touch-action:manipulation;
     box-shadow:2px 2px 0 rgba(0,0,0,.3);
   }
-  .dpad-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(0,0,0,.3); }
-  .dpad-left{ grid-column:1; grid-row:2; }
-  .dpad-hub{ grid-column:2; grid-row:2; background:var(--grid); cursor:default; box-shadow:none; }
-  .dpad-right{ grid-column:3; grid-row:2; }
-  .dpad-down{ grid-column:2; grid-row:3; }
+  .move-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(0,0,0,.3); }
 
+  .blip-mascot{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-bottom:clamp(2px, 1vw, 6px);
+    pointer-events:none;
+  }
+
+  .action-cluster{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:clamp(6px, 2vw, 8px);
+  }
   .rotate-btn{
-    width:60px; height:60px;
+    width:clamp(54px, 17vw, 74px);
+    height:clamp(54px, 17vw, 74px);
     border-radius:50%;
     background:var(--c2);
     color:#14121f;
     border:2px solid rgba(0,0,0,.4);
-    font-size:22px;
+    font-size:clamp(20px, 6.2vw, 27px);
     cursor:pointer;
     box-shadow:3px 3px 0 rgba(0,0,0,.4);
     -webkit-tap-highlight-color:transparent;
     touch-action:manipulation;
   }
   .rotate-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
+
+  .drop-btn{
+    width:clamp(66px, 21vw, 92px);
+    height:clamp(34px, 10vw, 44px);
+    border-radius:8px;
+    background:var(--c1);
+    color:#14121f;
+    border:2px solid rgba(0,0,0,.4);
+    font-size:clamp(9px, 2.8vw, 11px);
+    font-family:inherit;
+    letter-spacing:.5px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 rgba(0,0,0,.4);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .drop-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
+
   .controls-label{
     font-size:6.5px;
     color:var(--dim);
     text-align:center;
-    margin-top:5px;
+    margin-top:6px;
     letter-spacing:.5px;
   }
 
@@ -251,7 +278,6 @@
       <div class="board-row">
         <div id="canvas-wrap">
           <canvas id="game-canvas"></canvas>
-          <div id="blip-slot" class="blip-corner"></div>
           <div id="flash-overlay"></div>
           <div id="banner">¡TETRIS!</div>
           <div id="overlay">
@@ -287,15 +313,17 @@
       </div>
 
       <div class="controls-row">
-        <div class="dpad">
-          <button class="dpad-btn dpad-left" id="btn-left" aria-label="Izquierda">‹</button>
-          <div class="dpad-btn dpad-hub"></div>
-          <button class="dpad-btn dpad-right" id="btn-right" aria-label="Derecha">›</button>
-          <button class="dpad-btn dpad-down" id="btn-down" aria-label="Bajar">▾</button>
+        <div class="move-cluster">
+          <button class="move-btn" id="btn-left" aria-label="Izquierda">‹</button>
+          <button class="move-btn" id="btn-right" aria-label="Derecha">›</button>
         </div>
-        <button class="rotate-btn" id="btn-rotate" aria-label="Rotar">⟳</button>
+        <div class="blip-mascot" id="blip-slot"></div>
+        <div class="action-cluster">
+          <button class="rotate-btn" id="btn-rotate" aria-label="Rotar">⟳</button>
+          <button class="drop-btn" id="btn-down" aria-label="Bajar de golpe">▾ CAER</button>
+        </div>
       </div>
-      <div class="controls-label">◂ MOVER / BAJAR &nbsp;&nbsp;&nbsp; ROTAR ▸</div>
+      <div class="controls-label">◂ MOVER &nbsp;&nbsp;&nbsp; ROTAR / CAER ▸</div>
     </div>
 
     <div id="foot-note">sin guardado de partida &middot; botones físicos, o flechas + arriba para rotar</div>
