@@ -134,7 +134,7 @@
 
   /* icono: desliza y esquiva */
   .icon-desliza{ display:flex; align-items:center; justify-content:center; position:relative; }
-  .icon-desliza::before{
+    .icon-desliza::before{
     content:"";
     position:absolute;
     width:28px; height:38px;
@@ -164,6 +164,15 @@
     border-radius:34% 34% 40% 40% / 40% 40% 34% 34%;
     margin-top:10px;
   }
+
+  /* icono: apila sin parar */
+  .icon-apila{ display:flex; align-items:flex-end; justify-content:center; gap:2px; }
+  .icon-apila .block{ width:12px; }
+  .icon-apila .block.b1{ height:16px; background:var(--c2); }
+  .icon-apila .block.b2{ height:26px; background:var(--c3); }
+  .icon-apila .block.b3{ height:20px; background:var(--c1); }
+  .icon-apila .block.b4{ height:30px; background:var(--c4); }
+  .icon-apila .block.b5{ height:14px; background:var(--c2); }
 </style>
 </head>
 <body>
@@ -260,12 +269,29 @@
         <div class="gem g2"></div>
       </div>
       <h2>ATRAPA CON BLIP</h2>
-      <p>Mueve a BLIP arrastrando para atrapar las gemas de colores y esquivar las bolas oscuras. Si fallas solo pierdes la racha.</p>
+      <p>Mueve a BLIP arrastrando para atrapar las gemas de colores y esquivar las bolas oscuras. Si atrapas una mala, pierdes.</p>
       <div class="tag-row">
         <span class="tag">arrastrar</span>
         <span class="tag">infinito</span>
       </div>
       <a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-apila">
+        <div class="block b1"></div>
+        <div class="block b2"></div>
+        <div class="block b3"></div>
+        <div class="block b4"></div>
+        <div class="block b5"></div>
+      </div>
+      <h2>APILA SIN PARAR</h2>
+      <p>El clásico de encajar piezas que caen. Cruceta para mover y bajar de golpe, botón redondo para rotar — como una cabina arcade de verdad.</p>
+      <div class="tag-row">
+        <span class="tag">clásico</span>
+        <span class="tag">botones</span>
+      </div>
+      <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
     </div>
 
   </div>
@@ -284,7 +310,8 @@
       { key:'salto',   name:'Salto sin Fin' },
       { key:'encaja',  name:'Encaja y Despeja' },
       { key:'desliza', name:'Desliza y Esquiva' },
-      { key:'atrapa',  name:'Atrapa con BLIP' }
+      { key:'atrapa',  name:'Atrapa con BLIP' },
+      { key:'apila',   name:'Apila sin Parar' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');
