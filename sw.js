@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mini-arcade-v7';
+const CACHE_NAME = 'mini-arcade-v8';
 
 const ASSETS = [
   './',
@@ -17,7 +17,8 @@ const ASSETS = [
   'juegos/encaja-despeja.html',
   'juegos/atrapa-con-blip.html',
   'juegos/desliza-esquiva.html',
-  'juegos/apila-sin-parar.html'
+  'juegos/apila-sin-parar.html',
+  'juegos/rompe-bloques.html'
 ];
 
 self.addEventListener('install', (event) => {

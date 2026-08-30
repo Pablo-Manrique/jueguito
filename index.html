@@ -134,7 +134,7 @@
 
   /* icono: desliza y esquiva */
   .icon-desliza{ display:flex; align-items:center; justify-content:center; position:relative; }
-    .icon-desliza::before{
+  .icon-desliza::before{
     content:"";
     position:absolute;
     width:28px; height:38px;
@@ -173,6 +173,13 @@
   .icon-apila .block.b3{ height:20px; background:var(--c1); }
   .icon-apila .block.b4{ height:30px; background:var(--c4); }
   .icon-apila .block.b5{ height:14px; background:var(--c2); }
+
+  /* icono: rompe los bloques */
+  .icon-rompe{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; }
+  .icon-rompe .row{ display:flex; gap:2px; }
+  .icon-rompe .row div{ width:12px; height:6px; }
+  .icon-rompe .paddle{ width:22px; height:5px; background:var(--c4); margin-top:6px; }
+  .icon-rompe .ball{ width:6px; height:6px; border-radius:50%; background:var(--c3); margin-top:3px; }
 </style>
 </head>
 <body>
@@ -294,6 +301,26 @@
       <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
     </div>
 
+    <div class="game-card">
+      <div class="icon-box icon-rompe">
+        <div class="row">
+          <div style="background:var(--c1)"></div><div style="background:var(--c4)"></div><div style="background:var(--c2)"></div>
+        </div>
+        <div class="row">
+          <div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c1)"></div>
+        </div>
+        <div class="ball"></div>
+        <div class="paddle"></div>
+      </div>
+      <h2>ROMPE LOS BLOQUES</h2>
+      <p>BLIP pilota la pala. El punto donde golpees la bola decide el ángulo. Rompe bloques, atrapa power-ups, cuida tus vidas.</p>
+      <div class="tag-row">
+        <span class="tag">clásico</span>
+        <span class="tag">botones</span>
+      </div>
+      <a class="play-btn" href="juegos/rompe-bloques.html">JUGAR →</a>
+    </div>
+
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
@@ -311,7 +338,8 @@
       { key:'encaja',  name:'Encaja y Despeja' },
       { key:'desliza', name:'Desliza y Esquiva' },
       { key:'atrapa',  name:'Atrapa con BLIP' },
-      { key:'apila',   name:'Apila sin Parar' }
+      { key:'apila',   name:'Apila sin Parar' },
+      { key:'rompe',   name:'Rompe los Bloques' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');
