@@ -180,6 +180,12 @@
   .icon-rompe .row div{ width:12px; height:6px; }
   .icon-rompe .paddle{ width:22px; height:5px; background:var(--c4); margin-top:6px; }
   .icon-rompe .ball{ width:6px; height:6px; border-radius:50%; background:var(--c3); margin-top:3px; }
+
+  /* icono: repele la invasión */
+  .icon-repele{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .icon-repele .erow{ display:flex; gap:4px; }
+  .icon-repele .erow div{ width:10px; height:8px; }
+  .icon-repele .ship{ width:16px; height:8px; background:var(--c4); margin-top:4px; clip-path:polygon(50% 0%, 100% 100%, 0% 100%); }
 </style>
 </head>
 <body>
@@ -321,6 +327,25 @@
       <a class="play-btn" href="juegos/rompe-bloques.html">JUGAR →</a>
     </div>
 
+    <div class="game-card">
+      <div class="icon-box icon-repele">
+        <div class="erow">
+          <div style="background:var(--c1)"></div><div style="background:var(--c4)"></div><div style="background:var(--c1)"></div>
+        </div>
+        <div class="erow">
+          <div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c2)"></div>
+        </div>
+        <div class="ship"></div>
+      </div>
+      <h2>REPELE LA INVASIÓN</h2>
+      <p>BLIP defiende la Tierra. Dispara, esquiva y usa los escudos antes de que los invasores lleguen abajo.</p>
+      <div class="tag-row">
+        <span class="tag">clásico</span>
+        <span class="tag">botones</span>
+      </div>
+      <a class="play-btn" href="juegos/repele-invasion.html">JUGAR →</a>
+    </div>
+
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
@@ -339,7 +364,8 @@
       { key:'desliza', name:'Desliza y Esquiva' },
       { key:'atrapa',  name:'Atrapa con BLIP' },
       { key:'apila',   name:'Apila sin Parar' },
-      { key:'rompe',   name:'Rompe los Bloques' }
+      { key:'rompe',   name:'Rompe los Bloques' },
+      { key:'repele',  name:'Repele la Invasión' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');
