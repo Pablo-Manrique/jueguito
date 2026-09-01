@@ -186,6 +186,16 @@
   .icon-repele .erow{ display:flex; gap:4px; }
   .icon-repele .erow div{ width:10px; height:8px; }
   .icon-repele .ship{ width:16px; height:8px; background:var(--c4); margin-top:4px; clip-path:polygon(50% 0%, 100% 100%, 0% 100%); }
+
+  /* icono: pinball de blip */
+  .icon-pinball{ display:flex; align-items:center; justify-content:center; position:relative; }
+  .icon-pinball .bump{ position:absolute; border-radius:50%; }
+  .icon-pinball .bump.b1{ width:16px; height:16px; background:var(--c1); top:8px; left:44px; }
+  .icon-pinball .bump.b2{ width:12px; height:12px; background:var(--c2); top:24px; left:20px; }
+  .icon-pinball .bump.b3{ width:12px; height:12px; background:var(--c3); top:24px; left:64px; }
+  .icon-pinball .flip{ position:absolute; width:18px; height:5px; background:var(--c4); bottom:8px; border-radius:3px; }
+  .icon-pinball .flip.fl{ left:14px; transform:rotate(20deg); }
+  .icon-pinball .flip.fr{ right:14px; transform:rotate(-20deg); }
 </style>
 </head>
 <body>
@@ -346,6 +356,23 @@
       <a class="play-btn" href="juegos/repele-invasion.html">JUGAR →</a>
     </div>
 
+    <div class="game-card">
+      <div class="icon-box icon-pinball">
+        <div class="bump b1"></div>
+        <div class="bump b2"></div>
+        <div class="bump b3"></div>
+        <div class="flip fl"></div>
+        <div class="flip fr"></div>
+      </div>
+      <h2>PINBALL DE BLIP</h2>
+      <p>BLIP es literalmente la bola. Dos flippers para no dejarlo caer y encadenar combo golpeando los topes.</p>
+      <div class="tag-row">
+        <span class="tag">clásico</span>
+        <span class="tag">botones</span>
+      </div>
+      <a class="play-btn" href="juegos/pinball-de-blip.html">JUGAR →</a>
+    </div>
+
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
@@ -365,7 +392,8 @@
       { key:'atrapa',  name:'Atrapa con BLIP' },
       { key:'apila',   name:'Apila sin Parar' },
       { key:'rompe',   name:'Rompe los Bloques' },
-      { key:'repele',  name:'Repele la Invasión' }
+      { key:'repele',  name:'Repele la Invasión' },
+      { key:'pinball', name:'Pinball de BLIP' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');
