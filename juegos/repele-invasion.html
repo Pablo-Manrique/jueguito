@@ -74,6 +74,7 @@
     width:100%;
     aspect-ratio: 3 / 4;
     touch-action:none;
+    cursor:grab;
   }
   #ship-slot{
     position:absolute;
@@ -217,7 +218,7 @@
       <div id="banner">¡OLEADA!</div>
       <div id="overlay">
         <h2 id="overlay-title">REPELE LA INVASIÓN</h2>
-        <p id="overlay-text">Mueve a BLIP con los botones y dispara para frenar a los invasores antes de que lleguen abajo. Los escudos aguantan varios golpes — úsalos. Si te alcanzan o pierdes todas las vidas, se acaba.</p>
+        <p id="overlay-text">Arrastra sobre el tablero o usa los botones para mover a BLIP, y dispara para frenar a los invasores antes de que lleguen abajo. Los escudos aguantan varios golpes — úsalos. Si te alcanzan o pierdes todas las vidas, se acaba.</p>
         <div id="overlay-score"></div>
         <button id="start-btn">EMPEZAR</button>
       </div>
@@ -231,7 +232,7 @@
       <button class="fire-btn" id="btn-fire" aria-label="Disparar">DISPARAR</button>
     </div>
 
-    <div id="foot-note">sin guardado de partida &middot; botones físicos, o flechas + espacio</div>
+    <div id="foot-note">sin guardado de partida &middot; arrastra, botones, o flechas + espacio</div>
   </div>
 
 <script>
@@ -306,6 +307,7 @@
   let muted = false;
   let audioCtx = null;
   let movingLeft = false, movingRight = false, firing = false;
+  let dragging = false;
   let playerCooldown = 0;
 
   function rnd(a,b){ return a + Math.random()*(b-a); }
@@ -659,7 +661,7 @@
     lastTime = null;
     overlay.classList.remove('lost');
     overlayTitle.textContent = 'REPELE LA INVASIÓN';
-    overlayText.textContent = 'Mueve a BLIP con los botones y dispara para frenar a los invasores antes de que lleguen abajo. Los escudos aguantan varios golpes — úsalos. Si te alcanzan o pierdes todas las vidas, se acaba.';
+    overlayText.textContent = 'Arrastra sobre el tablero o usa los botones para mover a BLIP, y dispara para frenar a los invasores antes de que lleguen abajo. Los escudos aguantan varios golpes — úsalos. Si te alcanzan o pierdes todas las vidas, se acaba.';
     overlayScore.style.display = 'none';
     startBtn.textContent = 'EMPEZAR';
     updateHUD();
@@ -716,6 +718,24 @@
   btnFire.addEventListener('pointerup', ()=>firing=false);
   btnFire.addEventListener('pointerleave', ()=>firing=false);
   btnFire.addEventListener('pointercancel', ()=>firing=false);
+
+  function dragToX(clientX){
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    ship.x = Math.max(0, Math.min(W-ship.w, x - ship.w/2));
+    updateShipVisual();
+  }
+  canvas.addEventListener('pointerdown', e=>{
+    if(!running) return;
+    dragging = true;
+    dragToX(e.clientX);
+  });
+  window.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    dragToX(e.clientX);
+  });
+  window.addEventListener('pointerup', ()=>dragging=false);
+  window.addEventListener('pointercancel', ()=>dragging=false);
 
   window.addEventListener('keydown', (e)=>{
     if(['ArrowLeft','ArrowRight',' '].indexOf(e.key)!==-1) e.preventDefault();

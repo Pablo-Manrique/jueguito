@@ -266,6 +266,7 @@
   let bumpers = [];
   let leftFlipper = null;
   let rightFlipper = null;
+  let guides = [];
   let ballRotation = 0;
 
   let score = 0, combo = 0, lastMult = 1, balls = 3;
@@ -342,28 +343,32 @@
   function buildTable(){
     const s = scaleF();
     bumpers = [
-      { x:W*0.5,  y:H*0.32, r:18*s, color:BUMPER_COLORS[0], hit:0 },
-      { x:W*0.28, y:H*0.46, r:15*s, color:BUMPER_COLORS[1], hit:0 },
-      { x:W*0.72, y:H*0.46, r:15*s, color:BUMPER_COLORS[2], hit:0 }
+      { x:W*0.5,  y:H*0.30, r:18*s, color:BUMPER_COLORS[0], hit:0 },
+      { x:W*0.26, y:H*0.44, r:14*s, color:BUMPER_COLORS[1], hit:0 },
+      { x:W*0.74, y:H*0.44, r:14*s, color:BUMPER_COLORS[2], hit:0 }
     ];
-    const pivotY = H*0.85;
-    const len = W*0.2;
+    const pivotY = H*0.80;
+    const len = W*0.30;
     leftFlipper = {
-      pivotX: W*0.32, pivotY,
+      pivotX: W*0.16, pivotY,
       len,
-      restAngle: 70*Math.PI/180,
-      activeAngle: -40*Math.PI/180,
-      angle: 70*Math.PI/180,
+      restAngle: 15*Math.PI/180,
+      activeAngle: -58*Math.PI/180,
+      angle: 15*Math.PI/180,
       side: 1
     };
     rightFlipper = {
-      pivotX: W*0.68, pivotY,
+      pivotX: W*0.84, pivotY,
       len,
-      restAngle: 110*Math.PI/180,
-      activeAngle: 220*Math.PI/180,
-      angle: 110*Math.PI/180,
+      restAngle: 165*Math.PI/180,
+      activeAngle: 238*Math.PI/180,
+      angle: 165*Math.PI/180,
       side: -1
     };
+    guides = [
+      { ax:0, ay:H*0.62, bx:W*0.12, by:pivotY },
+      { ax:W, ay:H*0.62, bx:W*0.88, by:pivotY }
+    ];
   }
 
   function newBall(){
@@ -394,7 +399,7 @@
     const cp = closestPointOnSegment(ball.x, ball.y, f.pivotX, f.pivotY, tip.x, tip.y);
     const dx = ball.x-cp.x, dy = ball.y-cp.y;
     const dist = Math.hypot(dx,dy);
-    const thickness = 7*scaleF();
+    const thickness = 9*scaleF();
     if(dist < ball.r+thickness){
       const nx = dist>0.01 ? dx/dist : 0, ny = dist>0.01 ? dy/dist : -1;
       ball.x = cp.x + nx*(ball.r+thickness);
@@ -404,13 +409,28 @@
       ball.vy = ny*speed*0.6;
       if(active){
         const s = scaleF();
-        ball.vy -= 260*s;
-        ball.vx += f.side * 110*s;
+        ball.vy -= 300*s;
+        ball.vx += f.side * 130*s;
       }
       sfxFlipper();
       return true;
     }
     return false;
+  }
+
+  function handleGuideCollision(g){
+    const cp = closestPointOnSegment(ball.x, ball.y, g.ax, g.ay, g.bx, g.by);
+    const dx = ball.x-cp.x, dy = ball.y-cp.y;
+    const dist = Math.hypot(dx,dy);
+    if(dist < ball.r+3*scaleF()){
+      const nx = dist>0.01 ? dx/dist : 0, ny = dist>0.01 ? dy/dist : -1;
+      ball.x = cp.x + nx*(ball.r+3*scaleF());
+      ball.y = cp.y + ny*(ball.r+3*scaleF());
+      const dot = ball.vx*nx + ball.vy*ny;
+      ball.vx -= 2*dot*nx*0.9;
+      ball.vy -= 2*dot*ny*0.9;
+      sfxWall();
+    }
   }
 
   function registerHit(){
@@ -458,6 +478,16 @@
       ctx.stroke();
     });
 
+    ctx.strokeStyle = getVar('--grid');
+    ctx.lineWidth = 6*scaleF();
+    ctx.lineCap = 'round';
+    guides.forEach(g=>{
+      ctx.beginPath();
+      ctx.moveTo(g.ax, g.ay);
+      ctx.lineTo(g.bx, g.by);
+      ctx.stroke();
+    });
+
     if(leftFlipper) drawFlipper(leftFlipper);
     if(rightFlipper) drawFlipper(rightFlipper);
   }
@@ -495,7 +525,7 @@
     rightFlipper.angle += (targetR - rightFlipper.angle) * Math.min(1, dt*16);
 
     if(ball){
-      ball.vy += 620*s*dt;
+      ball.vy += 480*s*dt;
       ball.x += ball.vx*dt;
       ball.y += ball.vy*dt;
 
@@ -522,6 +552,7 @@
 
       handleFlipperCollision(leftFlipper, leftActive);
       handleFlipperCollision(rightFlipper, rightActive);
+      guides.forEach(handleGuideCollision);
 
       const maxSpeed = 560*s;
       const spd = Math.hypot(ball.vx, ball.vy);

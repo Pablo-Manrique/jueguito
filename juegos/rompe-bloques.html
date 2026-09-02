@@ -74,6 +74,7 @@
     width:100%;
     aspect-ratio: 3 / 4;
     touch-action:none;
+    cursor:grab;
   }
   #paddle-slot{
     position:absolute;
@@ -197,7 +198,7 @@
       <div id="banner">¡NIVEL!</div>
       <div id="overlay">
         <h2 id="overlay-title">ROMPE LOS BLOQUES</h2>
-        <p id="overlay-text">Mueve a BLIP con los botones para golpear la bola con la pala. El punto donde la golpees decide el ángulo de rebote. Rompe bloques, atrapa power-ups. Si pierdes todas las vidas, se acaba.</p>
+        <p id="overlay-text">Arrastra sobre el tablero o usa los botones para mover a BLIP y golpear la bola con la pala. El punto donde la golpees decide el ángulo de rebote. Rompe bloques, atrapa power-ups. Si pierdes todas las vidas, se acaba.</p>
         <div id="overlay-score"></div>
         <button id="start-btn">EMPEZAR</button>
       </div>
@@ -208,7 +209,7 @@
       <button class="side-btn" id="btn-right" aria-label="Derecha">›</button>
     </div>
 
-    <div id="foot-note">sin guardado de partida &middot; botones físicos, o las flechas del teclado</div>
+    <div id="foot-note">sin guardado de partida &middot; arrastra, usa los botones, o las flechas del teclado</div>
   </div>
 
 <script>
@@ -277,6 +278,7 @@
   let muted = false;
   let audioCtx = null;
   let movingLeft = false, movingRight = false;
+  let dragging = false;
 
   function rnd(a,b){ return a + Math.random()*(b-a); }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -601,7 +603,7 @@
     lastTime = null;
     overlay.classList.remove('lost');
     overlayTitle.textContent = 'ROMPE LOS BLOQUES';
-    overlayText.textContent = 'Mueve a BLIP con los botones para golpear la bola con la pala. El punto donde la golpees decide el ángulo de rebote. Rompe bloques, atrapa power-ups. Si pierdes todas las vidas, se acaba.';
+    overlayText.textContent = 'Arrastra sobre el tablero o usa los botones para mover a BLIP y golpear la bola con la pala. El punto donde la golpees decide el ángulo de rebote. Rompe bloques, atrapa power-ups. Si pierdes todas las vidas, se acaba.';
     overlayScore.style.display = 'none';
     startBtn.textContent = 'EMPEZAR';
     updateHUD();
@@ -653,6 +655,24 @@
   btnRight.addEventListener('pointerup', ()=>movingRight=false);
   btnRight.addEventListener('pointerleave', ()=>movingRight=false);
   btnRight.addEventListener('pointercancel', ()=>movingRight=false);
+
+  function dragToX(clientX){
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    paddle.x = Math.max(0, Math.min(W-paddle.w, x - paddle.w/2));
+    updatePaddleVisual();
+  }
+  canvas.addEventListener('pointerdown', e=>{
+    if(!running) return;
+    dragging = true;
+    dragToX(e.clientX);
+  });
+  window.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    dragToX(e.clientX);
+  });
+  window.addEventListener('pointerup', ()=>dragging=false);
+  window.addEventListener('pointercancel', ()=>dragging=false);
 
   window.addEventListener('keydown', (e)=>{
     if(e.key==='ArrowLeft' || e.key==='ArrowRight') e.preventDefault();
