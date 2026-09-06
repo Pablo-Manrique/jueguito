@@ -147,6 +147,7 @@
     margin-top:3px;
   }
   .side-box .val.pop{ animation: pop-scale .45s ease; }
+  #combo-mult{ color:var(--c3); }
   #next-canvas{
     width:100%;
     aspect-ratio:1;
@@ -282,7 +283,7 @@
           <div id="banner">¡TETRIS!</div>
           <div id="overlay">
             <h2 id="overlay-title">APILA SIN PARAR</h2>
-            <p id="overlay-text">Usa la cruceta para mover y bajar de golpe, y el botón redondo para rotar. Si la pila llega arriba, pierdes.</p>
+            <p id="overlay-text">Usa la cruceta para mover y bajar de golpe, y el botón redondo para rotar. Encadena líneas sin fallar para subir el combo. Si la pila llega arriba, pierdes.</p>
             <div id="overlay-score"></div>
             <button id="start-btn">EMPEZAR</button>
           </div>
@@ -304,6 +305,10 @@
           <div class="side-box">
             <span class="stat">LÍNEAS</span>
             <span class="val" id="lines-val">0</span>
+          </div>
+          <div class="side-box">
+            <span class="stat">COMBO</span>
+            <span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span>
           </div>
           <div class="side-box">
             <span class="stat">MEJOR</span>
@@ -346,6 +351,8 @@
   const scoreEl = document.getElementById('score-val');
   const levelEl = document.getElementById('level-val');
   const linesEl = document.getElementById('lines-val');
+  const comboEl = document.getElementById('combo-val');
+  const comboMultEl = document.getElementById('combo-mult');
   const bestEl = document.getElementById('best-val');
   const flashOverlay = document.getElementById('flash-overlay');
   const banner = document.getElementById('banner');
@@ -451,6 +458,9 @@
   let lastTime = null;
   let dropInterval = 800;
   let dropAccum = 0;
+  let lockAccum = 0;
+  const LOCK_DELAY = 450;
+  let combo = 0, lastComboMult = 1;
   let muted = false;
   let audioCtx = null;
 
@@ -544,29 +554,27 @@
     if(canPlace(piece.type, piece.rot, piece.row, newCol)){
       piece.col = newCol;
       sfxMove();
+      if(!canPlace(piece.type, piece.rot, piece.row+1, piece.col)) lockAccum = 0;
     }
   }
 
   function rotatePiece(){
     if(!running || !piece) return;
     const newRot = (piece.rot+1) % 4;
-    const kicks = [0,-1,1,-2,2];
-    for(const k of kicks){
-      if(canPlace(piece.type, newRot, piece.row, piece.col+k)){
+    const kicks = [
+      [0,0], [-1,0], [1,0], [-2,0], [2,0],
+      [0,-1], [-1,-1], [1,-1],
+      [0,1]
+    ];
+    for(const [dc,dr] of kicks){
+      if(canPlace(piece.type, newRot, piece.row+dr, piece.col+dc)){
         piece.rot = newRot;
-        piece.col += k;
+        piece.col += dc;
+        piece.row += dr;
         sfxRotate();
+        if(!canPlace(piece.type, piece.rot, piece.row+1, piece.col)) lockAccum = 0;
         return;
       }
-    }
-  }
-
-  function softDropTick(){
-    if(!piece) return;
-    if(canPlace(piece.type, piece.rot, piece.row+1, piece.col)){
-      piece.row += 1;
-    } else {
-      lockPiece();
     }
   }
 
@@ -592,6 +600,7 @@
     });
     clearLines();
     dropAccum = 0;
+    lockAccum = 0;
     spawnPiece();
     updateHUD();
   }
@@ -601,7 +610,11 @@
     for(let r=0;r<ROWS;r++){
       if(board[r].every(cell=>cell!==null)) fullRows.push(r);
     }
-    if(fullRows.length===0) return;
+    if(fullRows.length===0){
+      combo = 0;
+      lastComboMult = 1;
+      return;
+    }
 
     fullRows.forEach(r=>{
       board.splice(r,1);
@@ -611,7 +624,10 @@
     lines += fullRows.length;
     const n = fullRows.length;
     const base = n===1?100 : n===2?300 : n===3?500 : 800;
-    score += base*level;
+
+    combo++;
+    const mult = multiplierFor(combo);
+    score += Math.round(base*level*mult);
 
     const newLevel = Math.floor(lines/10)+1;
     const leveledUp = newLevel>level;
@@ -632,7 +648,15 @@
       replay(banner, 'show');
       sfxLevel();
       if(window.Companion) Companion.play('cheer');
+    } else if(mult > lastComboMult){
+      replay(comboMultEl, 'pop');
+      banner.textContent = '¡COMBO x' + mult + '!';
+      banner.style.color = getVar('--c3');
+      replay(banner, 'show');
+      sfxLevel();
+      if(window.Companion) Companion.play('cheer');
     }
+    lastComboMult = mult;
   }
 
   function computeGhostRow(){
@@ -707,10 +731,20 @@
     });
   }
 
+  function multiplierFor(c){
+    if(c >= 20) return 3;
+    if(c >= 10) return 2;
+    if(c >= 5) return 1.5;
+    return 1;
+  }
+
   function updateHUD(){
     scoreEl.textContent = score;
     levelEl.textContent = level;
     linesEl.textContent = lines;
+    comboEl.textContent = combo;
+    const cm = multiplierFor(combo);
+    comboMultEl.textContent = cm > 1 ? ' x' + cm : '';
     if(score > sessionBest){
       sessionBest = score;
       saveBest(sessionBest);
@@ -723,13 +757,14 @@
     board = [];
     for(let r=0;r<ROWS;r++) board.push(new Array(COLS).fill(null));
     score = 0; level = 1; lines = 0;
-    dropInterval = 800; dropAccum = 0; lastTime = null;
+    combo = 0; lastComboMult = 1;
+    dropInterval = 800; dropAccum = 0; lockAccum = 0; lastTime = null;
     refillBag();
     nextType = drawFromBag();
     spawnPiece();
     overlay.classList.remove('lost');
     overlayTitle.textContent = 'APILA SIN PARAR';
-    overlayText.textContent = 'Usa la cruceta para mover y bajar de golpe, y el botón redondo para rotar. Si la pila llega arriba, pierdes.';
+    overlayText.textContent = 'Usa la cruceta para mover y bajar de golpe, y el botón redondo para rotar. Encadena líneas sin fallar para subir el combo. Si la pila llega arriba, pierdes.';
     overlayScore.style.display = 'none';
     startBtn.textContent = 'EMPEZAR';
     updateHUD();
@@ -764,13 +799,27 @@
   function loop(ts){
     if(!running) return;
     if(lastTime === null) lastTime = ts;
-    const dt = ts - lastTime;
+    const dt = Math.min(ts - lastTime, 100);
     lastTime = ts;
-    dropAccum += dt;
-    if(dropAccum >= dropInterval){
-      dropAccum -= dropInterval;
-      softDropTick();
+
+    if(piece){
+      const grounded = !canPlace(piece.type, piece.rot, piece.row+1, piece.col);
+      if(grounded){
+        lockAccum += dt;
+        if(lockAccum >= LOCK_DELAY){
+          lockAccum = 0;
+          lockPiece();
+        }
+      } else {
+        lockAccum = 0;
+        dropAccum += dt;
+        if(dropAccum >= dropInterval){
+          dropAccum -= dropInterval;
+          piece.row += 1;
+        }
+      }
     }
+
     draw();
     rafId = requestAnimationFrame(loop);
   }
