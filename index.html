@@ -196,6 +196,12 @@
   .icon-pinball .flip{ position:absolute; width:18px; height:5px; background:var(--c4); bottom:8px; border-radius:3px; }
   .icon-pinball .flip.fl{ left:14px; transform:rotate(20deg); }
   .icon-pinball .flip.fr{ right:14px; transform:rotate(-20deg); }
+
+  /* icono: toca rápido */
+  .icon-toca{ display:flex; align-items:center; justify-content:center; position:relative; }
+  .icon-toca .t1{ position:absolute; width:14px; height:14px; background:var(--c1); top:8px; left:16px; clip-path:circle(50% at 50% 50%); }
+  .icon-toca .t2{ position:absolute; width:14px; height:14px; background:var(--c3); top:26px; left:64px; clip-path:polygon(50% 0%,0% 100%,100% 100%); }
+  .icon-toca .t3{ position:absolute; width:12px; height:12px; background:var(--c2); top:10px; left:74px; }
 </style>
 </head>
 <body>
@@ -216,6 +222,56 @@
   </div>
 
   <div class="game-grid">
+
+    <div class="game-card">
+      <div class="icon-box icon-apila">
+        <div class="block b1"></div>
+        <div class="block b2"></div>
+        <div class="block b3"></div>
+        <div class="block b4"></div>
+        <div class="block b5"></div>
+      </div>
+      <h2>APILA SIN PARAR</h2>
+      <p>El clásico de encajar piezas que caen. Cruceta para mover y bajar de golpe, botón redondo para rotar — como una cabina arcade de verdad.</p>
+      <div class="tag-row">
+        <span class="tag">clásico</span>
+        <span class="tag">botones</span>
+      </div>
+      <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-toca">
+        <div class="t1"></div>
+        <div class="t2"></div>
+        <div class="t3"></div>
+      </div>
+      <h2>TOCA RÁPIDO</h2>
+      <p>Van apareciendo formas de una en una — tócalas lo más rápido posible. Aquí gana quien menos tarda, no quien más puntúa.</p>
+      <div class="tag-row">
+        <span class="tag">reflejos</span>
+        <span class="tag">contrarreloj</span>
+      </div>
+      <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-encaja">
+        <div class="mini-grid">
+          <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
+          <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
+          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>
+          <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
+        </div>
+      </div>
+      <h2>ENCAJA Y DESPEJA</h2>
+      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida termina.</p>
+      <div class="tag-row">
+        <span class="tag">arrastrar</span>
+        <span class="tag">estrategia</span>
+      </div>
+      <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
+    </div>
 
     <div class="game-card">
       <div class="icon-box icon-combina">
@@ -250,24 +306,6 @@
     </div>
 
     <div class="game-card">
-      <div class="icon-box icon-encaja">
-        <div class="mini-grid">
-          <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
-          <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
-          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>
-          <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
-        </div>
-      </div>
-      <h2>ENCAJA Y DESPEJA</h2>
-      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida termina.</p>
-      <div class="tag-row">
-        <span class="tag">arrastrar</span>
-        <span class="tag">estrategia</span>
-      </div>
-      <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
-    </div>
-
-    <div class="game-card">
       <div class="icon-box icon-desliza">
         <div class="mini-grid">
           <div></div><div style="background:var(--c1)"></div><div></div>
@@ -298,23 +336,6 @@
         <span class="tag">infinito</span>
       </div>
       <a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a>
-    </div>
-
-    <div class="game-card">
-      <div class="icon-box icon-apila">
-        <div class="block b1"></div>
-        <div class="block b2"></div>
-        <div class="block b3"></div>
-        <div class="block b4"></div>
-        <div class="block b5"></div>
-      </div>
-      <h2>APILA SIN PARAR</h2>
-      <p>El clásico de encajar piezas que caen. Cruceta para mover y bajar de golpe, botón redondo para rotar — como una cabina arcade de verdad.</p>
-      <div class="tag-row">
-        <span class="tag">clásico</span>
-        <span class="tag">botones</span>
-      </div>
-      <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
     </div>
 
     <div class="game-card">
@@ -372,7 +393,6 @@
       </div>
       <a class="play-btn" href="juegos/pinball-de-blip.html">JUGAR →</a>
     </div>
-
   </div>
 
   <div class="foot-note">más juegos próximamente &middot; ningún juego guarda datos de partida</div>
@@ -393,7 +413,8 @@
       { key:'apila',   name:'Apila sin Parar' },
       { key:'rompe',   name:'Rompe los Bloques' },
       { key:'repele',  name:'Repele la Invasión' },
-      { key:'pinball', name:'Pinball de BLIP' }
+      { key:'pinball', name:'Pinball de BLIP' },
+      { key:'tocarapido', name:'Toca Rápido', format:'time' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');
@@ -415,7 +436,8 @@
       nameEl.textContent = g.name;
       const bestEl = document.createElement('span');
       bestEl.className = 'best';
-      bestEl.textContent = best !== null ? ('MEJOR: ' + best) : 'sin jugar';
+      const bestLabel = g.format==='time' ? (best/1000).toFixed(2)+'s' : best;
+      bestEl.textContent = best !== null ? ('MEJOR: ' + bestLabel) : 'sin jugar';
       row.appendChild(nameEl);
       row.appendChild(bestEl);
       listEl.appendChild(row);
