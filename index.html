@@ -202,6 +202,15 @@
   .icon-toca .t1{ position:absolute; width:14px; height:14px; background:var(--c1); top:8px; left:16px; clip-path:circle(50% at 50% 50%); }
   .icon-toca .t2{ position:absolute; width:14px; height:14px; background:var(--c3); top:26px; left:64px; clip-path:polygon(50% 0%,0% 100%,100% 100%); }
   .icon-toca .t3{ position:absolute; width:12px; height:12px; background:var(--c2); top:10px; left:74px; }
+
+  /* icono: conecta sin cruzar */
+  .icon-conecta{ display:flex; align-items:center; justify-content:center; position:relative; }
+  .icon-conecta .dot{ position:absolute; width:12px; height:12px; border-radius:50%; }
+  .icon-conecta .d1{ background:var(--c1); top:8px; left:10px; }
+  .icon-conecta .d2{ background:var(--c1); bottom:8px; right:10px; }
+  .icon-conecta .d3{ background:var(--c2); top:8px; right:10px; }
+  .icon-conecta .d4{ background:var(--c2); bottom:8px; left:10px; }
+  .icon-conecta .line1{ position:absolute; width:60px; height:4px; background:var(--c1); top:15px; left:15px; transform:rotate(35deg); transform-origin:left center; opacity:.8; }
 </style>
 </head>
 <body>
@@ -253,6 +262,23 @@
         <span class="tag">contrarreloj</span>
       </div>
       <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-conecta">
+        <div class="line1"></div>
+        <div class="dot d1"></div>
+        <div class="dot d2"></div>
+        <div class="dot d3"></div>
+        <div class="dot d4"></div>
+      </div>
+      <h2>CONECTA SIN CRUZAR</h2>
+      <p>Une cada pareja de puntos del mismo color arrastrando, sin cruzar otro camino. Niveles infinitos, cada vez con más colores.</p>
+      <div class="tag-row">
+        <span class="tag">arrastrar</span>
+        <span class="tag">puzle</span>
+      </div>
+      <a class="play-btn" href="juegos/conecta-sin-cruzar.html">JUGAR →</a>
     </div>
 
     <div class="game-card">
@@ -414,7 +440,8 @@
       { key:'rompe',   name:'Rompe los Bloques' },
       { key:'repele',  name:'Repele la Invasión' },
       { key:'pinball', name:'Pinball de BLIP' },
-      { key:'tocarapido', name:'Toca Rápido', format:'time' }
+      { key:'tocarapido', name:'Toca Rápido', format:'time' },
+      { key:'conecta', name:'Conecta sin Cruzar' }
     ];
     const listEl = document.getElementById('session-list');
     const countEl = document.getElementById('session-count');

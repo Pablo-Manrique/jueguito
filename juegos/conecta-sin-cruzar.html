@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conecta sin Cruzar · Mini Arcade</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" type="image/png" href="../assets/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icon-180.png">
+<meta name="theme-color" content="#14121f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mini Arcade">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
+<style>
+  #game-root{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+  }
+
+  #hud{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    font-size:clamp(8px, 2.6vw, 10px);
+    letter-spacing:.5px;
+    gap:6px 10px;
+    flex-wrap:wrap;
+  }
+  #hud .stat{ color:var(--dim); }
+  #hud .val{ color:var(--ink); margin-left:4px; }
+  #hud .val.pop{ animation: pop-scale .45s ease; }
+
+  #hud2{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .mini-btn{
+    font-family:inherit;
+    font-size:clamp(9px, 2.6vw, 10px);
+    background:transparent;
+    color:var(--dim);
+    border:1px solid var(--grid);
+    padding:9px 12px;
+    min-height:36px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .mini-btn:hover{ color:var(--ink); border-color:var(--dim); }
+  .mini-btn:active{ transform:translate(1px,1px); }
+
+  .blip-watch{
+    display:flex;
+    justify-content:center;
+    margin-bottom:8px;
+  }
+
+  #play-wrap{
+    position:relative;
+    width:100%;
+    max-width:440px;
+  }
+  #board{
+    display:grid;
+    gap:2px;
+    width:100%;
+    aspect-ratio:1;
+    background:var(--grid);
+    border:3px solid var(--grid);
+    box-shadow: 0 0 0 4px var(--bg), 6px 6px 0 rgba(0,0,0,.35);
+    touch-action:none;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+  }
+  .cell{
+    position:relative;
+    background:var(--panel);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .cell .fill{
+    position:absolute;
+    inset:0;
+    background:transparent;
+  }
+  .cell .dot-mark{
+    position:absolute;
+    top:30%; left:30%; width:40%; height:40%;
+    border-radius:50%;
+    background:rgba(0,0,0,.28);
+    border:2px solid rgba(255,255,255,.45);
+    display:none;
+  }
+  .cell.is-dot .dot-mark{ display:block; }
+
+  #clear-row{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    justify-content:center;
+    margin-top:12px;
+  }
+  #clear-row button{
+    font-family:inherit;
+    font-size:clamp(9px, 2.6vw, 10px);
+    background:var(--panel);
+    color:var(--ink);
+    border:2px solid var(--grid);
+    padding:11px 18px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 rgba(0,0,0,.3);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  #clear-row button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.3); }
+
+  #banner{
+    position:absolute;
+    top:10px; left:50%;
+    transform:translate(-50%,-10px);
+    font-size:10px;
+    color:var(--ink);
+    background:rgba(20,18,31,.85);
+    border:1px solid var(--grid);
+    padding:6px 10px;
+    opacity:0;
+    pointer-events:none;
+    white-space:nowrap;
+    z-index:3;
+  }
+  #banner.show{ animation: banner-in 1.1s ease; }
+
+  #overlay{
+    position:absolute; inset:0;
+    background:rgba(20,18,31,.92);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:12px; text-align:center; padding:18px;
+    z-index:5;
+  }
+  #overlay h2{ font-size:clamp(12px, 4vw, 14px); margin:0; color:var(--c3); }
+  #overlay p{ font-size:clamp(8px, 2.6vw, 9px); color:var(--dim); line-height:1.9; margin:0; max-width:330px; }
+  #overlay button{
+    font-family:inherit; font-size:clamp(10px, 3vw, 11px);
+    background:var(--c2); color:#14121f;
+    border:none; padding:13px 20px; cursor:pointer;
+    box-shadow:3px 3px 0 rgba(0,0,0,.4);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
+
+  #foot-note{ margin-top:10px; font-size:clamp(7px, 2vw, 8px); color:var(--dim); text-align:center; max-width:480px; line-height:1.8; }
+
+  @keyframes pop-scale{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.6) rotate(-8deg); }
+    70%{ transform:scale(.9); }
+    100%{ transform:scale(1); }
+  }
+  @keyframes banner-in{
+    0%{ opacity:0; transform:translate(-50%,-10px); }
+    15%{ opacity:1; transform:translate(-50%,0); }
+    82%{ opacity:1; transform:translate(-50%,0); }
+    100%{ opacity:0; transform:translate(-50%,-10px); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a class="back-link" href="../index.html">← MENÚ</a>
+    <span class="page-title">CONECTA SIN CRUZAR</span>
+  </div>
+
+  <div id="game-root">
+    <div id="hud">
+      <div><span class="stat">NIVEL</span><span class="val" id="level-val">1</span></div>
+      <div><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+      <div><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+    </div>
+
+    <div id="hud2">
+      <button class="mini-btn" id="mute-btn">SONIDO: ON</button>
+      <button class="mini-btn" id="restart-btn">REINICIAR</button>
+    </div>
+
+    <div class="blip-watch" id="blip-slot"></div>
+
+    <div id="play-wrap">
+      <div id="board"></div>
+      <div id="banner">¡NIVEL!</div>
+      <div id="overlay">
+        <h2>CONECTA SIN CRUZAR</h2>
+        <p>Arrastra desde un punto de color hasta su pareja para unirlos. Los caminos no pueden cruzarse — si cruzas el de otro color, se borra y tendrás que rehacerlo. Sin final, cada vez con más colores.</p>
+        <button id="start-btn">EMPEZAR</button>
+      </div>
+    </div>
+
+    <div id="clear-row">
+      <button id="clear-btn">LIMPIAR NIVEL</button>
+    </div>
+
+    <div id="foot-note">sin guardado de partida &middot; arrastra con el dedo o el ratón</div>
+  </div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const boardEl = document.getElementById('board');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const muteBtn = document.getElementById('mute-btn');
+  const levelEl = document.getElementById('level-val');
+  const scoreEl = document.getElementById('score-val');
+  const bestEl = document.getElementById('best-val');
+  const banner = document.getElementById('banner');
+
+  function getVar(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
+  const PALETTE = [
+    getVar('--c1'), getVar('--c2'), getVar('--c3'), getVar('--c4'),
+    '#6bffb0', '#5d8bff', '#ff9d5d', '#ff6bc7'
+  ];
+
+  const BEST_KEY = 'miniArcade.conecta.best';
+  function loadBest(){
+    try{ const v = sessionStorage.getItem(BEST_KEY); return v ? (parseInt(v,10)||0) : 0; }
+    catch(e){ return 0; }
+  }
+  function saveBest(v){
+    try{ sessionStorage.setItem(BEST_KEY, String(v)); } catch(e){}
+  }
+
+  let running = false;
+  let muted = false;
+  let audioCtx = null;
+
+  let level = 1, score = 0;
+  let sessionBest = loadBest();
+
+  let gridSize = 4;
+  let numColors = 3;
+  let dotAt = [];
+  let board = [];
+  let paths = [];
+  let solved = [];
+  let colorList = [];
+  let cellEls = [];
+  let fillEls = [];
+  let dragging = null;
+  let levelStartTime = 0;
+
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  function ensureAudio(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ audioCtx = null; }
+    }
+  }
+  function beep(freq, dur, type, vol, glideTo){
+    if(muted || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = vol || 0.06;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    if(glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, now + dur);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.start(now);
+    osc.stop(now + dur);
+  }
+  function sfxPickup(){ beep(400, 0.04, 'square', 0.03); }
+  function sfxConnect(){ beep(700, 0.07, 'triangle', 0.05); setTimeout(()=>beep(950,0.08,'triangle',0.05),50); }
+  function sfxClear(){ beep(200, 0.06, 'sawtooth', 0.03); }
+  function sfxLevelClear(){ beep(900,0.07,'square',0.05); setTimeout(()=>beep(1200,0.09,'square',0.05),60); setTimeout(()=>beep(1500,0.1,'square',0.05),120); }
+
+  function replay(el, cls){
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  function updateHUD(){
+    levelEl.textContent = level;
+    scoreEl.textContent = score;
+    if(score > sessionBest){
+      sessionBest = score;
+      saveBest(sessionBest);
+      replay(bestEl, 'pop');
+    }
+    bestEl.textContent = sessionBest;
+  }
+
+  function levelParams(lv){
+    const size = Math.min(4 + Math.floor((lv-1)/2), 7);
+    const maxByGrid = Math.floor((size*size)/4);
+    const colors = Math.min(3 + Math.floor((lv-1)/1.5), 8, maxByGrid);
+    return { size, colors: Math.max(2,colors) };
+  }
+
+  function tryGenerateLevel(N, numCols){
+    const grid = new Array(N*N).fill(-1);
+    const paths = [];
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+
+    for(let color=0; color<numCols; color++){
+      let placed = false;
+      for(let attempt=0; attempt<25 && !placed; attempt++){
+        const free = [];
+        for(let i=0;i<N*N;i++) if(grid[i]===-1) free.push(i);
+        if(free.length < 2) return null;
+        const startIdx = free[Math.floor(Math.random()*free.length)];
+        const targetLen = Math.floor(rnd(3, Math.min(N+2, 7)));
+        const path = [startIdx];
+        grid[startIdx] = color;
+        let current = startIdx;
+        let lastDir = null;
+        while(path.length < targetLen){
+          const r0 = Math.floor(current/N), c0 = current%N;
+          const candidates = dirs
+            .map(d=>({d, r:r0+d[0], c:c0+d[1]}))
+            .filter(x=>x.r>=0 && x.r<N && x.c>=0 && x.c<N && grid[x.r*N+x.c]===-1);
+          if(candidates.length===0) break;
+          let choice = null;
+          if(lastDir){
+            const same = candidates.find(x=>x.d[0]===lastDir[0] && x.d[1]===lastDir[1]);
+            if(same && Math.random()<0.65) choice = same;
+          }
+          if(!choice) choice = candidates[Math.floor(Math.random()*candidates.length)];
+          const nextIdx = choice.r*N + choice.c;
+          grid[nextIdx] = color;
+          path.push(nextIdx);
+          current = nextIdx;
+          lastDir = choice.d;
+        }
+        if(path.length >= 2){
+          paths.push(path);
+          placed = true;
+        } else {
+          path.forEach(i=>{ grid[i] = -1; });
+        }
+      }
+      if(!placed) return null;
+    }
+    return { paths, N };
+  }
+
+  function generateLevel(N, numCols){
+    let result = null;
+    let tries = 0;
+    while(!result && tries < 40){
+      result = tryGenerateLevel(N, numCols);
+      tries++;
+    }
+    if(!result && numCols > 2){
+      return generateLevel(N, numCols-1);
+    }
+    return result;
+  }
+
+  function buildGridDOM(){
+    boardEl.innerHTML = '';
+    boardEl.style.gridTemplateColumns = 'repeat(' + gridSize + ', 1fr)';
+    boardEl.style.gridTemplateRows = 'repeat(' + gridSize + ', 1fr)';
+    cellEls = [];
+    fillEls = [];
+    for(let r=0;r<gridSize;r++){
+      const rowEls = [], rowFills = [];
+      for(let c=0;c<gridSize;c++){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        const fill = document.createElement('div');
+        fill.className = 'fill';
+        const dotMark = document.createElement('div');
+        dotMark.className = 'dot-mark';
+        cell.appendChild(fill);
+        cell.appendChild(dotMark);
+        boardEl.appendChild(cell);
+        rowEls.push(cell);
+        rowFills.push(fill);
+      }
+      cellEls.push(rowEls);
+      fillEls.push(rowFills);
+    }
+  }
+
+  function render(){
+    for(let r=0;r<gridSize;r++){
+      for(let c=0;c<gridSize;c++){
+        const dotColor = dotAt[r][c];
+        const pathColor = board[r][c];
+        const activeColor = dotColor !== null ? dotColor : pathColor;
+        if(activeColor !== null){
+          fillEls[r][c].style.background = colorList[activeColor];
+        } else {
+          fillEls[r][c].style.background = 'transparent';
+        }
+        cellEls[r][c].classList.toggle('is-dot', dotColor !== null);
+      }
+    }
+  }
+
+  function clearPath(colorIdx){
+    const path = paths[colorIdx];
+    if(path){
+      path.forEach(({row,col})=>{
+        if(dotAt[row][col] === null) board[row][col] = null;
+      });
+    }
+    paths[colorIdx] = [];
+    solved[colorIdx] = false;
+  }
+
+  function clearAllPaths(){
+    for(let c=0;c<numColors;c++) clearPath(c);
+    dragging = null;
+    sfxClear();
+    if(window.Companion) Companion.play('think');
+    render();
+  }
+
+  function startDrag(color, row, col){
+    clearPath(color);
+    paths[color] = [{row,col}];
+    solved[color] = false;
+    dragging = { color };
+    sfxPickup();
+    render();
+  }
+
+  function tryExtend(row, col){
+    if(!dragging) return;
+    const color = dragging.color;
+    const path = paths[color];
+    const last = path[path.length-1];
+    if(row===last.row && col===last.col) return;
+
+    const dr = Math.abs(row-last.row), dc = Math.abs(col-last.col);
+    if(!((dr===1 && dc===0) || (dr===0 && dc===1))) return;
+
+    const idx = path.findIndex(p=>p.row===row && p.col===col);
+    if(idx !== -1){
+      const removed = path.splice(idx+1);
+      removed.forEach(cell=>{ if(dotAt[cell.row][cell.col]===null) board[cell.row][cell.col] = null; });
+      render();
+      return;
+    }
+
+    const targetDotColor = dotAt[row][col];
+    if(targetDotColor !== null && targetDotColor !== color) return;
+
+    if(targetDotColor === color){
+      path.push({row,col});
+      solved[color] = true;
+      dragging = null;
+      sfxConnect();
+      render();
+      checkLevelComplete();
+      return;
+    }
+
+    const occupied = board[row][col];
+    if(occupied !== null && occupied !== color){
+      clearPath(occupied);
+    }
+    path.push({row,col});
+    board[row][col] = color;
+    render();
+  }
+
+  function cellFromPoint(clientX, clientY){
+    const el = document.elementFromPoint(clientX, clientY);
+    if(!el || el.dataset.row === undefined) return null;
+    return { row: parseInt(el.dataset.row,10), col: parseInt(el.dataset.col,10) };
+  }
+
+  boardEl.addEventListener('pointerdown', (e)=>{
+    if(!running) return;
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if(!cell) return;
+    const dotColor = dotAt[cell.row][cell.col];
+    if(dotColor !== null) startDrag(dotColor, cell.row, cell.col);
+  });
+  window.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if(!cell) return;
+    tryExtend(cell.row, cell.col);
+  });
+  window.addEventListener('pointerup', ()=>{ dragging = null; });
+  window.addEventListener('pointercancel', ()=>{ dragging = null; });
+
+  function checkLevelComplete(){
+    if(solved.length === numColors && solved.every(s=>s)){
+      completeLevel();
+    }
+  }
+
+  function completeLevel(){
+    running = false;
+    const elapsed = (performance.now() - levelStartTime) / 1000;
+    const basePoints = gridSize * numColors * 8;
+    const speedBonus = Math.max(0, Math.round(30 - elapsed)) * 3;
+    score += basePoints + speedBonus;
+    updateHUD();
+
+    banner.textContent = '¡NIVEL ' + level + ' SUPERADO!';
+    banner.style.color = getVar('--c3');
+    replay(banner, 'show');
+    sfxLevelClear();
+    if(window.Companion) Companion.play('cheer');
+
+    level++;
+    setTimeout(()=>{ startLevel(level); running = true; }, 1200);
+  }
+
+  function startLevel(lv){
+    level = lv;
+    const params = levelParams(level);
+    const gen = generateLevel(params.size, params.colors);
+    gridSize = gen.N;
+    numColors = gen.paths.length;
+
+    dotAt = Array.from({length:gridSize}, ()=> new Array(gridSize).fill(null));
+    board = Array.from({length:gridSize}, ()=> new Array(gridSize).fill(null));
+    paths = [];
+    solved = [];
+    colorList = [];
+
+    gen.paths.forEach((idxPath, color)=>{
+      const startIdx = idxPath[0], endIdx = idxPath[idxPath.length-1];
+      const sr = Math.floor(startIdx/gridSize), sc = startIdx % gridSize;
+      const er = Math.floor(endIdx/gridSize), ec = endIdx % gridSize;
+      dotAt[sr][sc] = color;
+      dotAt[er][ec] = color;
+      paths.push([]);
+      solved.push(false);
+      colorList.push(PALETTE[color % PALETTE.length]);
+    });
+
+    buildGridDOM();
+    render();
+    updateHUD();
+    levelStartTime = performance.now();
+  }
+
+  function startGame(){
+    ensureAudio();
+    score = 0;
+    overlay.style.display = 'none';
+    running = true;
+    startLevel(1);
+  }
+
+  clearBtn.addEventListener('click', clearAllPaths);
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    muteBtn.textContent = 'SONIDO: ' + (muted ? 'OFF' : 'ON');
+  });
+
+  updateHUD();
+})();
+</script>
+
+<script src="../assets/companion.js"></script>
+<script>
+  Companion.mount(document.getElementById('blip-slot'), { size: 36 });
+</script>
+
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('../sw.js').catch(()=>{});
+    });
+  }
+</script>
+
+</body>
+</html>
