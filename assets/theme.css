@@ -152,3 +152,25 @@ a{ color:inherit; text-decoration:none; }
   max-width:480px;
   line-height:1.8;
 }
+
+/* assets/theme.css */
+
+/* Evita recarga por pull-to-refresh y desactiva selección global */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Aplicar a todas las zonas de juego, tableros y lienzos */
+#game-root,
+#play-wrap,
+#board,
+canvas,
+.cell {
+  touch-action: none;                 /* Inhabilita el desplazamiento y zoom nativo */
+  -webkit-touch-callout: none;       /* Desactiva el menú contextual al mantener pulsado */
+  -webkit-tap-highlight-color: transparent; /* Elimina el recuadro de toque en iOS/Android */
+  user-select: none;
+  -webkit-user-select: none;
+}

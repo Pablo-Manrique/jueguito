@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -32,7 +31,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:8px;
+    margin-bottom:6px;
     font-size:clamp(8px, 2.6vw, 10px);
     letter-spacing:.5px;
     gap:6px 10px;
@@ -40,8 +39,37 @@
   }
 
   #hud .stat{ color:var(--dim); }
-  #hud .val{ color:var(--ink); margin-left:4px; }
+  #hud .val{ color:var(--ink); margin-left:4px; font-weight:bold; }
   #hud .val.pop{ animation:pop-scale .45s ease; }
+
+  #active-bar{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:8px;
+    font-size:clamp(8px, 2.5vw, 10px);
+    letter-spacing:.5px;
+    color:var(--dim);
+    min-height:22px;
+  }
+
+  #active-swatch{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.4);
+    display:inline-block;
+    background:transparent;
+    transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+
+  #active-swatch.active{
+    transform:scale(1.25);
+    box-shadow:0 0 8px rgba(255,255,255,0.6);
+  }
 
   #hud2{
     width:100%;
@@ -111,6 +139,7 @@
     justify-content:center;
     min-width:0;
     min-height:0;
+    transition:filter .2s ease, box-shadow .2s ease;
   }
 
   .cell .fill{
@@ -118,23 +147,51 @@
     inset:0;
     background:transparent;
     pointer-events:none;
+    transition:background .15s ease, opacity .15s ease;
   }
 
   .cell .dot-mark{
     position:absolute;
-    top:30%;
-    left:30%;
-    width:40%;
-    height:40%;
+    top:25%;
+    left:25%;
+    width:50%;
+    height:50%;
     border-radius:50%;
-    background:rgba(0,0,0,.28);
-    border:2px solid rgba(255,255,255,.45);
+    background:rgba(0,0,0,.3);
+    border:2px solid rgba(255,255,255,.5);
     display:none;
     pointer-events:none;
+    box-shadow:0 2px 4px rgba(0,0,0,.4);
+    z-index:2;
   }
 
   .cell.is-dot .dot-mark{
-    display:block;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .cell.is-solved{
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);
+  }
+
+  .cell.is-solved .fill{
+    filter:brightness(1.15) contrast(1.05);
+    box-shadow:inset 0 0 6px rgba(255,255,255,0.4);
+  }
+
+  .cell.is-solved.is-dot .dot-mark{
+    border-color:#ffffff;
+    box-shadow:0 0 10px rgba(255,255,255,0.8);
+    animation:pulse-dot 1.2s infinite alternate ease-in-out;
+  }
+
+  .cell.is-solved.is-dot .dot-mark::after{
+    content:'✓';
+    font-size:clamp(9px, 3vw, 12px);
+    font-weight:900;
+    color:#ffffff;
+    text-shadow:0 1px 2px rgba(0,0,0,0.8);
   }
 
   #clear-row{
@@ -170,17 +227,18 @@
     transform:translate(-50%,-10px);
     font-size:10px;
     color:var(--ink);
-    background:rgba(20,18,31,.85);
+    background:rgba(20,18,31,.92);
     border:1px solid var(--grid);
-    padding:6px 10px;
+    padding:6px 12px;
     opacity:0;
     pointer-events:none;
     white-space:nowrap;
     z-index:3;
+    box-shadow:0 4px 12px rgba(0,0,0,.5);
   }
 
   #banner.show{
-    animation:banner-in 1.1s ease;
+    animation:banner-in 1.4s ease;
   }
 
   #overlay{
@@ -245,6 +303,11 @@
     100%{ transform:scale(1); }
   }
 
+  @keyframes pulse-dot{
+    0%{ transform:scale(1); }
+    100%{ transform:scale(1.12); }
+  }
+
   @keyframes banner-in{
     0%{
       opacity:0;
@@ -264,7 +327,6 @@
     }
   }
 </style>
-
 </head>
 
 <body>
@@ -282,18 +344,25 @@
       <span class="val" id="level-val">1</span>
     </div>
 
-```
-<div>
-  <span class="stat">PUNTOS</span>
-  <span class="val" id="score-val">0</span>
-</div>
+    <div>
+      <span class="stat">LLENADO</span>
+      <span class="val" id="fill-val">0%</span>
+    </div>
 
-<div>
-  <span class="stat">MEJOR</span>
-  <span class="val" id="best-val">0</span>
-</div>
-```
+    <div>
+      <span class="stat">PUNTOS</span>
+      <span class="val" id="score-val">0</span>
+    </div>
 
+    <div>
+      <span class="stat">MEJOR</span>
+      <span class="val" id="best-val">0</span>
+    </div>
+  </div>
+
+  <div id="active-bar">
+    <span id="active-label">SELECCIONA UN PUNTO</span>
+    <span id="active-swatch"></span>
   </div>
 
   <div id="hud2">
@@ -301,38 +370,31 @@
       SONIDO: ON
     </button>
 
-```
-<button class="mini-btn" id="restart-btn" type="button">
-  REINICIAR
-</button>
-```
-
+    <button class="mini-btn" id="restart-btn" type="button">
+      REINICIAR
+    </button>
   </div>
 
   <div class="blip-watch" id="blip-slot"></div>
 
   <div id="play-wrap">
 
-```
-<div id="board" aria-label="Tablero del juego"></div>
+    <div id="board" aria-label="Tablero del juego"></div>
 
-<div id="banner">¡NIVEL!</div>
+    <div id="banner">¡NIVEL!</div>
 
-<div id="overlay">
-  <h2>CONECTA SIN CRUZAR</h2>
+    <div id="overlay">
+      <h2>CONECTA SIN CRUZAR</h2>
 
-  <p>
-    Arrastra desde un punto de color hasta su pareja para unirlos.
-    Los caminos no pueden cruzarse: si invades el camino de otro
-    color, se borra y tendrás que rehacerlo.
-    Sin final, cada vez con más colores.
-  </p>
+      <p>
+        Arrastra desde un punto de color hasta su pareja para unirlos.<br>
+        <strong>Objetivo:</strong> Debes conectar todos los puntos y <strong>rellenar el 100% de las casillas</strong> del tablero.
+      </p>
 
-  <button id="start-btn" type="button">
-    EMPEZAR
-  </button>
-</div>
-```
+      <button id="start-btn" type="button">
+        EMPEZAR
+      </button>
+    </div>
 
   </div>
 
@@ -343,7 +405,7 @@
   </div>
 
   <div id="foot-note">
-    sin guardado de partida · arrastra con el dedo o el ratón
+    sin guardado de partida · arrastra para conectar
   </div>
 
 </div>
@@ -363,9 +425,13 @@
   const muteBtn = document.getElementById('mute-btn');
 
   const levelEl = document.getElementById('level-val');
+  const fillEl = document.getElementById('fill-val');
   const scoreEl = document.getElementById('score-val');
   const bestEl = document.getElementById('best-val');
   const banner = document.getElementById('banner');
+
+  const activeLabel = document.getElementById('active-label');
+  const activeSwatch = document.getElementById('active-swatch');
 
   function getVar(name){
     return getComputedStyle(root)
@@ -374,14 +440,14 @@
   }
 
   const PALETTE = [
-    getVar('--c1'),
-    getVar('--c2'),
-    getVar('--c3'),
-    getVar('--c4'),
-    '#6bffb0',
+    getVar('--c1') || '#ff5d5d',
+    getVar('--c2') || '#ffd05d',
+    getVar('--c3') || '#5dffcb',
+    getVar('--c4') || '#c76bff',
     '#5d8bff',
     '#ff9d5d',
-    '#ff6bc7'
+    '#ff6bc7',
+    '#6bffb0'
   ];
 
   const BEST_KEY = 'miniArcade.conecta.best';
@@ -434,8 +500,12 @@
     return a + Math.random() * (b-a);
   }
 
-  function clamp(value,min,max){
-    return Math.max(min,Math.min(max,value));
+  function areAdjacentIdx(idx1, idx2, N){
+    const r1 = Math.floor(idx1 / N);
+    const c1 = idx1 % N;
+    const r2 = Math.floor(idx2 / N);
+    const c2 = idx2 % N;
+    return (Math.abs(r1 - r2) + Math.abs(c1 - c2)) === 1;
   }
 
   /*
@@ -445,7 +515,6 @@
    */
 
   function ensureAudio(){
-
     if(audioCtx){
       if(audioCtx.state === 'suspended'){
         audioCtx.resume().catch(()=>{});
@@ -462,18 +531,15 @@
       if(audioCtx.state === 'suspended'){
         audioCtx.resume().catch(()=>{});
       }
-
     }catch(e){
       audioCtx = null;
     }
   }
 
   function beep(freq,dur,type,vol,glideTo){
-
     if(muted || !audioCtx) return;
 
     try{
-
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
@@ -481,7 +547,6 @@
       osc.frequency.value = freq;
 
       const volume = vol || 0.06;
-
       gain.gain.value = volume;
 
       osc.connect(gain);
@@ -490,22 +555,14 @@
       const now = audioCtx.currentTime;
 
       if(glideTo){
-        osc.frequency.exponentialRampToValueAtTime(
-          glideTo,
-          now + dur
-        );
+        osc.frequency.exponentialRampToValueAtTime(glideTo, now + dur);
       }
 
       gain.gain.setValueAtTime(volume,now);
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        now + dur
-      );
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
       osc.start(now);
       osc.stop(now + dur);
-
     }catch(e){}
   }
 
@@ -515,10 +572,7 @@
 
   function sfxConnect(){
     beep(700,0.07,'triangle',0.05);
-
-    setTimeout(()=>{
-      beep(950,0.08,'triangle',0.05);
-    },50);
+    setTimeout(()=>{ beep(950,0.08,'triangle',0.05); }, 50);
   }
 
   function sfxClear(){
@@ -526,47 +580,64 @@
   }
 
   function sfxLevelClear(){
-
     beep(900,0.07,'square',0.05);
-
-    setTimeout(()=>{
-      beep(1200,0.09,'square',0.05);
-    },60);
-
-    setTimeout(()=>{
-      beep(1500,0.1,'square',0.05);
-    },120);
+    setTimeout(()=>{ beep(1200,0.09,'square',0.05); },60);
+    setTimeout(()=>{ beep(1500,0.1,'square',0.05); },120);
   }
 
   /*
    * ------------------------------------------------------------
-   * HUD
+   * HUD Y ESTADO VISUAL
    * ------------------------------------------------------------
    */
 
   function replay(el,cls){
-
     el.classList.remove(cls);
-
     void el.offsetWidth;
-
     el.classList.add(cls);
   }
 
   function updateHUD(){
-
     levelEl.textContent = level;
     scoreEl.textContent = score;
 
     if(score > sessionBest){
-
       sessionBest = score;
       saveBest(sessionBest);
-
       replay(bestEl,'pop');
     }
 
     bestEl.textContent = sessionBest;
+  }
+
+  function updateFillStat(){
+    let filled = 0;
+    const total = gridSize * gridSize;
+
+    for(let r=0;r<gridSize;r++){
+      for(let c=0;c<gridSize;c++){
+        if(dotAt[r][c] !== null || board[r][c] !== null){
+          filled++;
+        }
+      }
+    }
+
+    const pct = Math.floor((filled / total) * 100);
+    fillEl.textContent = pct + '%';
+    return { filled, total, pct };
+  }
+
+  function updateActiveColorIndicator(){
+    if(dragging && dragging.color !== null){
+      const col = colorList[dragging.color];
+      activeSwatch.style.background = col;
+      activeSwatch.classList.add('active');
+      activeLabel.textContent = solved[dragging.color] ? '¡CONECTADO!' : 'DIBUJANDO CAMINO...';
+    }else{
+      activeSwatch.style.background = 'transparent';
+      activeSwatch.classList.remove('active');
+      activeLabel.textContent = 'SELECCIONA UN PUNTO';
+    }
   }
 
   /*
@@ -576,197 +647,156 @@
    */
 
   function levelParams(lv){
-
-    const size = Math.min(
-      4 + Math.floor((lv-1)/2),
-      7
-    );
-
-    const maxByGrid = Math.floor((size * size) / 4);
-
+    const size = Math.min(4 + Math.floor((lv-1)/2), 8);
+    const maxColors = Math.floor((size * size) / 3);
     const colors = Math.min(
       3 + Math.floor((lv-1)/1.5),
-      8,
-      maxByGrid
+      maxColors,
+      8
     );
 
     return {
       size,
-      colors:Math.max(2,colors)
+      colors: Math.max(2, Math.floor(colors))
     };
   }
 
   /*
    * ------------------------------------------------------------
-   * GENERADOR DE NIVELES
-   *
-   * Cada color genera un camino oculto.
-   * Los caminos son disjuntos, por lo que siempre existe
-   * al menos una solución: reproducir los caminos generados.
+   * GENERADOR DE NIVELES (SIN EXTREMOS CONTIGUOS)
    * ------------------------------------------------------------
    */
 
-  function tryGenerateLevel(N,numCols){
+  function generateFullGridPath(N){
+    const total = N * N;
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
 
-    const grid = new Array(N*N).fill(-1);
+    for(let attempt=0; attempt<50; attempt++){
+      const visited = new Array(total).fill(false);
+      const path = [];
+      let current = Math.floor(Math.random() * total);
 
-    const generatedPaths = [];
+      visited[current] = true;
+      path.push(current);
 
-    const dirs = [
-      [-1,0],
-      [1,0],
-      [0,-1],
-      [0,1]
-    ];
+      while(path.length < total){
+        const r = Math.floor(current / N);
+        const c = current % N;
 
-    for(let color=0;color<numCols;color++){
+        const neighbors = [];
 
-      let placed = false;
-
-      for(
-        let attempt=0;
-        attempt<40 && !placed;
-        attempt++
-      ){
-
-        const free = [];
-
-        for(let i=0;i<N*N;i++){
-
-          if(grid[i] === -1){
-            free.push(i);
-          }
-        }
-
-        if(free.length < 2){
-          return null;
-        }
-
-        const startIdx =
-          free[Math.floor(Math.random()*free.length)];
-
-        const maxLength =
-          Math.min(
-            N + 2,
-            7
-          );
-
-        const targetLen =
-          Math.max(
-            2,
-            Math.floor(rnd(3,maxLength + 1))
-          );
-
-        const path = [startIdx];
-
-        grid[startIdx] = color;
-
-        let current = startIdx;
-        let lastDir = null;
-
-        while(path.length < targetLen){
-
-          const r0 = Math.floor(current/N);
-          const c0 = current % N;
-
-          const candidates = dirs
-            .map(d=>({
-              d,
-              r:r0+d[0],
-              c:c0+d[1]
-            }))
-            .filter(x=>
-              x.r>=0 &&
-              x.r<N &&
-              x.c>=0 &&
-              x.c<N &&
-              grid[x.r*N+x.c] === -1
-            );
-
-          if(candidates.length === 0){
-            break;
-          }
-
-          let choice = null;
-
-          if(lastDir){
-
-            const same = candidates.find(x=>
-              x.d[0] === lastDir[0] &&
-              x.d[1] === lastDir[1]
-            );
-
-            if(same && Math.random() < 0.65){
-              choice = same;
+        for(const [dr, dc] of dirs){
+          const nr = r + dr;
+          const nc = c + dc;
+          if(nr >= 0 && nr < N && nc >= 0 && nc < N){
+            const nidx = nr * N + nc;
+            if(!visited[nidx]){
+              let degree = 0;
+              for(const [ddr, ddc] of dirs){
+                const nnr = nr + ddr;
+                const nnc = nc + ddc;
+                if(nnr >= 0 && nnr < N && nnc >= 0 && nnc < N && !visited[nnr * N + nnc]){
+                  degree++;
+                }
+              }
+              neighbors.push({ nidx, degree });
             }
           }
-
-          if(!choice){
-            choice =
-              candidates[
-                Math.floor(
-                  Math.random()*candidates.length
-                )
-              ];
-          }
-
-          const nextIdx =
-            choice.r*N + choice.c;
-
-          grid[nextIdx] = color;
-
-          path.push(nextIdx);
-
-          current = nextIdx;
-          lastDir = choice.d;
         }
 
-        if(path.length >= 2){
+        if(neighbors.length === 0) break;
 
-          generatedPaths.push(path);
-          placed = true;
+        neighbors.sort((a,b) => a.degree - b.degree || (Math.random() - 0.5));
 
-        }else{
-
-          path.forEach(i=>{
-            grid[i] = -1;
-          });
-        }
+        current = neighbors[0].nidx;
+        visited[current] = true;
+        path.push(current);
       }
 
-      if(!placed){
-        return null;
+      if(path.length === total){
+        return path;
       }
     }
 
-    return {
-      paths:generatedPaths,
-      N
-    };
+    const fallback = [];
+    for(let r=0; r<N; r++){
+      if(r % 2 === 0){
+        for(let c=0; c<N; c++) fallback.push(r * N + c);
+      } else {
+        for(let c=N-1; c>=0; c--) fallback.push(r * N + c);
+      }
+    }
+    return fallback;
   }
 
-  function generateLevel(N,numCols){
+  function trySplitPath(fullPath, numCols, N){
+    const total = fullPath.length;
+    const minLen = 3;
 
-    let result = null;
+    for(let attempt=0; attempt<200; attempt++){
+      let cuts = [];
+      for(let i=0; i<numCols-1; i++){
+        cuts.push(Math.floor(rnd(1, total-1)));
+      }
+      cuts.sort((a,b) => a - b);
 
-    for(let tries=0;tries<60 && !result;tries++){
+      let valid = true;
+      let prev = 0;
+      for(let i=0; i<cuts.length; i++){
+        if(cuts[i] - prev < minLen){
+          valid = false;
+          break;
+        }
+        prev = cuts[i];
+      }
+      if(total - prev < minLen) valid = false;
 
-      result = tryGenerateLevel(
-        N,
-        numCols
-      );
+      if(!valid) continue;
+
+      const segments = [];
+      let start = 0;
+      for(let i=0; i<cuts.length; i++){
+        segments.push(fullPath.slice(start, cuts[i]));
+        start = cuts[i];
+      }
+      segments.push(fullPath.slice(start));
+
+      let validEndpoints = true;
+      for(const seg of segments){
+        const startIdx = seg[0];
+        const endIdx = seg[seg.length - 1];
+        if(areAdjacentIdx(startIdx, endIdx, N)){
+          validEndpoints = false;
+          break;
+        }
+      }
+
+      if(validEndpoints){
+        return segments;
+      }
     }
 
-    /*
-     * Si no conseguimos colocar todos los colores,
-     * reducimos progresivamente la dificultad.
-     */
-    if(!result && numCols > 2){
+    return null;
+  }
 
-      return generateLevel(
-        N,
-        numCols-1
-      );
+  function generateLevel(N, numCols){
+    let result = null;
+    let tries = 0;
+
+    while(!result && tries < 100){
+      tries++;
+      const fullPath = generateFullGridPath(N);
+      const splitPaths = trySplitPath(fullPath, numCols, N);
+      if(splitPaths){
+        result = {
+          paths: splitPaths,
+          N
+        };
+      }
+    }
+
+    if(!result && numCols > 2){
+      return generateLevel(N, numCols - 1);
     }
 
     return result;
@@ -779,43 +809,31 @@
    */
 
   function buildGridDOM(){
-
     boardEl.innerHTML = '';
-
-    boardEl.style.gridTemplateColumns =
-      'repeat(' + gridSize + ',1fr)';
-
-    boardEl.style.gridTemplateRows =
-      'repeat(' + gridSize + ',1fr)';
+    boardEl.style.gridTemplateColumns = 'repeat(' + gridSize + ',1fr)';
+    boardEl.style.gridTemplateRows = 'repeat(' + gridSize + ',1fr)';
 
     cellEls = [];
     fillEls = [];
 
     for(let r=0;r<gridSize;r++){
-
       const rowEls = [];
       const rowFills = [];
 
       for(let c=0;c<gridSize;c++){
-
         const cell = document.createElement('div');
-
         cell.className = 'cell';
-
         cell.dataset.row = r;
         cell.dataset.col = c;
 
         const fill = document.createElement('div');
-
         fill.className = 'fill';
 
         const dotMark = document.createElement('div');
-
         dotMark.className = 'dot-mark';
 
         cell.appendChild(fill);
         cell.appendChild(dotMark);
-
         boardEl.appendChild(cell);
 
         rowEls.push(cell);
@@ -834,36 +852,33 @@
    */
 
   function render(){
+    updateFillStat();
 
     for(let r=0;r<gridSize;r++){
-
       for(let c=0;c<gridSize;c++){
-
         const dotColor = dotAt[r][c];
         const pathColor = board[r][c];
 
-        const activeColor =
-          dotColor !== null
-            ? dotColor
-            : pathColor;
+        const activeColor = (dotColor !== null) ? dotColor : pathColor;
+
+        const cell = cellEls[r][c];
+        const fill = fillEls[r][c];
 
         if(activeColor !== null){
+          fill.style.background = colorList[activeColor];
 
-          fillEls[r][c].style.background =
-            colorList[activeColor];
-
+          const isSolved = solved[activeColor] === true;
+          cell.classList.toggle('is-solved', isSolved);
         }else{
-
-          fillEls[r][c].style.background =
-            'transparent';
+          fill.style.background = 'transparent';
+          cell.classList.remove('is-solved');
         }
 
-        cellEls[r][c].classList.toggle(
-          'is-dot',
-          dotColor !== null
-        );
+        cell.classList.toggle('is-dot', dotColor !== null);
       }
     }
+
+    updateActiveColorIndicator();
   }
 
   /*
@@ -873,13 +888,10 @@
    */
 
   function clearPath(colorIdx){
-
     const path = paths[colorIdx];
 
     if(path){
-
       path.forEach(({row,col})=>{
-
         if(dotAt[row][col] === null){
           board[row][col] = null;
         }
@@ -891,19 +903,15 @@
   }
 
   function clearAllPaths(){
-
     for(let c=0;c<numColors;c++){
       clearPath(c);
     }
 
     dragging = null;
-
     sfxClear();
 
     if(window.Companion){
-      try{
-        Companion.play('think');
-      }catch(e){}
+      try{ Companion.play('think'); }catch(e){}
     }
 
     render();
@@ -911,19 +919,14 @@
 
   /*
    * ------------------------------------------------------------
-   * DRAG
+   * DRAG Y CONEXIÓN
    * ------------------------------------------------------------
    */
 
   function startDrag(color,row,col){
-
     clearPath(color);
 
-    paths[color] = [{
-      row,
-      col
-    }];
-
+    paths[color] = [{ row, col }];
     solved[color] = false;
 
     dragging = {
@@ -933,145 +936,68 @@
     };
 
     sfxPickup();
-
     render();
   }
 
   function isAdjacent(row,col,lastRow,lastCol){
-
     const dr = Math.abs(row-lastRow);
     const dc = Math.abs(col-lastCol);
-
-    return (
-      (dr === 1 && dc === 0) ||
-      (dr === 0 && dc === 1)
-    );
+    return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
   }
 
   function tryExtend(row,col){
-
-    if(!dragging){
-      return;
-    }
+    if(!dragging) return;
 
     const color = dragging.color;
-
     const path = paths[color];
 
-    if(!path || path.length === 0){
-      return;
-    }
+    if(!path || path.length === 0) return;
 
-    const last =
-      path[path.length-1];
+    const last = path[path.length-1];
 
-    if(
-      row === last.row &&
-      col === last.col
-    ){
-      return;
-    }
+    if(row === last.row && col === last.col) return;
 
-    /*
-     * Solo permitimos una celda ortogonal.
-     * La interpolación se encarga de los saltos rápidos.
-     */
-    if(!isAdjacent(
-      row,
-      col,
-      last.row,
-      last.col
-    )){
-      return;
-    }
+    if(!isAdjacent(row, col, last.row, last.col)) return;
 
-    /*
-     * Si volvemos sobre nuestro propio camino,
-     * recortamos desde ese punto.
-     */
-    const idx = path.findIndex(p=>
-      p.row === row &&
-      p.col === col
-    );
-
+    const idx = path.findIndex(p => p.row === row && p.col === col);
     if(idx !== -1){
-
-      const removed =
-        path.splice(idx+1);
-
+      const removed = path.splice(idx+1);
       removed.forEach(cell=>{
-
-        if(
-          dotAt[cell.row][cell.col] === null
-        ){
+        if(dotAt[cell.row][cell.col] === null){
           board[cell.row][cell.col] = null;
         }
       });
 
       solved[color] = false;
-
       dragging.lastRow = row;
       dragging.lastCol = col;
-
       render();
-
       return;
     }
 
-    /*
-     * No podemos entrar en el punto final de otro color.
-     */
-    const targetDotColor =
-      dotAt[row][col];
+    const targetDotColor = dotAt[row][col];
 
-    if(
-      targetDotColor !== null &&
-      targetDotColor !== color
-    ){
+    if(targetDotColor !== null && targetDotColor !== color){
       return;
     }
 
-    /*
-     * Hemos llegado al punto final.
-     */
     if(targetDotColor === color){
-
-      path.push({
-        row,
-        col
-      });
-
+      path.push({ row, col });
       solved[color] = true;
-
       dragging = null;
 
       sfxConnect();
-
       render();
-
       checkLevelComplete();
-
       return;
     }
 
-    /*
-     * Si la casilla pertenece a otro camino,
-     * ese camino desaparece.
-     */
     const occupied = board[row][col];
-
-    if(
-      occupied !== null &&
-      occupied !== color
-    ){
+    if(occupied !== null && occupied !== color){
       clearPath(occupied);
     }
 
-    path.push({
-      row,
-      col
-    });
-
+    path.push({ row, col });
     board[row][col] = color;
 
     dragging.lastRow = row;
@@ -1082,77 +1008,30 @@
 
   /*
    * ------------------------------------------------------------
-   * DETECCIÓN DE CELDAS
-   *
-   * IMPORTANTE:
-   * elementFromPoint() puede devolver .fill o .dot-mark.
-   * Por eso usamos closest('.cell').
+   * DETECCIÓN DE CELDAS E INTERPOLACIÓN
    * ------------------------------------------------------------
    */
 
   function cellFromPoint(clientX,clientY){
+    const element = document.elementFromPoint(clientX, clientY);
+    if(!element) return null;
 
-    const element =
-      document.elementFromPoint(
-        clientX,
-        clientY
-      );
+    const cell = element.closest('.cell');
+    if(!cell || !boardEl.contains(cell)) return null;
 
-    if(!element){
-      return null;
-    }
+    const row = Number(cell.dataset.row);
+    const col = Number(cell.dataset.col);
 
-    const cell =
-      element.closest('.cell');
+    if(!Number.isInteger(row) || !Number.isInteger(col)) return null;
 
-    if(!cell || !boardEl.contains(cell)){
-      return null;
-    }
-
-    const row =
-      Number(cell.dataset.row);
-
-    const col =
-      Number(cell.dataset.col);
-
-    if(
-      !Number.isInteger(row) ||
-      !Number.isInteger(col)
-    ){
-      return null;
-    }
-
-    return {
-      row,
-      col
-    };
+    return { row, col };
   }
 
-  /*
-   * ------------------------------------------------------------
-   * INTERPOLACIÓN
-   *
-   * Soluciona el problema de arrastrar rápido:
-   * si el dedo pasa de una celda a otra demasiado rápido,
-   * procesamos las celdas intermedias.
-   * ------------------------------------------------------------
-   */
-
   function processPointerPosition(clientX,clientY){
+    if(!dragging) return;
 
-    if(!dragging){
-      return;
-    }
-
-    const cell =
-      cellFromPoint(
-        clientX,
-        clientY
-      );
-
-    if(!cell){
-      return;
-    }
+    const cell = cellFromPoint(clientX, clientY);
+    if(!cell) return;
 
     let currentRow = dragging.lastRow;
     let currentCol = dragging.lastCol;
@@ -1160,344 +1039,225 @@
     const targetRow = cell.row;
     const targetCol = cell.col;
 
-    /*
-     * Si hemos saltado varias filas/columnas,
-     * avanzamos una casilla cada vez.
-     *
-     * Como el tablero es ortogonal, primero recorremos
-     * filas y después columnas.
-     */
-    while(
-      currentRow !== targetRow ||
-      currentCol !== targetCol
-    ){
-
+    while(currentRow !== targetRow || currentCol !== targetCol){
       if(currentRow !== targetRow){
-
-        currentRow +=
-          targetRow > currentRow ? 1 : -1;
-
+        currentRow += targetRow > currentRow ? 1 : -1;
       }else{
-
-        currentCol +=
-          targetCol > currentCol ? 1 : -1;
+        currentCol += targetCol > currentCol ? 1 : -1;
       }
 
-      tryExtend(
-        currentRow,
-        currentCol
-      );
+      tryExtend(currentRow, currentCol);
 
-      if(!dragging){
-        break;
-      }
+      if(!dragging) break;
     }
   }
 
   /*
    * ------------------------------------------------------------
-   * POINTER EVENTS
+   * EVENTOS DE PUNTERO (CON REANUDACIÓN DE CAMINOS)
    * ------------------------------------------------------------
    */
 
-  boardEl.addEventListener(
-    'pointerdown',
-    e=>{
+  boardEl.addEventListener('pointerdown', e => {
+    if(!running) return;
 
-      if(!running){
-        return;
+    ensureAudio();
+
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if(!cell) return;
+
+    const dotColor = dotAt[cell.row][cell.col];
+    const pathColor = board[cell.row][cell.col];
+
+    // Identifica qué color se ha pulsado (un punto o un camino ya dibujado)
+    const color = (dotColor !== null) ? dotColor : pathColor;
+
+    if(color === null) return;
+
+    try{
+      boardEl.setPointerCapture(e.pointerId);
+    }catch(err){}
+
+    e.preventDefault();
+
+    const path = paths[color];
+    const isSolved = solved[color];
+
+    // Si el camino ya está completado o no se ha empezado a dibujar, iniciamos desde el punto
+    if(isSolved || !path || path.length === 0){
+      if(dotColor !== null){
+        startDrag(color, cell.row, cell.col);
       }
-
-      ensureAudio();
-
-      const cell =
-        cellFromPoint(
-          e.clientX,
-          e.clientY
-        );
-
-      if(!cell){
-        return;
-      }
-
-      const dotColor =
-        dotAt[cell.row][cell.col];
-
-      /*
-       * Solo se puede iniciar desde un punto.
-       */
-      if(dotColor === null){
-        return;
-      }
-
-      /*
-       * Capturamos el puntero para que el arrastre
-       * continúe aunque salga ligeramente del tablero.
-       */
-      try{
-        boardEl.setPointerCapture(e.pointerId);
-      }catch(err){}
-
-      e.preventDefault();
-
-      startDrag(
-        dotColor,
-        cell.row,
-        cell.col
-      );
-    },
-    {passive:false}
-  );
-
-  boardEl.addEventListener(
-    'pointermove',
-    e=>{
-
-      if(!dragging){
-        return;
-      }
-
-      e.preventDefault();
-
-      processPointerPosition(
-        e.clientX,
-        e.clientY
-      );
-    },
-    {passive:false}
-  );
-
-  function endDrag(e){
-
-    if(!dragging){
       return;
     }
 
-    dragging = null;
+    // Si el camino está A MEDIAS:
+    const idx = path.findIndex(p => p.row === cell.row && p.col === cell.col);
 
-    if(
-      e &&
-      e.pointerId !== undefined
-    ){
-      try{
-        boardEl.releasePointerCapture(
-          e.pointerId
-        );
-      }catch(err){}
+    if(idx !== -1){
+      // Si toca el punto de inicio original (índice 0), se reinicia el camino
+      if(idx === 0 && dotColor !== null){
+        startDrag(color, cell.row, cell.col);
+        return;
+      }
+
+      // Si toca la punta del camino o una casilla intermedia, recortamos desde ahí y reanudamos
+      const removed = path.splice(idx + 1);
+      removed.forEach(c => {
+        if(dotAt[c.row][c.col] === null){
+          board[c.row][c.col] = null;
+        }
+      });
+
+      dragging = {
+        color,
+        lastRow: cell.row,
+        lastCol: cell.col
+      };
+
+      sfxPickup();
+      render();
+    } else if(dotColor !== null){
+      // Si toca el punto final/destino del mismo color, reinicia desde ese extremo
+      startDrag(color, cell.row, cell.col);
+    }
+  }, {passive:false});
+
+  boardEl.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    e.preventDefault();
+    processPointerPosition(e.clientX, e.clientY);
+  }, {passive:false});
+
+  function endDrag(e){
+    if(!dragging) return;
+
+    dragging = null;
+    updateActiveColorIndicator();
+
+    if(e && e.pointerId !== undefined){
+      try{ boardEl.releasePointerCapture(e.pointerId); }catch(err){}
     }
   }
 
-  boardEl.addEventListener(
-    'pointerup',
-    endDrag
-  );
-
-  boardEl.addEventListener(
-    'pointercancel',
-    endDrag
-  );
+  boardEl.addEventListener('pointerup', endDrag);
+  boardEl.addEventListener('pointercancel', endDrag);
 
   /*
    * ------------------------------------------------------------
-   * NIVEL COMPLETO
+   * DETECCIÓN DE NIVEL COMPLETO
    * ------------------------------------------------------------
    */
 
   function checkLevelComplete(){
+    const { pct } = updateFillStat();
+    const allConnected = solved.length === numColors && solved.length > 0 && solved.every(Boolean);
 
-    if(
-      solved.length === numColors &&
-      solved.length > 0 &&
-      solved.every(Boolean)
-    ){
-      completeLevel();
+    if(allConnected){
+      if(pct >= 100){
+        completeLevel();
+      }else{
+        banner.textContent = '¡PUNTOS UNIDOS! LLENA EL TABLERO (' + pct + '%)';
+        banner.style.color = getVar('--c2');
+        replay(banner, 'show');
+      }
     }
   }
 
   function completeLevel(){
-
     running = false;
     dragging = null;
+    updateActiveColorIndicator();
 
-    const elapsed =
-      (performance.now() - levelStartTime) / 1000;
+    const elapsed = (performance.now() - levelStartTime) / 1000;
+    const basePoints = gridSize * numColors * 12;
+    const speedBonus = Math.max(0, Math.round(40 - elapsed)) * 4;
 
-    const basePoints =
-      gridSize * numColors * 8;
-
-    const speedBonus =
-      Math.max(
-        0,
-        Math.round(30-elapsed)
-      ) * 3;
-
-    score +=
-      basePoints +
-      speedBonus;
-
+    score += basePoints + speedBonus;
     updateHUD();
 
-    banner.textContent =
-      '¡NIVEL ' + level + ' SUPERADO!';
-
-    banner.style.color =
-      getVar('--c3');
-
-    replay(
-      banner,
-      'show'
-    );
+    banner.textContent = '¡NIVEL ' + level + ' SUPERADO!';
+    banner.style.color = getVar('--c3');
+    replay(banner, 'show');
 
     sfxLevelClear();
 
     if(window.Companion){
-
-      try{
-        Companion.play('cheer');
-      }catch(e){}
+      try{ Companion.play('cheer'); }catch(e){}
     }
 
     level++;
 
     setTimeout(()=>{
-
       startLevel(level);
-
       running = true;
-
-    },1200);
+    }, 1300);
   }
 
   /*
    * ------------------------------------------------------------
-   * INICIO DE NIVEL
+   * INICIO DE NIVEL Y JUEGO
    * ------------------------------------------------------------
    */
 
   function startLevel(lv){
-
     level = lv;
+    const params = levelParams(level);
+    const gen = generateLevel(params.size, params.colors);
 
-    const params =
-      levelParams(level);
-
-    const gen =
-      generateLevel(
-        params.size,
-        params.colors
-      );
-
-    /*
-     * Protección ante un fallo inesperado del generador.
-     */
     if(!gen){
-
-      console.error(
-        'No se pudo generar el nivel',
-        level
-      );
-
+      console.error('Fallo al generar el nivel', level);
       return;
     }
 
     gridSize = gen.N;
+    numColors = gen.paths.length;
 
-    numColors =
-      gen.paths.length;
-
-    dotAt =
-      Array.from(
-        {length:gridSize},
-        ()=>new Array(gridSize).fill(null)
-      );
-
-    board =
-      Array.from(
-        {length:gridSize},
-        ()=>new Array(gridSize).fill(null)
-      );
+    dotAt = Array.from({length:gridSize}, () => new Array(gridSize).fill(null));
+    board = Array.from({length:gridSize}, () => new Array(gridSize).fill(null));
 
     paths = [];
     solved = [];
     colorList = [];
 
-    gen.paths.forEach(
-      (idxPath,color)=>{
+    gen.paths.forEach((idxPath, color) => {
+      const startIdx = idxPath[0];
+      const endIdx = idxPath[idxPath.length-1];
 
-        const startIdx =
-          idxPath[0];
+      const sr = Math.floor(startIdx / gridSize);
+      const sc = startIdx % gridSize;
+      const er = Math.floor(endIdx / gridSize);
+      const ec = endIdx % gridSize;
 
-        const endIdx =
-          idxPath[idxPath.length-1];
+      dotAt[sr][sc] = color;
+      dotAt[er][ec] = color;
 
-        const sr =
-          Math.floor(
-            startIdx/gridSize
-          );
-
-        const sc =
-          startIdx % gridSize;
-
-        const er =
-          Math.floor(
-            endIdx/gridSize
-          );
-
-        const ec =
-          endIdx % gridSize;
-
-        dotAt[sr][sc] = color;
-        dotAt[er][ec] = color;
-
-        paths.push([]);
-        solved.push(false);
-
-        colorList.push(
-          PALETTE[
-            color % PALETTE.length
-          ]
-        );
-      }
-    );
+      paths.push([]);
+      solved.push(false);
+      colorList.push(PALETTE[color % PALETTE.length]);
+    });
 
     buildGridDOM();
-
     render();
-
     updateHUD();
 
-    levelStartTime =
-      performance.now();
+    levelStartTime = performance.now();
   }
 
-  /*
-   * ------------------------------------------------------------
-   * GAME
-   * ------------------------------------------------------------
-   */
-
   function startGame(){
-
     ensureAudio();
-
     score = 0;
     level = 1;
-
     dragging = null;
 
     overlay.style.display = 'none';
-
     startLevel(1);
-
     running = true;
   }
 
   function restartGame(){
-
     running = false;
-
     dragging = null;
-
     startGame();
   }
 
@@ -1507,55 +1267,30 @@
    * ------------------------------------------------------------
    */
 
-  clearBtn.addEventListener(
-    'click',
-    ()=>{
+  clearBtn.addEventListener('click', ()=>{
+    if(!running) return;
+    clearAllPaths();
+  });
 
-      if(!running){
-        return;
-      }
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', restartGame);
 
-      clearAllPaths();
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    muteBtn.textContent = 'SONIDO: ' + (muted ? 'OFF' : 'ON');
+
+    if(!muted){
+      ensureAudio();
+      beep(700,0.05,'square',0.03);
     }
-  );
+  });
 
-  startBtn.addEventListener(
-    'click',
-    startGame
-  );
-
-  restartBtn.addEventListener(
-    'click',
-    restartGame
-  );
-
-  muteBtn.addEventListener(
-    'click',
-    ()=>{
-
-      muted = !muted;
-
-      muteBtn.textContent =
-        'SONIDO: ' +
-        (muted ? 'OFF' : 'ON');
-
-      if(!muted){
-        ensureAudio();
-        beep(700,0.05,'square',0.03);
-      }
-    }
-  );
-
-  /*
-   * Estado inicial.
-   */
   updateHUD();
 
 })();
 </script>
 
 <script src="../assets/companion.js"></script>
-
 <script>
   if(window.Companion){
     Companion.mount(
@@ -1567,15 +1302,11 @@
 
 <script>
   if('serviceWorker' in navigator){
-
-    window.addEventListener(
-      'load',
-      ()=>{
-        navigator.serviceWorker
-          .register('../sw.js')
-          .catch(()=>{});
-      }
-    );
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker
+        .register('../sw.js')
+        .catch(()=>{});
+    });
   }
 </script>
 

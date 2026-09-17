@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mini-arcade-v13';
+const CACHE_NAME = 'mini-arcade-v14';
 
 const ASSETS = [
   './',
@@ -34,11 +34,16 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache); // Borra las versiones de caché anteriores
+          }
+        })
+      );
+    })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
