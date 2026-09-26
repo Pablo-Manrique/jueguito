@@ -1,17 +1,336 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini Arcade</title><link rel="manifest" href="manifest.json"><link rel="icon" href="assets/favicon-48.png"><link rel="apple-touch-icon" href="assets/icon-180.png"><meta name="theme-color" content="#14121f"><link rel="stylesheet" href="assets/theme.css"><link rel="stylesheet" href="assets/companion.css"><style>
-.hero-blip{display:flex;justify-content:center;margin-bottom:10px}.blip-link{font-size:8px;color:var(--c4);border-bottom:1px solid var(--c4);padding-bottom:2px}.session-panel{width:100%;max-width:600px;border:2px solid var(--grid);background:var(--panel);padding:14px 16px;margin-bottom:22px;box-shadow:4px 4px #0005}.session-panel-head{display:flex;justify-content:space-between;margin-bottom:10px}.session-panel-title{font-size:9px;color:var(--c3)}.session-panel-count{font-size:7px;color:var(--dim)}.session-panel-list{display:flex;flex-direction:column;gap:6px}.session-row{display:flex;justify-content:space-between;font-size:8px;padding-bottom:6px;border-bottom:1px solid var(--grid)}.session-row:last-child{border:0}.session-row .name{color:var(--dim)}.session-row.played .name{color:var(--ink)}.session-row .best{color:var(--dim)}.session-row.played .best{color:var(--c3)}.icon-shape{position:absolute}.icon-apila{display:flex;align-items:flex-end;justify-content:center;gap:2px}.icon-apila .block{width:12px}.b1{height:16px;background:var(--c2)}.b2{height:26px;background:var(--c3)}.b3{height:20px;background:var(--c1)}.b4{height:30px;background:var(--c4)}.b5{height:14px;background:var(--c2)}.icon-siempre{position:relative}.icon-siempre .platform{position:absolute;height:4px}.p1{width:42px;left:8px;bottom:8px;background:var(--c2)}.p2{width:36px;left:48px;bottom:25px;background:var(--c3)}.p3{width:30px;left:82px;bottom:42px;background:var(--c4)}.icon-siempre .runner{position:absolute;width:18px;height:20px;left:41px;bottom:27px;background:var(--c4);border:2px solid rgba(0,0,0,.35);border-radius:34% 34% 40% 40%;box-shadow:3px 3px 0 rgba(0,0,0,.2)}.icon-siempre .runner:before{content:"";position:absolute;left:3px;right:3px;bottom:3px;height:4px;background:var(--c3);border-radius:50%}.icon-siempre .runner:after{content:"••";position:absolute;left:3px;top:3px;font-size:5px;line-height:5px;color:var(--bg);letter-spacing:3px}.icon-2048{display:flex;align-items:center;justify-content:center}.mini-2048{display:grid;grid-template-columns:repeat(4,16px);grid-template-rows:repeat(3,16px);gap:3px}.mini-2048 i{display:flex;align-items:center;justify-content:center;background:var(--grid);font-style:normal;font-size:5px;color:var(--dim)}.mini-2048 .a{background:var(--c2);color:var(--bg)}.mini-2048 .b{background:var(--c3);color:var(--bg)}.mini-2048 .c{background:var(--c1)}.mini-2048 .d{background:var(--c4)}.icon-toca,.icon-conecta,.icon-encaja,.icon-desliza,.icon-atrapa,.icon-rompe,.icon-repele,.icon-pinball{display:flex;align-items:center;justify-content:center;position:relative}.icon-toca:before{content:'●   ▲   ■';font-size:13px;color:var(--c3)}.icon-conecta:before{content:'●────●';font-size:13px;color:var(--c1)}.icon-encaja:before{content:'▦';font-size:34px;color:var(--c2)}.icon-desliza:before{content:'⇄';font-size:28px;color:var(--c3)}.icon-atrapa:before{content:'◆  ●  ◆';font-size:14px;color:var(--c4)}.icon-rompe:before{content:'▦  ━';font-size:24px;color:var(--c3)}.icon-repele:before{content:'▦  ▲';font-size:25px;color:var(--c1)}.icon-pinball:before{content:'●  ●  ╱╲';font-size:20px;color:var(--c4)}
-</style></head><body><div class="hero"><div class="hero-blip" id="hero-blip-slot"></div><h1>MINI ARCADE</h1><p>Juegos rápidos para pasar el rato. Sin registro, sin guardar partidas: entras, juegas un rato y ya.</p><a class="blip-link" href="companion.html">Conoce a BLIP →</a></div><div class="session-panel"><div class="session-panel-head"><span class="session-panel-title">TU SESIÓN</span><span class="session-panel-count" id="session-count"></span></div><div class="session-panel-list" id="session-list"></div></div><div class="game-grid">
-<div class="game-card"><div class="icon-box icon-apila"><div class="block b1"></div><div class="block b2"></div><div class="block b3"></div><div class="block b4"></div><div class="block b5"></div></div><h2>APILA SIN PARAR</h2><p>El clásico de encajar piezas que caen. Cruceta para mover y bajar de golpe, botón redondo para rotar.</p><div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div><a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-2048"><div class="mini-2048"><i class="a">2</i><i class="b">4</i><i></i><i class="c">8</i><i></i><i class="d">16</i><i></i><i></i><i></i><i class="a">2</i><i></i><i class="b">4</i></div></div><h2>2048</h2><p>Desliza las fichas y combina números iguales. Llega hasta 2048 sin quedarte sin movimientos.</p><div class="tag-row"><span class="tag">clásico</span><span class="tag">estrategia</span></div><a class="play-btn" href="juegos/2048.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-siempre"><div class="platform p1"></div><div class="platform p2"></div><div class="platform p3"></div><div class="runner"></div></div><h2>SIEMPRE ARRIBA</h2><p>Salta de plataforma en plataforma, muévete de izquierda a derecha, esquiva meteoritos y aprovecha las plataformas especiales.</p><div class="tag-row"><span class="tag">plataformas</span><span class="tag">arrastrar</span><span class="tag">infinito</span></div><a class="play-btn" href="juegos/siempre-arriba.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-toca"></div><h2>TOCA RÁPIDO</h2><p>Van apareciendo formas de una en una. Tócalas lo más rápido posible.</p><div class="tag-row"><span class="tag">reflejos</span><span class="tag">contrarreloj</span></div><a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-conecta"></div><h2>CONECTA SIN CRUZAR</h2><p>Une cada pareja de puntos del mismo color sin cruzar otro camino.</p><div class="tag-row"><span class="tag">arrastrar</span><span class="tag">puzle</span></div><a class="play-btn" href="juegos/conecta-sin-cruzar.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-encaja"></div><h2>ENCAJA Y DESPEJA</h2><p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla.</p><div class="tag-row"><span class="tag">arrastrar</span><span class="tag">estrategia</span></div><a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-combina"><div class="icon-shape shape-a"></div><div class="icon-shape shape-b"></div><div class="icon-shape shape-c"></div><div class="icon-shape shape-d"></div></div><h2>COMBINA EL OBJETIVO</h2><p>Bloques de colores cruzan la pantalla. Toca solo los que coinciden con el objetivo.</p><div class="tag-row"><span class="tag">reflejos</span><span class="tag">infinito</span></div><a class="play-btn" href="juegos/combina-objetivo.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-salto"></div><h2>SALTO SIN FIN</h2><p>Corres sin parar. Un solo botón para saltar obstáculos y estirar tu racha.</p><div class="tag-row"><span class="tag">ritmo</span><span class="tag">un botón</span></div><a class="play-btn" href="juegos/salto-sin-fin.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-desliza"></div><h2>DESLIZA Y ESQUIVA</h2><p>Que no te choquen.</p><div class="tag-row"><span class="tag">arrastrar</span><span class="tag">reflejos</span></div><a class="play-btn" href="juegos/desliza-esquiva.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-atrapa"></div><h2>ATRAPA CON BLIP</h2><p>Mueve a BLIP para atrapar gemas y esquivar las bolas oscuras.</p><div class="tag-row"><span class="tag">arrastrar</span><span class="tag">infinito</span></div><a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-rompe"></div><h2>ROMPE LOS BLOQUES</h2><p>BLIP pilota la pala. Rompe bloques, atrapa power-ups y cuida tus vidas.</p><div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div><a class="play-btn" href="juegos/rompe-bloques.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-repele"></div><h2>REPELE LA INVASIÓN</h2><p>BLIP defiende la Tierra. Dispara, esquiva y usa los escudos.</p><div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div><a class="play-btn" href="juegos/repele-invasion.html">JUGAR →</a></div>
-<div class="game-card"><div class="icon-box icon-pinball"></div><h2>PINBALL DE BLIP</h2><p>BLIP es la bola. Dos flippers para no dejarlo caer y encadenar combos.</p><div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div><a class="play-btn" href="juegos/pinball-de-blip.html">JUGAR →</a></div>
-</div><div class="foot-note">más juegos próximamente · ningún juego guarda datos de partida</div><script src="assets/companion.js"></script><script>Companion.mount(document.getElementById('hero-blip-slot'),{size:64,autoGesture:'wave',autoGestureDelay:600});</script><script>(()=>{const G=[['apila','Apila sin Parar'],['2048','2048'],['siempreArriba','Siempre Arriba'],['tocarapido','Toca Rápido'],['conecta','Conecta sin Cruzar'],['encaja','Encaja y Despeja'],['combina','Combina el Objetivo'],['salto','Salto sin Fin'],['desliza','Desliza y Esquiva'],['atrapa','Atrapa con BLIP'],['rompe','Rompe los Bloques'],['repele','Repele la Invasión'],['pinball','Pinball de BLIP']];let p=0,l=document.getElementById('session-list');for(const [k,n] of G){let v=null;try{let x=sessionStorage.getItem('miniArcade.'+k+'.best');if(x!==null)v=parseInt(x,10)||0}catch(e){}if(v!==null)p++;let r=document.createElement('div');r.className='session-row'+(v!==null?' played':'');r.innerHTML='<span class="name">'+n+'</span><span class="best">'+(v!==null?'MEJOR: '+v:'sin jugar')+'</span>';l.appendChild(r)}document.getElementById('session-count').textContent=p+'/'+G.length+' juegos probados esta sesión'})()</script><script>if('serviceWorker'in navigator)onload=()=>navigator.serviceWorker.register('sw.js').catch(()=>{})</script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Arcade</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="assets/favicon-48.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<meta name="theme-color" content="#14121f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mini Arcade">
+<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/companion.css">
+<style>
+  .hero-blip{display:flex;justify-content:center;margin-bottom:10px}
+  .blip-link{display:inline-block;margin-top:12px;font-size:clamp(8px,2.4vw,9px);color:var(--c4);border-bottom:1px solid var(--c4);padding-bottom:2px}
+  .blip-link:hover{color:var(--ink);border-color:var(--ink)}
+
+  .session-panel{width:100%;max-width:600px;border:2px solid var(--grid);background:var(--panel);padding:14px 16px;margin-bottom:22px;box-shadow:4px 4px 0 rgba(0,0,0,.3)}
+  .session-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+  .session-panel-title{font-size:clamp(9px,2.6vw,10px);color:var(--c3);letter-spacing:.5px}
+  .session-panel-count{font-size:clamp(7px,2.2vw,8px);color:var(--dim)}
+  .session-panel-list{display:flex;flex-direction:column;gap:7px}
+  .session-row{display:flex;justify-content:space-between;align-items:center;font-size:clamp(8px,2.4vw,9px);padding-bottom:7px;border-bottom:1px solid var(--grid)}
+  .session-row:last-child{border-bottom:none;padding-bottom:0}
+  .session-row .name{color:var(--dim)}
+  .session-row.played .name{color:var(--ink)}
+  .session-row .best{color:var(--dim)}
+  .session-row.played .best{color:var(--c3)}
+  .session-empty{font-size:clamp(8px,2.4vw,9px);color:var(--dim);line-height:1.8}
+
+  /* Miniaturas originales: cada una representa realmente el juego, sin emojis ni glifos genéricos. */
+  .icon-shape{position:absolute}
+
+  .icon-combina .shape-a{top:14px;left:20px;width:16px;height:16px;background:var(--c2);border-radius:50%}
+  .icon-combina .shape-b{top:30px;left:44px;width:16px;height:16px;background:var(--c4);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)}
+  .icon-combina .shape-c{top:10px;left:70px;width:14px;height:14px;background:var(--c3);clip-path:polygon(50% 0%,0% 100%,100% 100%)}
+  .icon-combina .shape-d{top:34px;left:98px;width:14px;height:14px;background:var(--c1)}
+
+  .icon-salto .ground{left:0;right:0;bottom:12px;height:2px;background:var(--grid)}
+  .icon-salto .runner{left:26px;bottom:14px;width:14px;height:14px;background:var(--c1)}
+  .icon-salto .obstacle{left:96px;bottom:14px;width:10px;height:20px;background:var(--c2)}
+  .icon-salto .arc{left:30px;bottom:14px;width:60px;height:26px;border-top:2px dashed var(--dim);border-radius:50% / 100% 100% 0 0;opacity:.5}
+
+  .icon-encaja{display:flex;align-items:center;justify-content:center}
+  .icon-encaja .mini-grid{display:grid;grid-template-columns:repeat(6,8px);grid-template-rows:repeat(4,8px);gap:2px}
+  .icon-encaja .mini-grid div{background:var(--grid)}
+
+  .icon-desliza{display:flex;align-items:center;justify-content:center;position:relative}
+  .icon-desliza::before{content:"";position:absolute;width:28px;height:38px;background:linear-gradient(to right,transparent 8px,var(--c3) 8px,var(--c3) 9px,transparent 9px,transparent 18px,var(--c3) 18px,var(--c3) 19px,transparent 19px);opacity:.7}
+  .icon-desliza .mini-grid{display:grid;grid-template-columns:repeat(3,8px);grid-template-rows:repeat(4,8px);gap:2px;position:relative}
+  .icon-desliza .mini-grid div{background:var(--grid)}
+
+  .icon-atrapa{display:flex;align-items:center;justify-content:center;gap:6px}
+  .icon-atrapa .gem{width:14px;height:14px}
+  .icon-atrapa .gem.g1{background:var(--c2);clip-path:circle(50% at 50% 50%);margin-top:-14px}
+  .icon-atrapa .gem.g2{background:var(--c3);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);margin-top:4px}
+  .icon-atrapa .blip-mini{position:relative;width:20px;height:21px;background:var(--c4);border:2px solid rgba(0,0,0,.4);border-radius:34% 34% 40% 40% / 40% 40% 34% 34%;margin-top:10px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+  .icon-atrapa .blip-mini::before{content:"";position:absolute;left:26%;right:26%;bottom:14%;height:22%;background:var(--c3);border-radius:50% 50% 40% 40%;opacity:.9}
+  .icon-atrapa .blip-mini::after{content:"••";position:absolute;left:4px;top:5px;color:#14121f;font-size:6px;letter-spacing:4px;line-height:1}
+
+  .icon-apila{display:flex;align-items:flex-end;justify-content:center;gap:2px}
+  .icon-apila .block{width:12px}
+  .icon-apila .block.b1{height:16px;background:var(--c2)}
+  .icon-apila .block.b2{height:26px;background:var(--c3)}
+  .icon-apila .block.b3{height:20px;background:var(--c1)}
+  .icon-apila .block.b4{height:30px;background:var(--c4)}
+  .icon-apila .block.b5{height:14px;background:var(--c2)}
+
+  .icon-rompe{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .icon-rompe .row{display:flex;gap:2px}
+  .icon-rompe .row div{width:12px;height:6px}
+  .icon-rompe .paddle{width:22px;height:5px;background:var(--c4);margin-top:6px}
+  .icon-rompe .ball{width:6px;height:6px;border-radius:50%;background:var(--c3);margin-top:3px}
+
+  .icon-repele{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .icon-repele .erow{display:flex;gap:4px}
+  .icon-repele .erow div{width:10px;height:8px}
+  .icon-repele .ship{width:16px;height:8px;background:var(--c4);margin-top:4px;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+
+  .icon-pinball{display:flex;align-items:center;justify-content:center;position:relative}
+  .icon-pinball .bump{position:absolute;border-radius:50%}
+  .icon-pinball .bump.b1{width:16px;height:16px;background:var(--c1);top:8px;left:44px}
+  .icon-pinball .bump.b2{width:12px;height:12px;background:var(--c2);top:24px;left:20px}
+  .icon-pinball .bump.b3{width:12px;height:12px;background:var(--c3);top:24px;left:64px}
+  .icon-pinball .flip{position:absolute;width:18px;height:5px;background:var(--c4);bottom:8px;border-radius:3px}
+  .icon-pinball .flip.fl{left:14px;transform:rotate(20deg)}
+  .icon-pinball .flip.fr{right:14px;transform:rotate(-20deg)}
+
+  .icon-toca{display:flex;align-items:center;justify-content:center;position:relative}
+  .icon-toca .t1{position:absolute;width:14px;height:14px;background:var(--c1);top:8px;left:16px;border-radius:50%}
+  .icon-toca .t2{position:absolute;width:14px;height:14px;background:var(--c3);top:26px;left:64px;clip-path:polygon(50% 0%,0% 100%,100% 100%)}
+  .icon-toca .t3{position:absolute;width:12px;height:12px;background:var(--c2);top:10px;left:74px}
+  .icon-toca .cursor{position:absolute;left:47px;top:26px;width:15px;height:22px;border:2px solid var(--ink);clip-path:polygon(0 0,100% 62%,63% 67%,48% 100%,37% 96%,49% 65%,0 51%);opacity:.9}
+
+  .icon-conecta{display:flex;align-items:center;justify-content:center;position:relative}
+  .icon-conecta .dot{position:absolute;width:12px;height:12px;border-radius:50%}
+  .icon-conecta .d1{background:var(--c1);top:8px;left:10px}
+  .icon-conecta .d2{background:var(--c1);bottom:8px;right:10px}
+  .icon-conecta .d3{background:var(--c2);top:8px;right:10px}
+  .icon-conecta .d4{background:var(--c2);bottom:8px;left:10px}
+  .icon-conecta .line1{position:absolute;width:60px;height:4px;background:var(--c1);top:15px;left:15px;transform:rotate(35deg);transform-origin:left center;opacity:.8}
+  .icon-conecta .line2{position:absolute;width:60px;height:4px;background:var(--c2);top:49px;left:25px;transform:rotate(-35deg);transform-origin:left center;opacity:.7}
+
+  /* Nuevas miniaturas, construidas con la misma gramática visual de las originales. */
+  .icon-2048{display:flex;align-items:center;justify-content:center}
+  .mini-2048{display:grid;grid-template-columns:repeat(4,16px);grid-template-rows:repeat(4,16px);gap:3px}
+  .mini-2048 i{display:flex;align-items:center;justify-content:center;background:var(--grid);font-style:normal;font-size:5px;color:var(--dim)}
+  .mini-2048 .n2{background:#72b7b5;color:var(--bg)}
+  .mini-2048 .n4{background:#d2b15c;color:var(--bg)}
+  .mini-2048 .n8{background:#c76e7c}
+  .mini-2048 .n16{background:#8876c4}
+  .mini-2048 .n32{background:#9f74a6}
+
+  .icon-siempre-arriba{position:relative}
+  .icon-siempre-arriba .platform{position:absolute;height:4px;border:1px solid rgba(0,0,0,.3)}
+  .icon-siempre-arriba .sa-p1{width:46px;left:8px;bottom:9px;background:var(--c2)}
+  .icon-siempre-arriba .sa-p2{width:38px;left:53px;bottom:26px;background:var(--c3)}
+  .icon-siempre-arriba .sa-p3{width:30px;left:89px;bottom:43px;background:var(--c4)}
+  .icon-siempre-arriba .sa-blip{position:absolute;left:45px;bottom:28px;width:20px;height:21px;background:var(--c4);border:2px solid rgba(0,0,0,.4);border-radius:34% 34% 40% 40% / 40% 40% 34% 34%;box-shadow:2px 2px 0 rgba(0,0,0,.22)}
+  .icon-siempre-arriba .sa-blip::before{content:"";position:absolute;left:26%;right:26%;bottom:14%;height:22%;background:var(--c3);border-radius:50% 50% 40% 40%;opacity:.9}
+  .icon-siempre-arriba .sa-blip::after{content:"••";position:absolute;left:3px;top:5px;color:#14121f;font-size:6px;letter-spacing:4px;line-height:1}
+
+  .icon-meteor{position:absolute;width:7px;height:7px;background:var(--c1);transform:rotate(45deg);opacity:.75}
+  .icon-meteor.m1{right:15px;top:10px}.icon-meteor.m2{right:33px;top:28px;width:5px;height:5px;background:var(--c3)}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-blip" id="hero-blip-slot"></div>
+    <h1>MINI ARCADE</h1>
+    <p>Juegos rápidos para pasar el rato. Sin registro, sin guardar partidas: entras, juegas un rato y ya.</p>
+    <a class="blip-link" href="companion.html">Conoce a BLIP →</a>
+  </div>
+
+  <div class="session-panel">
+    <div class="session-panel-head">
+      <span class="session-panel-title">TU SESIÓN</span>
+      <span class="session-panel-count" id="session-count"></span>
+    </div>
+    <div class="session-panel-list" id="session-list"></div>
+  </div>
+
+  <div class="game-grid">
+    <div class="game-card">
+      <div class="icon-box icon-apila">
+        <div class="block b1"></div><div class="block b2"></div><div class="block b3"></div><div class="block b4"></div><div class="block b5"></div>
+      </div>
+      <h2>APILA SIN PARAR</h2>
+      <p>El clásico de encajar piezas que caen. Cruceta para mover y bajar de golpe, botón redondo para rotar — como una cabina arcade de verdad.</p>
+      <div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div>
+      <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-2048">
+        <div class="mini-2048">
+          <i class="n2">2</i><i class="n4">4</i><i></i><i></i>
+          <i></i><i class="n8">8</i><i></i><i class="n16">16</i>
+          <i></i><i></i><i class="n2">2</i><i></i>
+          <i></i><i class="n4">4</i><i></i><i class="n32">32</i>
+        </div>
+      </div>
+      <h2>2048</h2>
+      <p>Desliza las fichas y combina números iguales. Llega hasta 2048 sin quedarte sin movimientos.</p>
+      <div class="tag-row"><span class="tag">clásico</span><span class="tag">estrategia</span></div>
+      <a class="play-btn" href="juegos/2048.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-siempre-arriba">
+        <div class="platform sa-p1"></div><div class="platform sa-p2"></div><div class="platform sa-p3"></div>
+        <div class="sa-blip"></div><div class="icon-meteor m1"></div><div class="icon-meteor m2"></div>
+      </div>
+      <h2>SIEMPRE ARRIBA</h2>
+      <p>Salta de plataforma en plataforma y no dejes de subir. Muévete de izquierda a derecha, esquiva meteoritos y aprovecha las plataformas especiales para llegar lo más alto posible.</p>
+      <div class="tag-row"><span class="tag">plataformas</span><span class="tag">arrastrar</span><span class="tag">infinito</span></div>
+      <a class="play-btn" href="juegos/siempre-arriba.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-toca">
+        <div class="t1"></div><div class="t2"></div><div class="t3"></div><div class="cursor"></div>
+      </div>
+      <h2>TOCA RÁPIDO</h2>
+      <p>Van apareciendo formas de una en una — tócalas lo más rápido posible. Aquí gana quien menos tarda, no quien más puntúa.</p>
+      <div class="tag-row"><span class="tag">reflejos</span><span class="tag">contrarreloj</span></div>
+      <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-conecta">
+        <div class="line1"></div><div class="line2"></div>
+        <div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div>
+      </div>
+      <h2>CONECTA SIN CRUZAR</h2>
+      <p>Une cada pareja de puntos del mismo color arrastrando, sin cruzar otro camino. Niveles infinitos, cada vez con más colores.</p>
+      <div class="tag-row"><span class="tag">arrastrar</span><span class="tag">puzle</span></div>
+      <a class="play-btn" href="juegos/conecta-sin-cruzar.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-encaja">
+        <div class="mini-grid">
+          <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
+          <div></div><div style="background:var(--c1)"></div><div style="background:var(--c1)"></div><div></div><div></div><div></div>
+          <div></div><div></div><div style="background:var(--c2)"></div><div style="background:var(--c2)"></div><div></div><div></div>
+          <div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div><div style="background:var(--c4)"></div>
+        </div>
+      </div>
+      <h2>ENCAJA Y DESPEJA</h2>
+      <p>Arrastra piezas al tablero. Completa una fila o columna para eliminarla. Si ninguna pieza cabe ya, la partida termina.</p>
+      <div class="tag-row"><span class="tag">arrastrar</span><span class="tag">estrategia</span></div>
+      <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-combina">
+        <div class="icon-shape shape-a"></div><div class="icon-shape shape-b"></div><div class="icon-shape shape-c"></div><div class="icon-shape shape-d"></div>
+      </div>
+      <h2>COMBINA EL OBJETIVO</h2>
+      <p>Bloques de colores y formas cruzan la pantalla sin parar. Toca solo los que coinciden con el objetivo antes de que se escapen.</p>
+      <div class="tag-row"><span class="tag">reflejos</span><span class="tag">infinito</span></div>
+      <a class="play-btn" href="juegos/combina-objetivo.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-salto">
+        <div class="icon-shape arc"></div><div class="icon-shape ground"></div><div class="icon-shape runner"></div><div class="icon-shape obstacle"></div>
+      </div>
+      <h2>SALTO SIN FIN</h2>
+      <p>Corres sin parar por un mundo que no acaba. Un solo botón para saltar obstáculos y estirar tu racha lo máximo posible.</p>
+      <div class="tag-row"><span class="tag">ritmo</span><span class="tag">un botón</span></div>
+      <a class="play-btn" href="juegos/salto-sin-fin.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-desliza">
+        <div class="mini-grid">
+          <div></div><div style="background:var(--c1)"></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div style="background:var(--c1)"></div>
+          <div style="background:var(--c3)"></div><div></div><div></div>
+        </div>
+      </div>
+      <h2>DESLIZA Y ESQUIVA</h2>
+      <p>Que no te choquen.</p>
+      <div class="tag-row"><span class="tag">arrastrar</span><span class="tag">reflejos</span></div>
+      <a class="play-btn" href="juegos/desliza-esquiva.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-atrapa">
+        <div class="gem g1"></div><div class="gem g2"></div><div class="blip-mini"></div>
+      </div>
+      <h2>ATRAPA CON BLIP</h2>
+      <p>Mueve a BLIP arrastrando para atrapar las gemas de colores y esquivar las bolas oscuras. Si atrapas una mala, pierdes.</p>
+      <div class="tag-row"><span class="tag">arrastrar</span><span class="tag">infinito</span></div>
+      <a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-rompe">
+        <div class="row"><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div><div style="background:var(--c1)"></div></div>
+        <div class="row"><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div><div style="background:var(--c2)"></div><div style="background:var(--c1)"></div><div style="background:var(--c4)"></div></div>
+        <div class="ball"></div><div class="paddle"></div>
+      </div>
+      <h2>ROMPE LOS BLOQUES</h2>
+      <p>BLIP pilota la pala. El punto donde golpees la bola decide el ángulo. Rompe bloques, atrapa power-ups, cuida tus vidas.</p>
+      <div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div>
+      <a class="play-btn" href="juegos/rompe-bloques.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-repele">
+        <div class="erow"><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div></div>
+        <div class="erow"><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div></div>
+        <div class="ship"></div>
+      </div>
+      <h2>REPELE LA INVASIÓN</h2>
+      <p>BLIP defiende la Tierra. Dispara, esquiva y usa los escudos antes de que los invasores lleguen abajo.</p>
+      <div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div>
+      <a class="play-btn" href="juegos/repele-invasion.html">JUGAR →</a>
+    </div>
+
+    <div class="game-card">
+      <div class="icon-box icon-pinball">
+        <div class="bump b1"></div><div class="bump b2"></div><div class="bump b3"></div><div class="flip fl"></div><div class="flip fr"></div>
+      </div>
+      <h2>PINBALL DE BLIP</h2>
+      <p>BLIP es literalmente la bola. Dos flippers para no dejarlo caer y encadenar combo golpeando los topes.</p>
+      <div class="tag-row"><span class="tag">clásico</span><span class="tag">botones</span></div>
+      <a class="play-btn" href="juegos/pinball-de-blip.html">JUGAR →</a>
+    </div>
+  </div>
+
+  <div class="foot-note">más juegos próximamente · ningún juego guarda datos de partida</div>
+
+  <script src="assets/companion.js"></script>
+  <script>
+    Companion.mount(document.getElementById('hero-blip-slot'), {size:64, autoGesture:'wave', autoGestureDelay:600});
+  </script>
+  <script>
+    (() => {
+      const G = [
+        ['apila','Apila sin Parar'],['2048','2048'],['siempreArriba','Siempre Arriba'],
+        ['tocarapido','Toca Rápido'],['conecta','Conecta sin Cruzar'],['encaja','Encaja y Despeja'],
+        ['combina','Combina el Objetivo'],['salto','Salto sin Fin'],['desliza','Desliza y Esquiva'],
+        ['atrapa','Atrapa con BLIP'],['rompe','Rompe los Bloques'],['repele','Repele la Invasión'],['pinball','Pinball de BLIP']
+      ];
+      const list = document.getElementById('session-list');
+      let played = 0;
+      for (const [key,name] of G) {
+        let value = null;
+        try {
+          const raw = sessionStorage.getItem('miniArcade.' + key + '.best');
+          if (raw !== null) value = parseInt(raw, 10) || 0;
+        } catch (e) {}
+        if (value !== null) played++;
+        const row = document.createElement('div');
+        row.className = 'session-row' + (value !== null ? ' played' : '');
+        row.innerHTML = '<span class="name">' + name + '</span><span class="best">' + (value !== null ? 'MEJOR: ' + value : 'sin jugar') + '</span>';
+        list.appendChild(row);
+      }
+      document.getElementById('session-count').textContent = played + '/' + G.length + ' juegos probados esta sesión';
+    })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
