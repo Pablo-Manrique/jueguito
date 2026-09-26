@@ -1,5 +1,359 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Siempre Arriba · Mini Arcade</title><link rel="manifest" href="../manifest.json"><link rel="icon" href="../assets/favicon-48.png"><link rel="stylesheet" href="../assets/theme.css"><link rel="stylesheet" href="../assets/companion.css"><style>
-#app{width:min(94vw,520px);margin:auto}#hud{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:8px 0}.stat{border:1px solid var(--grid);background:var(--panel);padding:7px;font-size:7px;color:var(--dim)}.stat b{display:block;color:var(--ink);font-size:9px;margin-top:4px}.actions{text-align:right;margin-bottom:7px}.btn{font:7px inherit;color:var(--dim);background:none;border:1px solid var(--grid);padding:8px 9px;margin-left:4px}#wrap{position:relative;border:2px solid var(--grid);box-shadow:4px 4px 0 #0005;background:var(--panel)}canvas{display:block;width:100%;aspect-ratio:3/5;touch-action:none}.overlay{position:absolute;inset:0;background:#14121ff2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:3}.overlay>div{max-width:350px}.overlay h2{font-size:12px;color:var(--c3)}.overlay p,.legend{font-size:7px;color:var(--dim);line-height:1.9}.start{font:8px inherit;background:var(--c2);color:var(--bg);border:0;padding:12px 18px}.banner{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:7px;background:#14121fee;border:1px solid var(--grid);padding:6px 9px;opacity:0}.banner.show{animation:b 1s}.help,.note{text-align:center;color:var(--dim);font-size:7px;line-height:1.8;margin-top:7px}@keyframes b{10%,80%{opacity:1}100%{opacity:0}}@keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}.shake{animation:shake .2s}
-</style></head><body><div class="top-nav"><a class="back-link" href="../index.html">← MENÚ</a><span class="page-title">SIEMPRE ARRIBA</span></div><main id="app"><div id="hud"><div class="stat">ALTURA<b id="sc">0 m</b></div><div class="stat">🪙<b id="co">0</b></div><div class="stat">❤️<b id="li">3</b></div><div class="stat">MEJOR<b id="be">0 m</b></div></div><div class="actions"><button class="btn" id="snd">SONIDO: ON</button><button class="btn" id="rst">REINICIAR</button></div><div id="wrap"><canvas id="c"></canvas><div id="bn" class="banner"></div><div id="ov" class="overlay"><div><h2>SIEMPRE ARRIBA</h2><p>Salta automáticamente. Desliza a izquierda/derecha para dirigir a BLIP. Aterriza, encadena plataformas y no caigas.</p><div class="legend">⬜ normal · 🟨 móvil · 🟥 frágil<br>🟪 super salto · 🪙 moneda · 🛡 escudo · ☄️ meteoritos</div><br><button class="start" id="go">EMPEZAR</button></div></div></div><div class="help">MANTÉN EL DEDO A UN LADO · ← → / A D EN ORDENADOR</div><div class="note">física independiente de FPS · récord de sesión</div></main><script>
-(()=>{const c=document.getElementById('c'),x=c.getContext('2d'),wrap=document.getElementById('wrap'),ov=document.getElementById('ov'),bn=document.getElementById('bn');let W,H,D,run=false,last,raf,score=0,coins=0,lives=3,best=+(sessionStorage.getItem('miniArcade.siempreArriba.best')||0),cam=0,nextY=0,t=0,shield=0,inv=0,muted=false,pdown=false,px=0,L=false,R=false,ps=[],its=[],ms=[],parts=[],stars=[];const P={N:0,M:1,F:2,S:3},G=1500,J=-735,SJ=-930;let pl={x:0,y:0,w:22,h:28,vx:0,vy:0};const q=s=>getComputedStyle(document.documentElement).getPropertyValue(s).trim();const rnd=(a,b)=>a+Math.random()*(b-a);function resize(){let r=c.getBoundingClientRect();W=r.width;H=r.height;D=Math.min(devicePixelRatio||1,2);c.width=W*D;c.height=H*D;x.setTransform(D,0,0,D,0,0)}function beep(f,d=.06){if(muted)return;try{let a=window._a||(window._a=new AudioContext),o=a.createOscillator(),g=a.createGain();o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.value=.025;g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.start();o.stop(a.currentTime+d)}catch(e){}}function hud(){sc.textContent=score+' m';co.textContent=coins;li.textContent=lives;be.textContent=best+' m'}function banner(s,col=q('--c3')){bn.textContent=s;bn.style.color=col;bn.classList.remove('show');void bn.offsetWidth;bn.classList.add('show')}function particles(a,b,col,n=8){for(let i=0;i<n;i++){let z=rnd(0,6.28),v=rnd(50,160);parts.push({x:a,y:b,vx:Math.cos(z)*v,vy:Math.sin(z)*v,life:.5,col})}}function mk(y,prev,first=false){let d=Math.min(score/2200,1),w=first?130:Math.max(50,108-d*38+rnd(-5,14)),reach=first?0:70+d*80,xx=first?W/2-w/2:prev.x+rnd(-reach,reach);xx=Math.max(5,Math.min(W-w-5,xx));let z=Math.random(),type=P.N;if(score>350&&z<.13)type=P.M;else if(score>600&&z<.25)type=P.F;else if(score>850&&z<.34)type=P.S;return{x:xx,y,w,h:10,type,baseX:xx,phase:rnd(0,6.28),broken:false,touched:false}}function item(p){let z=Math.random();if(z<.4)its.push({t:'c',x:p.x+p.w/2,y:p.y-22,r:7,a:rnd(0,6.28)});if(z>.95&&score>350)its.push({t:'s',x:p.x+p.w/2,y:p.y-24,r:9,a:rnd(0,6.28)})}function meteor(){let l=Math.random()<.5;ms.push({x:l?-30:W+30,y:rnd(70,H*.6),r:rnd(6,10),v:l?rnd(190,290):-rnd(190,290),a:rnd(0,6.28)})}function reset(){resize();score=coins=cam=0;lives=3;shield=inv=0;ps=[];its=[];ms=[];parts=[];pl={x:W/2-11,y:H-60,w:22,h:28,vx:0,vy:J};let a=mk(H-30,null,true);ps.push(a);let prev=a,y=H-105;for(let i=0;i<15;i++){let p=mk(y,prev);ps.push(p);item(p);prev=p;y-=rnd(62,78)}nextY=y;stars=Array.from({length:Math.round(W/12)},()=>({x:rnd(0,W),y:rnd(0,H),s:rnd(1,2)}));hud()}function gen(){while(nextY>-100){let p=mk(nextY,ps[ps.length-1]);ps.push(p);item(p);let d=Math.min(score/1800,1);nextY-=rnd(62+d*8,82+d*22);if(score>500&&Math.random()<Math.min(.11+score/12000,.22))meteor()}}function col(cx,cy,r,rx,ry,rw,rh){let a=Math.max(rx,Math.min(cx,rx+rw)),b=Math.max(ry,Math.min(cy,ry+rh));return(cx-a)**2+(cy-b)**2<r*r}function hit(){if(inv>0)return;lives--;inv=1.2;wrap.classList.remove('shake');void wrap.offsetWidth;wrap.classList.add('shake');beep(130);particles(pl.x+11,pl.y+14,q('--c1'),16);if(lives<=0)return end();let p=ps.filter(a=>!a.broken&&a.y>pl.y).sort((a,b)=>a.y-b.y)[0]||ps[0];pl.x=Math.max(4,Math.min(W-pl.w-4,p.x+p.w/2-pl.w/2));pl.y=p.y-pl.h;pl.vy=J;banner('VIDA PERDIDA · '+lives+' RESTANTES',q('--c1'))}function update(dt){t+=dt;let dir=(L?-1:0)+(R?1:0);if(pdown){let d=px-(pl.x+11);if(Math.abs(d)>18)dir=Math.sign(d)}if(dir)pl.vx+=dir*1250*dt;else pl.vx*=Math.pow(.84,dt*60);pl.vx=Math.max(-285,Math.min(285,pl.vx));pl.x+=pl.vx*dt;if(pl.x>W)pl.x=-pl.w;if(pl.x+pl.w<0)pl.x=W;let old=pl.y+pl.h;pl.vy+=G*dt;pl.y+=pl.vy*dt;for(let p of ps)if(p.type===P.M){p.x=p.baseX+Math.sin(t*3.15+p.phase)*68;p.x=Math.max(4,Math.min(W-p.w-4,p.x))}if(pl.vy>0)for(let p of ps)if(!p.broken&&pl.x+pl.w-3>p.x&&pl.x+3<p.x+p.w&&old<=p.y&&pl.y+pl.h>=p.y){pl.y=p.y-pl.h;pl.vy=p.type===P.S?SJ:J;beep(p.type===P.S?520:170);if(p.type===P.S)banner('SUPER SALTO',q('--c4'));if(p.type===P.F&&!p.touched){p.touched=true;setTimeout(()=>p.broken=true,210)}break}let line=H*.46;if(pl.y<line){let d=line-pl.y;pl.y=line;ps.forEach(p=>p.y+=d);its.forEach(i=>i.y+=d);ms.forEach(m=>m.y+=d);parts.forEach(p=>p.y+=d);nextY+=d;cam+=d;score=Math.max(score,Math.floor(cam/10))}for(let m of ms){m.x+=m.v*dt;m.a+=dt*5;if(col(m.x,m.y,m.r,pl.x,pl.y,pl.w,pl.h)){m.dead=1;if(shield){shield=0;banner('ESCUDO ROTO',q('--c2'))}else hit()}}ms=ms.filter(m=>!m.dead&&m.x>-60&&m.x<W+60);for(let i of its){i.a+=dt*5;if(col(i.x,i.y,i.r,pl.x,pl.y,pl.w,pl.h)){i.dead=1;if(i.t==='c'){coins++;score+=4;beep(700);particles(i.x,i.y,q('--c3'),8)}else{shield=7;beep(450);banner('ESCUDO +7s',q('--c2'));particles(i.x,i.y,q('--c2'),10)}}}its=its.filter(i=>!i.dead&&i.y<H+70);if(shield>0)shield=Math.max(0,shield-dt);if(inv>0)inv=Math.max(0,inv-dt);for(let p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}parts=parts.filter(p=>p.life>0);ps=ps.filter(p=>!p.broken&&p.y<H+80);gen();if(pl.y>H+70)hit();if(score>best){best=score;sessionStorage.setItem('miniArcade.siempreArriba.best',best)}hud()}function draw(){x.fillStyle=q('--panel');x.fillRect(0,0,W,H);for(let s of stars){s.y+=10/60;if(s.y>H)s.y=-2;x.fillStyle=q('--grid');x.globalAlpha=.45;x.fillRect(s.x,s.y,s.s,s.s)}x.globalAlpha=1;for(let p of ps){let c=p.type===P.M?q('--c3'):p.type===P.F?q('--c1'):p.type===P.S?q('--c4'):q('--ink');x.fillStyle='#0005';x.fillRect(p.x+3,p.y+4,p.w,5);x.fillStyle=c;x.fillRect(p.x,p.y,p.w,p.h)}for(let i of its)if(!i.dead){x.fillStyle=i.t==='c'?q('--c3'):q('--c2');x.beginPath();x.arc(i.x,i.y,i.r,0,6.28);x.fill()}for(let m of ms){x.fillStyle=q('--dim');x.beginPath();x.arc(m.x,m.y,m.r,0,6.28);x.fill()}for(let p of parts){x.globalAlpha=Math.max(0,p.life*2);x.fillStyle=p.col;x.fillRect(p.x,p.y,3,3)}x.globalAlpha=1;if(inv>0&&Math.floor(inv*14)%2===0)return;x.save();x.translate(pl.x+11,pl.y+14);if(shield){x.strokeStyle=q('--c2');x.lineWidth=2;x.beginPath();x.arc(0,0,22+Math.sin(t*8)*2,0,6.28);x.stroke()}x.fillStyle=q('--c4');x.strokeStyle='rgba(0,0,0,.4)';x.lineWidth=2;x.beginPath();x.roundRect(-12,-15,24,29,9);x.fill();x.stroke();x.beginPath();x.roundRect(-14,-3,4,9,2);x.fill();x.stroke();x.beginPath();x.roundRect(10,-3,4,9,2);x.fill();x.stroke();x.fillStyle=q('--c3');x.globalAlpha=.9;x.beginPath();x.ellipse(0,8,6,3.2,0,0,6.28);x.fill();x.globalAlpha=1;x.fillStyle='#14121f';if(Math.sin(t*1.43)>.985){x.fillRect(-6,-5,3,1);x.fillRect(3,-5,3,1)}else{x.beginPath();x.arc(-5,-5,1.7,0,6.28);x.arc(5,-5,1.7,0,6.28);x.fill()}x.strokeStyle='rgba(0,0,0,.5)';x.lineWidth=1.5;x.beginPath();x.arc(0,3,3,0,Math.PI);x.stroke();x.restore()}function end(){run=false;ov.innerHTML='<div><h2>FIN DE LA PARTIDA</h2><p><b>'+score+' m</b><br>🪙 '+coins+' monedas<br>MEJOR: '+best+' m</p><button class="start" id="again">REINTENTAR</button></div>';ov.style.display='flex';again.onclick=start}function start(){try{(window._a||new AudioContext).resume()}catch(e){}reset();ov.style.display='none';run=true;last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}function loop(now){if(!run)return;let dt=Math.min((now-last)/1000,.032);last=now;update(dt);draw();raf=requestAnimationFrame(loop)}function pos(e){let r=c.getBoundingClientRect();px=(e.clientX-r.left)/r.width*W}c.onpointerdown=e=>{pdown=true;c.setPointerCapture?.(e.pointerId);pos(e)};c.onpointermove=e=>{if(pdown)pos(e)};['pointerup','pointercancel','pointerleave'].forEach(k=>c.addEventListener(k,()=>pdown=false));onkeydown=e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'){L=1;e.preventDefault()}if(e.key==='ArrowRight'||e.key.toLowerCase()==='d'){R=1;e.preventDefault()}};onkeyup=e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')L=0;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')R=0};go.onclick=start;rst.onclick=start;snd.onclick=()=>{muted=!muted;snd.textContent='SONIDO: '+(muted?'OFF':'ON')};onresize=()=>{if(!run){reset();draw()}};reset();draw()})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siempre Arriba · Mini Arcade</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" type="image/png" href="../assets/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icon-180.png">
+<meta name="theme-color" content="#14121f">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
+<style>
+  #app{width:min(94vw,520px);margin:auto}
+  #hud{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:8px 0}
+  .stat{border:1px solid var(--grid);background:var(--panel);padding:7px;font-size:7px;color:var(--dim)}
+  .stat b{display:block;color:var(--ink);font-size:9px;margin-top:4px}
+  .actions{text-align:right;margin-bottom:7px}
+  .btn{font:7px inherit;color:var(--dim);background:transparent;border:1px solid var(--grid);padding:8px 9px;margin-left:4px;min-height:34px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .btn:hover{color:var(--ink);border-color:var(--dim)}
+  .btn:active{transform:translate(1px,1px)}
+  #wrap{position:relative;border:2px solid var(--grid);box-shadow:4px 4px 0 #0005;background:var(--panel);overflow:hidden}
+  canvas{display:block;width:100%;aspect-ratio:3/5;touch-action:none}
+  #player-slot{position:absolute;left:0;top:0;z-index:5;pointer-events:none}
+  .overlay{position:absolute;inset:0;background:#14121ff2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:8}
+  .overlay>div{max-width:350px}
+  .overlay h2{font-size:12px;color:var(--c3);margin:0 0 9px}
+  .overlay p,.legend{font-size:7px;color:var(--dim);line-height:1.9;margin:0}
+  .start{font:8px inherit;background:var(--c2);color:var(--bg);border:0;padding:12px 18px;box-shadow:3px 3px 0 rgba(0,0,0,.35);cursor:pointer;touch-action:manipulation}
+  .start:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.35)}
+  .banner{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:7px;background:#14121fee;border:1px solid var(--grid);padding:6px 9px;opacity:0;z-index:7;pointer-events:none;white-space:nowrap}
+  .banner.show{animation:b 1s}
+  .help,.note{text-align:center;color:var(--dim);font-size:7px;line-height:1.8;margin-top:7px}
+  .note{margin-top:3px}
+  @keyframes b{10%,80%{opacity:1}100%{opacity:0}}
+  @keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
+  .shake{animation:shake .2s}
+  @media (prefers-reduced-motion:reduce){.banner.show{animation:none;opacity:1}.shake{animation:none}}
+</style>
+</head>
+<body>
+<div class="top-nav"><a class="back-link" href="../index.html">← MENÚ</a><span class="page-title">SIEMPRE ARRIBA</span></div>
+<main id="app">
+  <div id="hud">
+    <div class="stat">ALTURA<b id="sc">0 m</b></div>
+    <div class="stat">🪙<b id="co">0</b></div>
+    <div class="stat">❤️<b id="li">3</b></div>
+    <div class="stat">MEJOR<b id="be">0 m</b></div>
+  </div>
+  <div class="actions"><button class="btn" id="snd" type="button">SONIDO: ON</button><button class="btn" id="rst" type="button">REINICIAR</button></div>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div id="player-slot"></div>
+    <div id="bn" class="banner"></div>
+    <div id="ov" class="overlay">
+      <div>
+        <h2>SIEMPRE ARRIBA</h2>
+        <p>BLIP salta automáticamente. Mantén el dedo a un lado u otro para dirigirlo. Aterriza, encadena plataformas y busca las especiales.</p>
+        <div class="legend">⬜ normal · 🟨 móvil · 🟥 frágil<br>🟪 super salto · 🪙 moneda · 🛡 escudo · ☄️ meteoritos</div>
+        <br><button class="start" id="go" type="button">EMPEZAR</button>
+      </div>
+    </div>
+  </div>
+  <div class="help">MANTÉN EL DEDO A UN LADO · ← → / A D EN ORDENADOR</div>
+  <div class="note">física independiente de FPS · récord de sesión</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const canvas=document.getElementById('c');
+  const ctx=canvas.getContext('2d');
+  const wrap=document.getElementById('wrap');
+  const playerSlot=document.getElementById('player-slot');
+  const overlay=document.getElementById('ov');
+  const startBtn=document.getElementById('go');
+  const resetBtn=document.getElementById('rst');
+  const soundBtn=document.getElementById('snd');
+  const scoreEl=document.getElementById('sc');
+  const coinEl=document.getElementById('co');
+  const livesEl=document.getElementById('li');
+  const bestEl=document.getElementById('be');
+  const banner=document.getElementById('bn');
+
+  const BEST_KEY='miniArcade.siempreArriba.best';
+  const W_BASE=360;
+  const GRAVITY=1500;
+  const JUMP=-735;
+  const SUPER_JUMP=-930;
+  const PLAYER_W=22;
+  const PLAYER_H=30;
+  const MOVE_MAX=285;
+  const AIR_ACCEL=1250;
+  const DRAG=0.84;
+  const CONTROL_DEADZONE=18;
+  const START_LIVES=3;
+
+  let W=360,H=600,dpr=1;
+  let running=false, muted=false, raf=0,last=0,time=0;
+  let inputX=null, left=false, right=false;
+  let score=0,coins=0,lives=START_LIVES,best=loadBest();
+  let cameraY=0, worldTop=0;
+  let player={x:W/2,y:0,vx:0,vy:0,onPlatform:null,shield:0};
+  let platforms=[], pickups=[], meteors=[], particles=[];
+  let audio=null;
+
+  function loadBest(){try{return Number(sessionStorage.getItem(BEST_KEY)||0)||0}catch(e){return 0}}
+  function saveBest(){try{sessionStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+  function gv(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
+  const C={bg:()=>gv('--bg'),panel:()=>gv('--panel'),grid:()=>gv('--grid'),ink:()=>gv('--ink'),dim:()=>gv('--dim'),c1:()=>gv('--c1'),c2:()=>gv('--c2'),c3:()=>gv('--c3'),c4:()=>gv('--c4')};
+
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    W=Math.max(280,r.width); H=Math.max(480,r.height);
+    dpr=Math.max(1,Math.min(window.devicePixelRatio||1,3));
+    canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function rand(a,b){return a+Math.random()*(b-a)}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+  function pick(a){return a[Math.floor(Math.random()*a.length)]}
+  function worldToScreenY(y){return y-cameraY}
+
+  function makePlatform(y, index){
+    const typeRoll=Math.random();
+    let type='normal';
+    if(typeRoll<0.12) type='super';
+    else if(typeRoll<0.25) type='moving';
+    else if(typeRoll<0.34) type='fragile';
+    const w=type==='moving'?rand(68,98):rand(76,112);
+    const x=rand(10,W-w-10);
+    return {x,y,w,h:8,type,baseX:x,phase:rand(0,Math.PI*2),broken:false,used:false,index};
+  }
+
+  function resetWorld(){
+    platforms=[];pickups=[];meteors=[];particles=[];cameraY=0;worldTop=0;time=0;
+    const baseY=H-42;
+    platforms.push({x:W*.5-52,y:baseY,w:104,h:8,type:'normal',baseX:W*.5-52,phase:0,broken:false,used:false,index:0});
+    let py=baseY-86;
+    for(let i=1;i<18;i++){
+      platforms.push(makePlatform(py,i));
+      if(Math.random()<.68) pickups.push({x:platforms[i].x+platforms[i].w*.5,y:py-20,r:5,type:'coin',taken:false});
+      if(Math.random()<.09) pickups.push({x:platforms[i].x+platforms[i].w*.7,y:py-36,r:7,type:'shield',taken:false});
+      py-=rand(64,88);
+    }
+    player={x:platforms[0].x+platforms[0].w*.5,y:baseY-PLAYER_H,vx:0,vy:JUMP,onPlatform:platforms[0],shield:0};
+    inputX=null;left=false;right=false;
+    updateHud();
+  }
+
+  function extendWorld(){
+    const highest=platforms.reduce((m,p)=>Math.min(m,p.y),Infinity);
+    while(highest - worldTop < 1050){
+      const nextY=worldTop-78-rand(0,30);
+      const p=makePlatform(nextY,platforms.length);
+      platforms.push(p);worldTop=nextY;
+      if(Math.random()<.62) pickups.push({x:p.x+p.w*.5,y:p.y-20,r:5,type:'coin',taken:false});
+      if(Math.random()<.08) pickups.push({x:p.x+p.w*.7,y:p.y-36,r:7,type:'shield',taken:false});
+      if(Math.random()<.18) meteors.push({x:rand(8,W-8),y:p.y-rand(80,180),vx:rand(-25,25),vy:rand(130,210),r:rand(7,11),rot:rand(0,Math.PI*2)});
+    }
+  }
+
+  function platformX(p){const raw=p.type==='moving'?p.baseX+Math.sin(time*3.15+p.phase)*68:p.x;return Math.max(6,Math.min(W-p.w-6,raw))}
+
+  function ensureAudio(){
+    if(audio) return;
+    try{audio=new (window.AudioContext||window.webkitAudioContext)()}catch(e){audio=null}
+  }
+  function beep(freq,dur=.06,type='square',vol=.035){
+    if(muted||!audio)return;
+    try{const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(audio.destination);const n=audio.currentTime;g.gain.setValueAtTime(vol,n);g.gain.exponentialRampToValueAtTime(.0001,n+dur);o.start(n);o.stop(n+dur+.01)}catch(e){}
+  }
+
+  function bannerText(text){banner.textContent=text;banner.classList.remove('show');void banner.offsetWidth;banner.classList.add('show')}
+
+  function updateHud(){scoreEl.textContent=Math.max(0,Math.floor(score))+' m';coinEl.textContent=String(coins);livesEl.textContent=String(lives);bestEl.textContent=Math.max(best,Math.floor(score))+' m'}
+
+  function spawnFx(x,y,color,n=7){for(let i=0;i<n;i++){const a=rand(-Math.PI,Math.PI),s=rand(35,90);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay:rand(1.2,2),size:rand(2,4),color})}}
+
+  function collidePlatform(prevBottom,newBottom,p){
+    if(p.broken) return false;
+    const px1=player.x-PLAYER_W*.38,px2=player.x+PLAYER_W*.38;
+    const sx=platformX(p);
+    return player.vy>=0 && prevBottom<=p.y+3 && newBottom>=p.y && px2>=sx && px1<=sx+p.w;
+  }
+
+  function landOn(p){
+    player.y=p.y-PLAYER_H;
+    player.vy=p.type==='super'?SUPER_JUMP:JUMP;
+    player.onPlatform=p;
+    if(p.type==='fragile'){p.used=true;setTimeout(()=>p.broken=true,120)}
+    if(p.type==='super'){bannerText('¡SUPER SALTO!');if(window.Companion)Companion.play('cheer');beep(820,.08,'square',.05)}
+    else {if(window.Companion && Math.random()<.18)Companion.play('cheer');beep(520,.045,'square',.025)}
+    spawnFx(player.x,p.y,C.grid(),5);
+  }
+
+  function loseLife(){
+    lives--;
+    wrap.classList.remove('shake');void wrap.offsetWidth;wrap.classList.add('shake');
+    if(window.Companion)Companion.play('sad');
+    if(lives<=0){endGame();return}
+    const below=platforms.filter(p=>!p.broken && p.y>player.y-60).sort((a,b)=>a.y-b.y)[0]||platforms[0];
+    player.x=clamp(platformX(below)+below.w*.5,PLAYER_W,W-PLAYER_W);
+    player.y=below.y-PLAYER_H;player.vx=0;player.vy=JUMP;player.onPlatform=below;player.shield=0;
+    bannerText('¡VIDA PERDIDA!');updateHud();
+  }
+
+  function endGame(){
+    running=false;cancelAnimationFrame(raf);
+    best=Math.max(best,Math.floor(score));saveBest();updateHud();
+    overlay.innerHTML='<div><h2>FIN DE LA PARTIDA</h2><p><b>'+Math.floor(score)+' m</b><br>🪙 '+coins+' monedas<br>MEJOR: '+best+' m</p><br><button class="start" id="again" type="button">REINTENTAR</button></div>';
+    overlay.style.display='flex';
+    document.getElementById('again').addEventListener('click',startGame,{once:true});
+  }
+
+  function update(dt){
+    time+=dt;
+    if(inputX!==null){
+      const center=player.x;
+      const diff=inputX-center;
+      if(Math.abs(diff)>CONTROL_DEADZONE) player.vx+=clamp(diff,-90,90)*dt*8;
+      else player.vx*=Math.pow(DRAG,dt*60);
+    } else {
+      const axis=(right?1:0)-(left?1:0);
+      if(axis) player.vx+=axis*AIR_ACCEL*dt; else player.vx*=Math.pow(DRAG,dt*60);
+    }
+    player.vx=clamp(player.vx,-MOVE_MAX,MOVE_MAX);
+    player.x+=player.vx*dt;
+    if(player.x<PLAYER_W*.5){player.x=PLAYER_W*.5;player.vx*=.35}
+    if(player.x>W-PLAYER_W*.5){player.x=W-PLAYER_W*.5;player.vx*=.35}
+
+    const prevBottom=player.y+PLAYER_H;
+    player.vy+=GRAVITY*dt;
+    player.y+=player.vy*dt;
+    player.onPlatform=null;
+
+    for(const p of platforms){
+      if(collidePlatform(prevBottom,player.y+PLAYER_H,p)){
+        landOn(p);break;
+      }
+    }
+
+    for(const item of pickups){
+      if(item.taken)continue;
+      const dx=item.x-player.x,dy=item.y-(player.y+PLAYER_H*.45);
+      const hit=(dx*dx+dy*dy)<(item.r+11)*(item.r+11);
+      if(hit){
+        item.taken=true;
+        if(item.type==='coin'){coins++;score+=24;if(window.Companion)Companion.play('surprise');beep(880,.05,'triangle',.04);spawnFx(item.x,item.y,C.c3(),8)}
+        else {player.shield=7;bannerText('¡ESCUDO!');if(window.Companion)Companion.play('cheer');beep(640,.12,'triangle',.04);spawnFx(item.x,item.y,C.c2(),10)}
+      }
+    }
+
+    for(const m of meteors){
+      m.x+=m.vx*dt;m.y+=m.vy*dt;m.rot+=dt*3;
+      const dx=m.x-player.x,dy=m.y-(player.y+PLAYER_H*.45),rr=m.r+10;
+      if(dx*dx+dy*dy<rr*rr){
+        if(player.shield>0){player.shield=0;m.y=H+80;bannerText('¡ESCUDO SALVÓ A BLIP!');if(window.Companion)Companion.play('cheer');beep(740,.08,'triangle',.045);spawnFx(m.x,m.y,C.c2(),9)}
+        else {m.y=H+80;loseLife()}
+      }
+    }
+    player.shield=Math.max(0,player.shield-dt);
+
+    cameraY=Math.min(cameraY, player.y-H*.46);
+    score=Math.max(score,Math.floor(-cameraY));
+    best=Math.max(best,Math.floor(score));
+    extendWorld();
+
+    for(const p of platforms) if(p.broken && p.y-cameraY>H+100) p.broken=true;
+    platforms=platforms.filter(p=>p.y-cameraY<H+140);
+    pickups=pickups.filter(q=>!q.taken && q.y-cameraY<H+100);
+    meteors=meteors.filter(m=>m.y-cameraY<H+140);
+    for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;p.life-=p.decay*dt;if(p.life<=0)particles.splice(i,1)}
+
+    if(player.y-cameraY>H+PLAYER_H*2) loseLife();
+    updateHud();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle=C.panel();ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=C.grid();
+    for(let i=0;i<70;i++){
+      const x=(i*71)%W;const y=((i*43)-cameraY*.18)%H;const yy=y<0?y+H:y;
+      ctx.globalAlpha=.28;ctx.fillRect(x,yy,1.5,1.5)
+    }
+    ctx.globalAlpha=1;
+
+    for(const p of platforms){
+      const sx=platformX(p),sy=worldToScreenY(p.y);
+      if(sy<-20||sy>H+20)continue;
+      let col=C.c2(); if(p.type==='super')col=C.c4(); else if(p.type==='moving')col=C.c3(); else if(p.type==='fragile')col=C.c1();
+      ctx.fillStyle=col;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=2;
+      ctx.fillRect(sx,sy,p.w,p.h);ctx.strokeRect(sx,sy,p.w,p.h);
+      if(p.type==='moving'){ctx.globalAlpha=.35;ctx.fillStyle=C.ink();ctx.fillRect(sx+7,sy+2,p.w-14,1);ctx.globalAlpha=1}
+      if(p.type==='fragile'){ctx.strokeStyle='rgba(20,18,31,.55)';ctx.beginPath();ctx.moveTo(sx+15,sy);ctx.lineTo(sx+27,sy+p.h);ctx.moveTo(sx+p.w*.65,sy);ctx.lineTo(sx+p.w*.75,sy+p.h);ctx.stroke()}
+    }
+
+    for(const item of pickups){
+      if(item.taken)continue;const sy=worldToScreenY(item.y);if(sy<-20||sy>H+20)continue;
+      ctx.save();ctx.translate(item.x,sy);ctx.rotate(time*1.7);
+      ctx.fillStyle=item.type==='coin'?C.c3():C.c2();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(0,-item.r);ctx.lineTo(item.r*.75,0);ctx.lineTo(0,item.r);ctx.lineTo(-item.r*.75,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+      if(item.type==='shield'){ctx.globalAlpha=.45;ctx.strokeStyle=C.ink();ctx.beginPath();ctx.arc(item.x,sy,item.r+3,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}
+    }
+
+    for(const m of meteors){
+      const sy=worldToScreenY(m.y);if(sy<-30||sy>H+30)continue;
+      ctx.save();ctx.translate(m.x,sy);ctx.rotate(m.rot);ctx.fillStyle=C.c1();ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=2;ctx.fillRect(-m.r*.7,-m.r*.7,m.r*1.4,m.r*1.4);ctx.strokeRect(-m.r*.7,-m.r*.7,m.r*1.4,m.r*1.4);ctx.strokeStyle=C.c3();ctx.beginPath();ctx.moveTo(-m.r*.2,-m.r*1.15);ctx.lineTo(-m.r*.9,-m.r*1.8);ctx.stroke();ctx.restore();
+    }
+
+    if(player.shield>0){
+      const py=worldToScreenY(player.y+PLAYER_H*.5);ctx.globalAlpha=.45+Math.sin(time*8)*.12;ctx.strokeStyle=C.c2();ctx.lineWidth=2;ctx.beginPath();ctx.arc(player.x,py,19+Math.sin(time*5),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+    }
+
+    for(const p of particles){ctx.globalAlpha=p.life;ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size*.5,worldToScreenY(p.y)-p.size*.5,p.size,p.size)}ctx.globalAlpha=1;
+
+    playerSlot.style.left=(player.x-15)+'px';
+    playerSlot.style.top=(worldToScreenY(player.y))+'px';
+  }
+
+  function loop(now){
+    if(!running)return;
+    const dt=Math.min((now-last)/1000,.032);last=now;
+    update(dt);draw();raf=requestAnimationFrame(loop);
+  }
+
+  function startGame(){
+    ensureAudio();
+    if(audio&&audio.state==='suspended')audio.resume().catch(()=>{});
+    resize();resetWorld();overlay.style.display='none';running=true;cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
+  }
+
+  startBtn.addEventListener('click',startGame);
+  resetBtn.addEventListener('click',startGame);
+  soundBtn.addEventListener('click',()=>{muted=!muted;soundBtn.textContent='SONIDO: '+(muted?'OFF':'ON')});
+
+  canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture?.(e.pointerId);const r=canvas.getBoundingClientRect();inputX=(e.clientX-r.left)/r.width*W});
+  canvas.addEventListener('pointermove',e=>{if(e.buttons){const r=canvas.getBoundingClientRect();inputX=(e.clientX-r.left)/r.width*W}});
+  ['pointerup','pointercancel','pointerleave'].forEach(type=>canvas.addEventListener(type,()=>inputX=null));
+
+  window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'){left=true;e.preventDefault()}if(e.key==='ArrowRight'||e.key.toLowerCase()==='d'){right=true;e.preventDefault()}});
+  window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')left=false;if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')right=false});
+  window.addEventListener('resize',()=>{resize();if(!running){resetWorld();draw()}});
+
+  resize();resetWorld();draw();
+})();
+</script>
+<script src="../assets/companion.js"></script>
+<script>
+  const playerSlot=document.getElementById('player-slot');
+  Companion.mount(playerSlot,{size:30});
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
