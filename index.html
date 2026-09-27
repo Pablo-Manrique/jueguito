@@ -43,6 +43,45 @@
   transform:translate(2px,2px);
   box-shadow:1px 1px 0 rgba(0,0,0,.35);
 }
+  .filter-bar{
+    width:100%;
+    max-width:600px;
+    display:flex;
+    justify-content:center;
+    gap:7px;
+    flex-wrap:wrap;
+    margin:0 auto 22px;
+  }
+
+  .filter-btn{
+    border:1px solid var(--grid);
+    background:var(--panel);
+    color:var(--dim);
+    padding:8px 11px;
+    font-family:inherit;
+    font-size:clamp(7px,2.2vw,8px);
+    cursor:pointer;
+    transition:background .08s ease,color .08s ease,border-color .08s ease,transform .08s ease;
+  }
+
+  .filter-btn:hover{
+    color:var(--ink);
+    border-color:var(--dim);
+  }
+
+  .filter-btn.active{
+    background:var(--c3);
+    border-color:var(--c3);
+    color:var(--bg);
+  }
+
+  .filter-btn:active{
+    transform:translateY(1px);
+  }
+
+  .game-card.hidden{
+    display:none;
+  }
   .session-panel{width:100%;max-width:600px;border:2px solid var(--grid);background:var(--panel);padding:14px 16px;margin-bottom:22px;box-shadow:4px 4px 0 rgba(0,0,0,.3)}
   .session-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
   .session-panel-title{font-size:clamp(9px,2.6vw,10px);color:var(--c3);letter-spacing:.5px}
@@ -168,9 +207,15 @@
     </div>
     <div class="session-panel-list" id="session-list"></div>
   </div>
-
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" data-filter="todos">TODOS</button>
+    <button class="filter-btn" data-filter="pensar">🧠 PENSAR</button>
+    <button class="filter-btn" data-filter="reflejos">⚡ REFLEJOS</button>
+    <button class="filter-btn" data-filter="accion">🎮 ACCIÓN</button>
+    <button class="filter-btn" data-filter="habilidad">🏗️ HABILIDAD</button>
+  </div>
   <div class="game-grid">
-    <div class="game-card">
+    <div class="game-card" data-category="habilidad">
       <div class="icon-box icon-apila">
         <div class="block b1"></div><div class="block b2"></div><div class="block b3"></div><div class="block b4"></div><div class="block b5"></div>
       </div>
@@ -180,7 +225,7 @@
       <a class="play-btn" href="juegos/apila-sin-parar.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="pensar">
       <div class="icon-box icon-2048">
         <div class="mini-2048">
           <i class="n2">2</i><i class="n4">4</i><i></i><i></i>
@@ -195,7 +240,7 @@
       <a class="play-btn" href="juegos/2048.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+   <div class="game-card" data-category="habilidad">
       <div class="icon-box icon-siempre-arriba">
         <div class="platform sa-p1"></div><div class="platform sa-p2"></div><div class="platform sa-p3"></div>
         <div class="sa-blip"></div><div class="icon-meteor m1"></div><div class="icon-meteor m2"></div>
@@ -206,7 +251,7 @@
       <a class="play-btn" href="juegos/siempre-arriba.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="reflejos">
       <div class="icon-box icon-toca">
         <div class="t1"></div><div class="t2"></div><div class="t3"></div><div class="cursor"></div>
       </div>
@@ -216,7 +261,7 @@
       <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+   <div class="game-card" data-category="pensar">
       <div class="icon-box icon-conecta">
         <div class="line1"></div><div class="line2"></div>
         <div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div>
@@ -227,7 +272,7 @@
       <a class="play-btn" href="juegos/conecta-sin-cruzar.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="pensar">
       <div class="icon-box icon-encaja">
         <div class="mini-grid">
           <div></div><div></div><div style="background:var(--c3)"></div><div></div><div></div><div></div>
@@ -242,7 +287,7 @@
       <a class="play-btn" href="juegos/encaja-despeja.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="reflejos">
       <div class="icon-box icon-combina">
         <div class="icon-shape shape-a"></div><div class="icon-shape shape-b"></div><div class="icon-shape shape-c"></div><div class="icon-shape shape-d"></div>
       </div>
@@ -252,7 +297,7 @@
       <a class="play-btn" href="juegos/combina-objetivo.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="habilidad">
       <div class="icon-box icon-salto">
         <div class="icon-shape arc"></div><div class="icon-shape ground"></div><div class="icon-shape runner"></div><div class="icon-shape obstacle"></div>
       </div>
@@ -262,7 +307,7 @@
       <a class="play-btn" href="juegos/salto-sin-fin.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="reflejos">
       <div class="icon-box icon-desliza">
         <div class="mini-grid">
           <div></div><div style="background:var(--c1)"></div><div></div>
@@ -277,7 +322,7 @@
       <a class="play-btn" href="juegos/desliza-esquiva.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="reflejos">
       <div class="icon-box icon-atrapa">
         <div class="gem g1"></div><div class="gem g2"></div><div class="blip-mini"></div>
       </div>
@@ -287,7 +332,7 @@
       <a class="play-btn" href="juegos/atrapa-con-blip.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="accion">
       <div class="icon-box icon-rompe">
         <div class="row"><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div><div style="background:var(--c1)"></div></div>
         <div class="row"><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div><div style="background:var(--c2)"></div><div style="background:var(--c1)"></div><div style="background:var(--c4)"></div></div>
@@ -299,7 +344,7 @@
       <a class="play-btn" href="juegos/rompe-bloques.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+    <div class="game-card" data-category="accion">
       <div class="icon-box icon-repele">
         <div class="erow"><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div><div style="background:var(--c1)"></div><div style="background:var(--c2)"></div></div>
         <div class="erow"><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div><div style="background:var(--c4)"></div><div style="background:var(--c3)"></div></div>
@@ -311,7 +356,7 @@
       <a class="play-btn" href="juegos/repele-invasion.html">JUGAR →</a>
     </div>
 
-    <div class="game-card">
+   <div class="game-card" data-category="accion">
       <div class="icon-box icon-pinball">
         <div class="bump b1"></div><div class="bump b2"></div><div class="bump b3"></div><div class="flip fl"></div><div class="flip fr"></div>
       </div>
@@ -380,6 +425,28 @@
     });
   })();
 </script>
+  <script>
+    (() => {
+      const buttons = document.querySelectorAll('.filter-btn');
+      const cards = document.querySelectorAll('.game-card');
+
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter;
+
+          buttons.forEach(btn => {
+            btn.classList.toggle('active', btn === button);
+          });
+
+          cards.forEach(card => {
+            const category = card.dataset.category;
+            const visible = filter === 'todos' || category === filter;
+            card.classList.toggle('hidden', !visible);
+          });
+        });
+      });
+    })();
+  </script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
