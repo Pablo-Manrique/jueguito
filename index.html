@@ -17,7 +17,32 @@
   .hero-blip{display:flex;justify-content:center;margin-bottom:10px}
   .blip-link{display:inline-block;margin-top:12px;font-size:clamp(8px,2.4vw,9px);color:var(--c4);border-bottom:1px solid var(--c4);padding-bottom:2px}
   .blip-link:hover{color:var(--ink);border-color:var(--ink)}
+.surprise-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:14px;
+  padding:10px 16px;
+  border:2px solid var(--c3);
+  background:var(--c3);
+  color:var(--bg);
+  font-family:inherit;
+  font-size:clamp(8px,2.4vw,9px);
+  text-decoration:none;
+  cursor:pointer;
+  box-shadow:3px 3px 0 rgba(0,0,0,.35);
+  transition:transform .08s ease,box-shadow .08s ease;
+}
 
+.surprise-btn:hover{
+  background:var(--ink);
+  border-color:var(--ink);
+}
+
+.surprise-btn:active{
+  transform:translate(2px,2px);
+  box-shadow:1px 1px 0 rgba(0,0,0,.35);
+}
   .session-panel{width:100%;max-width:600px;border:2px solid var(--grid);background:var(--panel);padding:14px 16px;margin-bottom:22px;box-shadow:4px 4px 0 rgba(0,0,0,.3)}
   .session-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
   .session-panel-title{font-size:clamp(9px,2.6vw,10px);color:var(--c3);letter-spacing:.5px}
@@ -133,6 +158,7 @@
     <h1>MINI ARCADE</h1>
     <p>Juegos rápidos para pasar el rato. Sin registro, sin guardar partidas: entras, juegas un rato y ya.</p>
     <a class="blip-link" href="companion.html">Conoce a BLIP →</a>
+<a class="surprise-btn" id="surprise-btn" href="#">🎲 SORPRÉNDEME</a>
   </div>
 
   <div class="session-panel">
@@ -327,6 +353,33 @@
       document.getElementById('session-count').textContent = played + '/' + G.length + ' juegos probados esta sesión';
     })();
   </script>
+<script>
+  (() => {
+    const games = [
+      'juegos/apila-sin-parar.html',
+      'juegos/2048.html',
+      'juegos/siempre-arriba.html',
+      'juegos/toca-rapido.html',
+      'juegos/conecta-sin-cruzar.html',
+      'juegos/encaja-despeja.html',
+      'juegos/combina-objetivo.html',
+      'juegos/salto-sin-fin.html',
+      'juegos/desliza-esquiva.html',
+      'juegos/atrapa-con-blip.html',
+      'juegos/rompe-bloques.html',
+      'juegos/repele-invasion.html',
+      'juegos/pinball-de-blip.html'
+    ];
+
+    const btn = document.getElementById('surprise-btn');
+
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      const game = games[Math.floor(Math.random() * games.length)];
+      window.location.href = game;
+    });
+  })();
+</script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
