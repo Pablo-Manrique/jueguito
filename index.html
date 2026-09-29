@@ -189,6 +189,57 @@
 
   .icon-meteor{position:absolute;width:7px;height:7px;background:var(--c1);transform:rotate(45deg);opacity:.75}
   .icon-meteor.m1{right:15px;top:10px}.icon-meteor.m2{right:33px;top:28px;width:5px;height:5px;background:var(--c3)}
+  .icon-ritmo{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.icon-ritmo .rhythm-line{
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:50%;
+  height:2px;
+  background:var(--grid);
+}
+
+.icon-ritmo .rhythm-target{
+  position:absolute;
+  left:24px;
+  top:13px;
+  width:18px;
+  height:28px;
+  border-left:2px solid var(--c3);
+  border-right:2px solid var(--c3);
+}
+
+.icon-ritmo .rhythm-note{
+  position:absolute;
+  width:12px;
+  height:12px;
+  top:21px;
+}
+
+.icon-ritmo .n1{
+  left:48px;
+  background:var(--c1);
+  border-radius:50%;
+}
+
+.icon-ritmo .n2{
+  left:76px;
+  background:var(--c2);
+  transform:rotate(45deg);
+}
+
+.icon-ritmo .n3{
+  left:103px;
+  background:var(--c4);
+  clip-path:polygon(50% 0%,0% 100%,100% 100%);
+}
 </style>
 </head>
 <body>
@@ -260,7 +311,25 @@
       <div class="tag-row"><span class="tag">reflejos</span><span class="tag">contrarreloj</span></div>
       <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
     </div>
+<div class="game-card" data-category="reflejos">
+  <div class="icon-box icon-ritmo">
+    <div class="rhythm-line"></div>
+    <div class="rhythm-note n1"></div>
+    <div class="rhythm-note n2"></div>
+    <div class="rhythm-note n3"></div>
+    <div class="rhythm-target"></div>
+  </div>
 
+  <h2>SIGUE EL RITMO</h2>
+  <p>Las notas avanzan hacia la zona marcada. Tócalas justo a tiempo para conseguir puntos, mantener el combo y seguir el ritmo.</p>
+
+  <div class="tag-row">
+    <span class="tag">ritmo</span>
+    <span class="tag">reflejos</span>
+  </div>
+
+  <a class="play-btn" href="juegos/sigue-el-ritmo.html">JUGAR →</a>
+</div>
    <div class="game-card" data-category="pensar">
       <div class="icon-box icon-conecta">
         <div class="line1"></div><div class="line2"></div>
@@ -377,7 +446,7 @@
     (() => {
       const G = [
         ['apila','Apila sin Parar'],['2048','2048'],['siempreArriba','Siempre Arriba'],
-        ['tocarapido','Toca Rápido'],['conecta','Conecta sin Cruzar'],['encaja','Encaja y Despeja'],
+        ['tocarapido','Toca Rápido'],['ritmo','Sigue el Ritmo'],['conecta','Conecta sin Cruzar'],['encaja','Encaja y Despeja'],
         ['combina','Combina el Objetivo'],['salto','Salto sin Fin'],['desliza','Desliza y Esquiva'],
         ['atrapa','Atrapa con BLIP'],['rompe','Rompe los Bloques'],['repele','Repele la Invasión'],['pinball','Pinball de BLIP']
       ];
@@ -405,6 +474,7 @@
       'juegos/2048.html',
       'juegos/siempre-arriba.html',
       'juegos/toca-rapido.html',
+      'juegos/sigue-el-ritmo.html',
       'juegos/conecta-sin-cruzar.html',
       'juegos/encaja-despeja.html',
       'juegos/combina-objetivo.html',
