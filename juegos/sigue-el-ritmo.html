@@ -1,458 +1,2220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Sigue el Ritmo · Mini Arcade</title>
+
 <link rel="manifest" href="../manifest.json">
-<link rel="icon" href="../assets/favicon-48.png">
+<link rel="icon" type="image/png" href="../assets/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icon-180.png">
-<meta name="theme-color" content="#14121f">
-<link rel="stylesheet" href="../assets/theme.css">
+
 <link rel="stylesheet" href="../assets/companion.css">
+
 <style>
-#game-root{display:flex;flex-direction:column;align-items:center;width:100%}
-#hud{width:100%;max-width:420px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
-.stat{border:1px solid var(--grid);background:var(--panel);padding:7px 3px;text-align:center}
-.stat b{display:block;font-size:7px;color:var(--dim);margin-bottom:3px}
-.stat span{font-size:10px;color:var(--ink)}
-#hud2{width:100%;max-width:420px;display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
-.mini-btn{font-family:inherit;font-size:10px;background:transparent;color:var(--dim);border:1px solid var(--grid);padding:9px 12px;min-height:36px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.mini-btn:hover{color:var(--ink);border-color:var(--dim)}
-.mini-btn:active{transform:translate(1px,1px)}
-.blip-watch{display:flex;justify-content:center;margin-bottom:8px}
+:root{
+  --bg:#08090d;
+  --panel:#11131a;
+  --text:#f4f5f7;
+  --muted:#858995;
 
-/* Campo vertical: tres carriles, inspirado en Piano Tiles */
-#play{position:relative;width:100%;max-width:370px;aspect-ratio:.70;border:3px solid var(--grid);background:var(--panel);box-shadow:0 0 0 4px var(--bg),6px 6px 0 rgba(0,0,0,.35);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-#lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr)}
-.lane{position:relative;overflow:hidden;border-right:1px solid var(--grid);background:linear-gradient(to bottom,rgba(255,255,255,.018),rgba(255,255,255,.004));cursor:pointer}
-.lane:last-child{border-right:none}
-.lane:nth-child(2){background:linear-gradient(to bottom,rgba(255,255,255,.026),rgba(255,255,255,.006))}
-.lane.pressed{background:rgba(255,255,255,.075)}
+  --c1:#ff5f56;
+  --c2:#ffd166;
+  --c3:#66e3ff;
+  --c4:#a78bfa;
 
-/* Zona de golpe */
-.hit-zone{position:absolute;left:0;right:0;bottom:10%;height:76px;border-top:2px solid var(--c3);background:linear-gradient(to bottom,rgba(255,255,255,.015),rgba(255,255,255,.055));pointer-events:none;z-index:3}
-.hit-zone::before{content:"";position:absolute;left:7px;right:7px;top:0;height:1px;background:var(--c3);opacity:.35}
-.hit-zone-label{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);font-size:6px;letter-spacing:1px;color:var(--dim);opacity:.65;white-space:nowrap}
+  --good:#7dff9b;
+  --bad:#ff6b7a;
+}
 
-/* Teclas inferiores */
-.key-row{position:absolute;left:0;right:0;bottom:0;height:10%;display:grid;grid-template-columns:repeat(3,1fr);z-index:4;pointer-events:none}
-.key{border-top:1px solid var(--grid);border-right:1px solid var(--grid);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--dim);background:rgba(0,0,0,.08)}
-.key:last-child{border-right:none}.key.active{background:rgba(255,255,255,.08);color:var(--ink);box-shadow:inset 0 2px 0 var(--c3)}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-/* Las piezas caen desde fuera de pantalla y se mantienen visibles durante todo el trayecto */
-.note{position:absolute;left:5%;width:90%;height:66px;top:0;border:2px solid rgba(0,0,0,.38);box-shadow:3px 3px 0 rgba(0,0,0,.30),0 0 12px rgba(255,255,255,.035);z-index:2;pointer-events:none;will-change:transform}
-.note.a{background:var(--c1)}.note.b{background:var(--c2)}.note.c{background:var(--c3)}
-.note::before{content:"";position:absolute;left:10%;right:10%;top:7px;height:3px;background:rgba(255,255,255,.22)}
-.note::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:13px;border:1px solid rgba(20,18,31,.35);transform:translate(-50%,-50%) rotate(45deg)}
-.note.near{filter:brightness(1.15);box-shadow:3px 3px 0 rgba(0,0,0,.3),0 0 18px rgba(255,255,255,.12)}
-.note.hit{animation:note-hit .15s ease-out forwards}
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
 
-#feedback{position:absolute;left:50%;top:25%;transform:translate(-50%,-50%);font-size:14px;color:var(--ink);opacity:0;pointer-events:none;z-index:7;text-align:center;white-space:nowrap}
-#feedback.show{animation:feedback .55s ease}
-#combo{position:absolute;left:50%;bottom:11%;transform:translateX(-50%);font-size:9px;color:var(--dim);letter-spacing:.7px;z-index:5;pointer-events:none}
-#pulse{position:absolute;left:10%;right:10%;bottom:calc(10% + 38px);height:2px;background:var(--c3);opacity:.10;pointer-events:none;z-index:5}
-#play.beat #pulse{animation:pulse .18s ease}
-#countdown{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:30px;color:var(--ink);opacity:0;pointer-events:none;z-index:9}
-#countdown.show{animation:countdown .45s ease}
+body{
+  display:flex;
+  justify-content:center;
+  overflow-x:hidden;
+}
 
-#overlay{position:absolute;inset:0;background:rgba(20,18,31,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:18px;z-index:10}
-#overlay h2{font-size:14px;margin:0;color:var(--c3)}
-#overlay p{font-size:9px;color:var(--dim);line-height:1.9;margin:0;max-width:330px}
-#result{display:none;font-size:10px;color:var(--ink);line-height:2}
-#overlay button{font-family:inherit;font-size:11px;background:var(--c2);color:#14121f;border:0;padding:13px 20px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);touch-action:manipulation}
-#overlay button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
-#foot{margin-top:10px;font-size:8px;color:var(--dim);text-align:center;line-height:1.8;max-width:390px}
+button{
+  font:inherit;
+}
 
-@keyframes feedback{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-65%) scale(1)}}
-@keyframes countdown{0%{opacity:0;transform:translate(-50%,-50%) scale(.65)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.18)}}
-@keyframes pulse{0%{opacity:.10}35%{opacity:.65}100%{opacity:.10}}
-@keyframes note-hit{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(8px) scale(.94)}}
-@media(max-width:360px){#hud{grid-template-columns:repeat(2,1fr)}#play{max-width:340px}.note{height:58px}.hit-zone{height:68px}}
+#app{
+  width:100%;
+  max-width:520px;
+  min-height:100vh;
+  padding:18px 14px 28px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.back{
+  text-decoration:none;
+  color:var(--muted);
+  font-size:14px;
+  padding:8px 0;
+}
+
+.back:hover{
+  color:var(--text);
+}
+
+.title-wrap{
+  flex:1;
+  text-align:center;
+}
+
+h1{
+  margin:0;
+  font-size:21px;
+  letter-spacing:.08em;
+  font-weight:800;
+}
+
+.subtitle{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.best{
+  min-width:65px;
+  text-align:right;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.25;
+}
+
+.best strong{
+  display:block;
+  color:var(--text);
+  font-size:17px;
+}
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.info{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:0 auto 10px;
+  width:100%;
+  max-width:390px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.info strong{
+  color:var(--text);
+}
+
+#score{
+  font-size:15px;
+}
+
+#combo{
+  position:absolute;
+  left:50%;
+  bottom:7%;
+  transform:translateX(-50%);
+  z-index:8;
+
+  min-width:100px;
+  text-align:center;
+
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:.05em;
+
+  text-shadow:0 0 12px rgba(255,255,255,.2);
+
+  pointer-events:none;
+}
+
+#combo.hot{
+  animation:comboPop .18s ease-out;
+}
+
+@keyframes comboPop{
+  0%{transform:translateX(-50%) scale(.8);opacity:.4}
+  100%{transform:translateX(-50%) scale(1);opacity:1}
+}
+
+/* =========================================================
+   GAME BOARD
+========================================================= */
+
+#play{
+  position:relative;
+
+  width:100%;
+  max-width:390px;
+
+  aspect-ratio:.68;
+
+  margin:0 auto;
+
+  overflow:hidden;
+
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+
+  background:
+    radial-gradient(circle at 50% 100%,
+      rgba(255,255,255,.055),
+      transparent 45%),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.018),
+      rgba(255,255,255,.008)
+    );
+
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.35),
+    inset 0 0 30px rgba(255,255,255,.015);
+
+  touch-action:none;
+  user-select:none;
+}
+
+/* =========================================================
+   LANES
+========================================================= */
+
+#lanes{
+  position:absolute;
+  inset:0;
+
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+}
+
+.lane{
+  position:relative;
+
+  border-right:1px solid rgba(255,255,255,.075);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.008),
+      rgba(255,255,255,.018)
+    );
+
+  transition:
+    background .08s ease,
+    box-shadow .08s ease;
+}
+
+.lane:last-child{
+  border-right:none;
+}
+
+.lane::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:0;
+
+  width:1px;
+  height:100%;
+
+  transform:translateX(-50%);
+
+  background:linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,255,255,.025) 55%,
+    rgba(255,255,255,.08) 100%
+  );
+
+  pointer-events:none;
+}
+
+/* Carril preparado para recibir nota */
+
+.lane.ready{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.012),
+      rgba(255,255,255,.07)
+    );
+
+  box-shadow:
+    inset 0 -70px 60px rgba(255,255,255,.055);
+}
+
+.lane-key{
+  position:absolute;
+
+  left:50%;
+  bottom:10px;
+
+  transform:translateX(-50%);
+
+  width:38px;
+  height:38px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+
+  color:rgba(255,255,255,.35);
+
+  font-size:13px;
+  font-weight:800;
+
+  background:rgba(255,255,255,.025);
+
+  transition:
+    color .08s ease,
+    border-color .08s ease,
+    background .08s ease,
+    transform .08s ease;
+}
+
+.lane.ready .lane-key{
+  color:rgba(255,255,255,.85);
+  border-color:rgba(255,255,255,.3);
+  background:rgba(255,255,255,.09);
+
+  transform:translateX(-50%) scale(1.05);
+}
+
+/* =========================================================
+   HIT ZONE
+========================================================= */
+
+/*
+   La zona de golpe está bastante más arriba que antes.
+   No es necesario tocar exactamente la línea:
+   toda esta franja cuenta como referencia visual.
+*/
+
+#hit-zone{
+  position:absolute;
+
+  left:0;
+  right:0;
+
+  bottom:25%;
+
+  height:82px;
+
+  border-top:2px solid var(--c3);
+  border-bottom:2px solid rgba(102,227,255,.35);
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,.025),
+      rgba(255,255,255,.07),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    0 -1px 12px rgba(102,227,255,.06),
+    0 1px 10px rgba(102,227,255,.03);
+
+  pointer-events:none;
+  z-index:3;
+
+  transition:
+    background .08s ease,
+    box-shadow .08s ease,
+    border-color .08s ease;
+}
+
+#hit-zone.ready{
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,.045),
+      rgba(255,255,255,.13),
+      rgba(255,255,255,.045)
+    );
+
+  border-top-color:rgba(102,227,255,.95);
+
+  box-shadow:
+    0 -2px 20px rgba(102,227,255,.14),
+    0 2px 15px rgba(102,227,255,.07);
+}
+
+/* Línea central de pulso */
+
+#beat-pulse{
+  position:absolute;
+
+  left:0;
+  right:0;
+
+  bottom:calc(25% + 41px);
+
+  height:2px;
+
+  background:rgba(255,255,255,.28);
+
+  box-shadow:
+    0 0 8px rgba(255,255,255,.08);
+
+  pointer-events:none;
+  z-index:4;
+
+  opacity:.65;
+
+  transition:
+    opacity .08s ease,
+    transform .08s ease;
+}
+
+#hit-zone.ready + #beat-pulse{
+  opacity:1;
+}
+
+/* =========================================================
+   NOTES
+========================================================= */
+
+.note{
+  position:absolute;
+
+  top:0;
+
+  width:33.3333%;
+  height:54px;
+
+  border-radius:12px;
+
+  transform:translateY(-90px);
+
+  z-index:5;
+
+  box-shadow:
+    0 6px 20px rgba(0,0,0,.25);
+
+  transition:
+    filter .06s ease,
+    opacity .08s ease;
+}
+
+.note::after{
+  content:"";
+
+  position:absolute;
+  inset:5px;
+
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:8px;
+
+  pointer-events:none;
+}
+
+.note.a{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,95,86,.95),
+      rgba(255,95,86,.65)
+    );
+}
+
+.note.b{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,209,102,.95),
+      rgba(255,209,102,.65)
+    );
+}
+
+.note.c{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(102,227,255,.95),
+      rgba(102,227,255,.65)
+    );
+}
+
+.note.d{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(167,139,250,.95),
+      rgba(167,139,250,.65)
+    );
+}
+
+.note.near-hit{
+  filter:
+    brightness(1.25)
+    drop-shadow(0 0 12px rgba(255,255,255,.22));
+
+  transform:
+    translateY(var(--note-y))
+    scale(1.025);
+}
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+#feedback{
+  position:absolute;
+
+  left:50%;
+  top:41%;
+
+  transform:translate(-50%,-50%);
+
+  z-index:10;
+
+  pointer-events:none;
+
+  font-size:17px;
+  font-weight:900;
+
+  letter-spacing:.08em;
+
+  opacity:0;
+
+  white-space:nowrap;
+
+  text-shadow:0 0 14px rgba(255,255,255,.18);
+}
+
+#feedback.show{
+  animation:feedback .42s ease-out forwards;
+}
+
+#feedback.good{
+  color:var(--good);
+}
+
+#feedback.perfect{
+  color:var(--c3);
+}
+
+#feedback.bad{
+  color:var(--bad);
+}
+
+@keyframes feedback{
+  0%{
+    opacity:0;
+    transform:translate(-50%,-40%) scale(.8);
+  }
+
+  20%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:0;
+    transform:translate(-50%,-90%) scale(1.05);
+  }
+}
+
+/* =========================================================
+   COUNTDOWN
+========================================================= */
+
+#countdown{
+  position:absolute;
+
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  z-index:20;
+
+  font-size:58px;
+  font-weight:900;
+
+  pointer-events:none;
+
+  text-shadow:
+    0 0 30px rgba(255,255,255,.18);
+
+  opacity:0;
+}
+
+#countdown.show{
+  animation:countdown .72s ease-out forwards;
+}
+
+@keyframes countdown{
+  0%{
+    opacity:0;
+    transform:scale(1.35);
+  }
+
+  20%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:0;
+    transform:scale(.9);
+  }
+}
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+#overlay{
+  position:absolute;
+
+  inset:0;
+
+  z-index:30;
+
+  display:flex;
+  flex-direction:column;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:30px;
+
+  text-align:center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(8,9,13,.72),
+      rgba(8,9,13,.96)
+    );
+
+  backdrop-filter:blur(4px);
+}
+
+#overlay.hidden{
+  display:none;
+}
+
+.overlay-title{
+  font-size:25px;
+  font-weight:900;
+
+  letter-spacing:.08em;
+
+  margin-bottom:8px;
+}
+
+.overlay-text{
+  max-width:280px;
+
+  color:var(--muted);
+
+  font-size:13px;
+  line-height:1.5;
+
+  margin-bottom:22px;
+}
+
+#start-btn,
+#again-btn{
+  border:1px solid rgba(255,255,255,.18);
+
+  border-radius:12px;
+
+  padding:12px 24px;
+
+  color:var(--text);
+
+  background:rgba(255,255,255,.07);
+
+  cursor:pointer;
+
+  font-weight:800;
+
+  letter-spacing:.04em;
+
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    border-color .12s ease;
+}
+
+#start-btn:hover,
+#again-btn:hover{
+  background:rgba(255,255,255,.12);
+  border-color:rgba(255,255,255,.3);
+}
+
+#start-btn:active,
+#again-btn:active{
+  transform:scale(.96);
+}
+
+.result{
+  margin:0 0 4px;
+
+  font-size:13px;
+  color:var(--muted);
+}
+
+.result strong{
+  color:var(--text);
+  font-size:28px;
+}
+
+.new-record{
+  color:var(--good);
+  font-size:12px;
+  font-weight:800;
+  margin:6px 0 18px;
+}
+
+/* =========================================================
+   BOTTOM HELP
+========================================================= */
+
+.help{
+  width:100%;
+  max-width:390px;
+
+  margin:12px auto 0;
+
+  text-align:center;
+
+  color:var(--muted);
+
+  font-size:11px;
+  line-height:1.5;
+}
+
+.help strong{
+  color:rgba(255,255,255,.65);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-height:700px){
+  #app{
+    padding-top:10px;
+  }
+
+  .top{
+    margin-bottom:8px;
+  }
+
+  .info{
+    margin-bottom:6px;
+  }
+
+  .help{
+    margin-top:7px;
+  }
+}
+
+@media (min-width:600px){
+  #app{
+    padding-top:28px;
+  }
+}
 </style>
 </head>
+
 <body>
-<div class="top-nav"><a class="back-link" href="../index.html">← MENÚ</a><span class="page-title">SIGUE EL RITMO</span></div>
-<div id="game-root">
-  <div id="hud">
-    <div class="stat"><b>PUNTOS</b><span id="score">0</span></div>
-    <div class="stat"><b>COMBO</b><span id="combo-v">0</span></div>
-    <div class="stat"><b>RITMO</b><span id="mult">1x</span></div>
-    <div class="stat"><b>MEJOR</b><span id="best">—</span></div>
-  </div>
 
-  <div id="hud2"><button class="mini-btn" id="mute">SONIDO: ON</button><button class="mini-btn" id="restart">REINICIAR</button></div>
-  <div class="blip-watch" id="blip-slot"></div>
+<div id="app">
 
-  <div id="play">
-    <div id="lanes">
-      <div class="lane" data-lane="0"><div class="lane-notes"></div></div>
-      <div class="lane" data-lane="1"><div class="lane-notes"></div></div>
-      <div class="lane" data-lane="2"><div class="lane-notes"></div></div>
+  <div class="top">
+
+    <a class="back" href="../index.html">
+      ← Arcade
+    </a>
+
+    <div class="title-wrap">
+      <h1>SIGUE EL RITMO</h1>
+      <div class="subtitle">Toca las notas al llegar</div>
     </div>
 
-    <div class="hit-zone"><span class="hit-zone-label">TOCA AQUÍ</span></div>
-    <div class="key-row"><div class="key" data-key="0">A</div><div class="key" data-key="1">S</div><div class="key" data-key="2">D</div></div>
-    <div id="pulse"></div>
+    <div class="best">
+      RÉCORD
+      <strong id="best">0</strong>
+    </div>
+
+  </div>
+
+  <div class="info">
+    <div>
+      PUNTOS <strong id="score">0</strong>
+    </div>
+
+    <div>
+      COMBO <strong id="combo-top">0</strong>
+    </div>
+  </div>
+
+  <div id="play">
+
+    <div id="lanes">
+
+      <div class="lane" data-lane="0">
+        <span class="lane-key">A</span>
+      </div>
+
+      <div class="lane" data-lane="1">
+        <span class="lane-key">S</span>
+      </div>
+
+      <div class="lane" data-lane="2">
+        <span class="lane-key">D</span>
+      </div>
+
+    </div>
+
+    <div id="hit-zone"></div>
+
+    <div id="beat-pulse"></div>
+
     <div id="feedback"></div>
+
     <div id="combo"></div>
+
     <div id="countdown"></div>
 
     <div id="overlay">
-      <h2 id="title">SIGUE EL RITMO</h2>
-      <p id="text">Tres carriles. Las piezas caen desde arriba y debes tocar su carril cuando entren en la zona marcada. Anticípate: se ven venir desde bastante antes.</p>
-      <div id="result"></div>
-      <button id="start">EMPEZAR</button>
+
+      <div class="overlay-title">
+        SIGUE EL RITMO
+      </div>
+
+      <div class="overlay-text">
+        Toca el carril cuando la nota llegue a la zona iluminada.
+        No necesitas pulsar exactamente sobre la línea.
+      </div>
+
+      <button id="start-btn">
+        EMPEZAR
+      </button>
+
     </div>
+
   </div>
 
-  <div id="foot">3 carriles · toca el carril o pulsa A / S / D · ritmo generado en el navegador</div>
+  <div class="help">
+    <strong>Móvil:</strong> toca cualquier punto del carril ·
+    <strong>PC:</strong> A · S · D
+  </div>
+
 </div>
 
+<script src="../assets/companion.js"></script>
+
 <script>
-(()=>{
-  const play=document.getElementById('play');
-  const lanes=[...document.querySelectorAll('.lane')];
-  const laneNotes=lanes.map(l=>l.querySelector('.lane-notes'));
-  const keys=[...document.querySelectorAll('.key')];
-  const overlay=document.getElementById('overlay');
-  const title=document.getElementById('title');
-  const text=document.getElementById('text');
-  const result=document.getElementById('result');
-  const start=document.getElementById('start');
-  const restart=document.getElementById('restart');
-  const mute=document.getElementById('mute');
-  const scoreEl=document.getElementById('score');
-  const comboEl=document.getElementById('combo-v');
-  const multEl=document.getElementById('mult');
-  const bestEl=document.getElementById('best');
-  const feedback=document.getElementById('feedback');
-  const comboText=document.getElementById('combo');
-  const countdown=document.getElementById('countdown');
+(() => {
 
-  const KEY='miniArcade.ritmo.best';
-  const BPM=108;
-  const BEAT=60000/BPM;
-  const TOTAL_BEATS=64;
-  const TRAVEL=1850;
-  const HIT_WINDOW=135;
-  const HIT_Y_RATIO=.80;
-  const FIRST_TARGET_OFFSET=1900;
+  /* ========================================================
+     CONFIGURACIÓN
+  ======================================================== */
 
-  let best=0,running=false,muted=false,ctx=null,raf=0;
-  let notes=[],pattern=[],targetTimes=[];
-  let beatIndex=0,score=0,combo=0,maxCombo=0,startTime=0,nextSpawn=0,lastTarget=0;
+  const KEY = 'miniArcade.ritmo.best';
 
-  try{best=parseInt(sessionStorage.getItem(KEY),10)||0}catch(e){}
+  const BPM = 108;
+  const BEAT = 60000 / BPM;
 
-  function updateHud(){
-    scoreEl.textContent=score;
-    comboEl.textContent=combo;
-    multEl.textContent=Math.min(4,1+Math.floor(combo/5))+'x';
-    bestEl.textContent=best||'—';
-    comboText.textContent=combo>=3?'COMBO ×'+combo:'';
+  const TOTAL_BEATS = 72;
+
+  /*
+    Tiempo que tarda una nota desde que aparece
+    hasta llegar a la zona de golpe.
+  */
+  const TRAVEL = 1850;
+
+  /*
+    Ventana de acierto.
+    140 ms permite jugar cómodamente en móvil
+    sin hacer que el juego sea demasiado fácil.
+  */
+  const HIT_WINDOW = 150;
+
+  /*
+    Zona de golpe.
+
+    Antes estaba alrededor del 76%.
+    Ahora está más arriba para que resulte mucho
+    más natural visualmente.
+  */
+  const HIT_Y_RATIO = .68;
+
+  const START_DELAY = 1150;
+
+  /* ========================================================
+     ELEMENTOS
+  ======================================================== */
+
+  const play = document.getElementById('play');
+
+  const lanes = [...document.querySelectorAll('.lane')];
+
+  const overlay = document.getElementById('overlay');
+
+  const startBtn = document.getElementById('start-btn');
+
+  const scoreEl = document.getElementById('score');
+
+  const comboTopEl = document.getElementById('combo-top');
+
+  const comboEl = document.getElementById('combo');
+
+  const bestEl = document.getElementById('best');
+
+  const feedbackEl = document.getElementById('feedback');
+
+  const countdownEl = document.getElementById('countdown');
+
+  const hitZone = document.getElementById('hit-zone');
+
+  /* ========================================================
+     ESTADO
+  ======================================================== */
+
+  let best = 0;
+
+  let score = 0;
+
+  let combo = 0;
+
+  let maxCombo = 0;
+
+  let beatIndex = 0;
+
+  let startTime = 0;
+
+  let running = false;
+
+  let animationFrame = 0;
+
+  let notes = [];
+
+  let pattern = [];
+
+  let lastBeat = -1;
+
+  /* ========================================================
+     RÉCORD
+  ======================================================== */
+
+  try{
+    best = parseInt(
+      sessionStorage.getItem(KEY),
+      10
+    ) || 0;
+  }catch(e){
+    best = 0;
   }
 
-  function ensureAudio(){
-    if(!ctx){
-      try{ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){ctx=null}
+  bestEl.textContent = best;
+
+  /* ========================================================
+     BLIP
+  ======================================================== */
+
+  let blip = null;
+
+  try{
+    if(window.Companion){
+      blip = Companion.mount(
+        document.createElement('div'),
+        {
+          size:34
+        }
+      );
     }
-    if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{});
+  }catch(e){
+    blip = null;
   }
 
-  function scheduleTone(targetTime,freq,dur=.055,type='square',vol=.035){
-    if(muted||!ctx)return;
-    const delay=Math.max(0,(targetTime-performance.now())/1000);
-    const when=ctx.currentTime+delay;
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.type=type;o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);
-    g.gain.setValueAtTime(vol,when);
-    g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-    o.start(when);o.stop(when+dur);
-  }
+  function blipPlay(gesture){
 
-  function laneTone(lane,time){
-    const freqs=[261.63,329.63,392.00];
-    scheduleTone(time,freqs[lane],.075,'triangle',.045);
-  }
-
-  function metronomeTone(time,accent){
-    scheduleTone(time,accent?156:104,.045,'square',accent?.032:.021);
-  }
-
-  function feedbackMessage(msg){
-    feedback.textContent=msg;
-    feedback.classList.remove('show');
-    void feedback.offsetWidth;
-    feedback.classList.add('show');
-  }
-
-  function clearNotes(){
-    notes.forEach(n=>n.el.remove());
-    notes=[];
-  }
-
-  /* Patrón musical por bloques de 8 tiempos. Más simple al principio,
-     con silencios y dobles notas después. */
-  function makePattern(){
-    return [
-      0,1,2,1, 0,1,2,1,
-      0,2,1,2, 0,1,2,0,
-      0,1,0,2, 1,2,1,0,
-      0,2,0,1, 2,1,2,0,
-      [0,1],2,1,[1,2], 0,2,1,0,
-      [0,2],1,0,[0,1], 2,1,[1,2],2,
-      0,[0,2],1,2, [0,1],2,0,1,
-      2,[0,1],0,2, [1,2],0,1,2
-    ];
-  }
-
-  function spawnNote(lane,targetTime){
-    const el=document.createElement('div');
-    el.className='note '+['a','b','c'][lane];
-    laneNotes[lane].appendChild(el);
-    notes.push({el,lane,targetTime,hit:false,missed:false});
-  }
-
-  function spawnPattern(value,targetTime){
-    const lanesAtTime=Array.isArray(value)?value:[value];
-    lanesAtTime.forEach(lane=>spawnNote(lane,targetTime));
-  }
-
-  function noteTop(n,now){
-    const h=play.getBoundingClientRect().height;
-    const noteH=n.el.getBoundingClientRect().height||66;
-    const hitCenter=h*HIT_Y_RATIO;
-    const startCenter=-noteH-18;
-    const progress=1-(n.targetTime-now)/TRAVEL;
-    return startCenter+(hitCenter-startCenter)*progress-noteH/2;
-  }
-
-  function removeMissed(now){
-    notes.forEach(n=>{
-      if(n.hit||n.missed)return;
-      if(now>n.targetTime+HIT_WINDOW){
-        n.missed=true;
-        n.el.remove();
-        combo=0;
-        feedbackMessage('MISS');
-        scheduleTone(now,190,.10,'sawtooth',.035);
-        if(window.Companion)Companion.play('sad');
+    try{
+      if(
+        window.Companion &&
+        typeof Companion.play === 'function'
+      ){
+        Companion.play(gesture);
       }
-    });
-    notes=notes.filter(n=>!n.missed&&!n.hit);
+    }catch(e){}
+
   }
+
+  /* ========================================================
+     AUDIO
+  ======================================================== */
+
+  let audioCtx = null;
+
+  function initAudio(){
+
+    try{
+
+      if(!audioCtx){
+
+        audioCtx =
+          new (window.AudioContext ||
+          window.webkitAudioContext)();
+
+      }
+
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+
+    }catch(e){}
+
+  }
+
+  function tone(
+    frequency,
+    duration=.06,
+    type='sine',
+    volume=.025
+  ){
+
+    if(!audioCtx) return;
+
+    try{
+
+      const now = audioCtx.currentTime;
+
+      const oscillator =
+        audioCtx.createOscillator();
+
+      const gain =
+        audioCtx.createGain();
+
+      oscillator.type = type;
+
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        now
+      );
+
+      gain.gain.setValueAtTime(
+        volume,
+        now
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        now + duration
+      );
+
+      oscillator.connect(gain);
+
+      gain.connect(audioCtx.destination);
+
+      oscillator.start(now);
+
+      oscillator.stop(now + duration);
+
+    }catch(e){}
+
+  }
+
+  /* ========================================================
+     PATRÓN
+  ======================================================== */
+
+  function makePattern(){
+
+    const p = [];
+
+    let lastLane = 1;
+
+    for(
+      let i = 0;
+      i < TOTAL_BEATS;
+      i++
+    ){
+
+      const r = Math.random();
+
+      /*
+        Primeros compases:
+        patrón sencillo para que el jugador
+        entre en ritmo.
+      */
+
+      if(i < 4){
+
+        lastLane =
+          (lastLane + 1) % 3;
+
+        p.push(lastLane);
+
+        continue;
+      }
+
+      /*
+        A partir de aquí aparecen ocasionalmente
+        notas dobles.
+      */
+
+      const doubleChance =
+        i < 16
+          ? .15
+          : i < 40
+            ? .22
+            : .30;
+
+      if(
+        i % 8 === 6 &&
+        r < doubleChance
+      ){
+
+        const other =
+          (lastLane +
+            1 +
+            Math.floor(
+              Math.random() * 2
+            )) % 3;
+
+        p.push(
+          8 +
+          (lastLane << 2) +
+          other
+        );
+
+        continue;
+      }
+
+      let lane;
+
+      /*
+        Mantener ocasionalmente el mismo carril
+        evita que el juego se convierta simplemente
+        en "izquierda-derecha-izquierda-derecha".
+      */
+
+      if(r < .38){
+
+        lane = lastLane;
+
+      }else if(r < .70){
+
+        lane =
+          (lastLane + 1) % 3;
+
+      }else{
+
+        lane =
+          (lastLane + 2) % 3;
+
+      }
+
+      /*
+        Cambio de carril periódico para mantener
+        sensación musical.
+      */
+
+      if(
+        i % 8 === 0 &&
+        r < .72
+      ){
+
+        lane =
+          (lastLane + 1) % 3;
+
+      }
+
+      lastLane = lane;
+
+      p.push(lane + 1);
+
+    }
+
+    return p;
+
+  }
+
+  /* ========================================================
+     SPAWN
+  ======================================================== */
+
+  function spawnNote(
+    laneIndex,
+    targetTime
+  ){
+
+    const el =
+      document.createElement('div');
+
+    el.className =
+      'note ' +
+      ['a','b','c','d'][
+        laneIndex % 4
+      ];
+
+    el.style.left =
+      (laneIndex * 100 / 3) + '%';
+
+    el.dataset.lane =
+      laneIndex;
+
+    play.appendChild(el);
+
+    notes.push({
+
+      el,
+
+      lane:laneIndex,
+
+      targetTime,
+
+      hit:false,
+
+      missed:false
+
+    });
+
+  }
+
+  /* ========================================================
+     POSICIÓN
+  ======================================================== */
+
+  function noteY(
+    note,
+    now
+  ){
+
+    const h =
+      play.getBoundingClientRect().height;
+
+    const hitY =
+      h * HIT_Y_RATIO;
+
+    const startY = -90;
+
+    const progress =
+      1 -
+      (note.targetTime - now) /
+      TRAVEL;
+
+    return (
+      startY +
+      (hitY - startY) *
+      progress
+    );
+
+  }
+
+  /* ========================================================
+     FEEDBACK
+  ======================================================== */
+
+  function feedback(
+    text,
+    type
+  ){
+
+    feedbackEl.textContent =
+      text;
+
+    feedbackEl.className =
+      '';
+
+    /*
+      Forzar reflow para que la animación
+      pueda repetirse rápidamente.
+    */
+
+    void feedbackEl.offsetWidth;
+
+    feedbackEl.className =
+      'show ' + type;
+
+  }
+
+  /* ========================================================
+     HIT
+  ======================================================== */
+
+  function hitNote(
+    note,
+    delta
+  ){
+
+    if(note.hit || note.missed){
+      return;
+    }
+
+    note.hit = true;
+
+    /*
+      Cuanto más cerca del momento exacto,
+      mayor recompensa.
+    */
+
+    const perfect =
+      delta <= 65;
+
+    const good =
+      delta <= 115;
+
+    if(perfect){
+
+      score += 30;
+
+      feedback(
+        'PERFECT',
+        'perfect'
+      );
+
+      tone(
+        880,
+        .08,
+        'sine',
+        .035
+      );
+
+    }else if(good){
+
+      score += 20;
+
+      feedback(
+        'BIEN',
+        'good'
+      );
+
+      tone(
+        660,
+        .07,
+        'sine',
+        .028
+      );
+
+    }else{
+
+      score += 10;
+
+      feedback(
+        'OK',
+        'good'
+      );
+
+      tone(
+        520,
+        .06,
+        'sine',
+        .024
+      );
+
+    }
+
+    combo++;
+
+    maxCombo =
+      Math.max(
+        maxCombo,
+        combo
+      );
+
+    /*
+      Bonus progresivo por combo.
+    */
+
+    if(combo >= 5){
+
+      score +=
+        Math.min(
+          15,
+          Math.floor(combo / 5) * 2
+        );
+
+    }
+
+    scoreEl.textContent =
+      score;
+
+    comboTopEl.textContent =
+      combo;
+
+    comboEl.textContent =
+      combo >= 2
+        ? combo + '× COMBO'
+        : '';
+
+    comboEl.classList.remove(
+      'hot'
+    );
+
+    void comboEl.offsetWidth;
+
+    if(combo >= 2){
+
+      comboEl.classList.add(
+        'hot'
+      );
+
+    }
+
+    note.el.style.opacity =
+      '0';
+
+    note.el.style.transform =
+      'translateY(' +
+      noteY(
+        note,
+        performance.now()
+      ) +
+      'px) scale(1.18)';
+
+    setTimeout(() => {
+
+      if(note.el.parentNode){
+
+        note.el.remove();
+
+      }
+
+    },120);
+
+    if(perfect){
+
+      blipPlay('cheer');
+
+    }else{
+
+      blipPlay('wave');
+
+    }
+
+  }
+
+  /* ========================================================
+     MISS
+  ======================================================== */
+
+  function missNote(note){
+
+    if(note.hit || note.missed){
+      return;
+    }
+
+    note.missed = true;
+
+    combo = 0;
+
+    comboTopEl.textContent =
+      combo;
+
+    comboEl.textContent =
+      '';
+
+    feedback(
+      'FALLO',
+      'bad'
+    );
+
+    tone(
+      180,
+      .09,
+      'sawtooth',
+      .018
+    );
+
+    blipPlay('sad');
+
+    note.el.style.opacity =
+      '0';
+
+    setTimeout(() => {
+
+      if(note.el.parentNode){
+
+        note.el.remove();
+
+      }
+
+    },100);
+
+  }
+
+  /* ========================================================
+     INPUT
+  ======================================================== */
+
+  function tapLane(
+    laneIndex
+  ){
+
+    if(!running){
+      return;
+    }
+
+    const now =
+      performance.now();
+
+    let candidate = null;
+
+    let bestDelta =
+      Infinity;
+
+    for(const note of notes){
+
+      if(
+        note.hit ||
+        note.missed ||
+        note.lane !== laneIndex
+      ){
+        continue;
+      }
+
+      const delta =
+        Math.abs(
+          now -
+          note.targetTime
+        );
+
+      if(
+        delta < bestDelta
+      ){
+
+        bestDelta =
+          delta;
+
+        candidate =
+          note;
+
+      }
+
+    }
+
+    if(
+      candidate &&
+      bestDelta <= HIT_WINDOW
+    ){
+
+      hitNote(
+        candidate,
+        bestDelta
+      );
+
+    }else{
+
+      /*
+        Pulsar demasiado pronto no rompe
+        el combo. Solo se ignora.
+        Esto evita castigar toques accidentales.
+      */
+
+      const closest =
+        notes
+          .filter(n =>
+            !n.hit &&
+            !n.missed &&
+            n.lane === laneIndex
+          )
+          .sort(
+            (a,b) =>
+              Math.abs(
+                a.targetTime - now
+              ) -
+              Math.abs(
+                b.targetTime - now
+              )
+          )[0];
+
+      if(
+        closest &&
+        closest.targetTime < now - HIT_WINDOW
+      ){
+
+        missNote(
+          closest
+        );
+
+      }
+
+    }
+
+  }
+
+  /* ========================================================
+     POINTER
+  ======================================================== */
+
+  lanes.forEach(
+    (lane,index) => {
+
+      lane.addEventListener(
+        'pointerdown',
+        event => {
+
+          event.preventDefault();
+
+          initAudio();
+
+          tapLane(index);
+
+        },
+        {
+          passive:false
+        }
+      );
+
+    }
+  );
+
+  /* ========================================================
+     TECLADO
+  ======================================================== */
+
+  document.addEventListener(
+    'keydown',
+    event => {
+
+      if(event.repeat){
+        return;
+      }
+
+      const key =
+        event.key.toLowerCase();
+
+      if(key === 'a'){
+        tapLane(0);
+      }
+
+      if(key === 's'){
+        tapLane(1);
+      }
+
+      if(key === 'd'){
+        tapLane(2);
+      }
+
+      if(
+        key === 'a' ||
+        key === 's' ||
+        key === 'd'
+      ){
+
+        event.preventDefault();
+
+      }
+
+    }
+  );
+
+  /* ========================================================
+     UPDATE
+  ======================================================== */
 
   function updateNotes(now){
-    const h=play.getBoundingClientRect().height;
-    const hitCenter=h*HIT_Y_RATIO;
-    const noteH=66;
-    notes.forEach(n=>{
-      if(n.hit||n.missed)return;
-      const top=noteTop(n,now);
-      n.el.style.transform='translateY('+top+'px)';
-      const center=top+(n.el.getBoundingClientRect().height||noteH)/2;
-      n.el.classList.toggle('near',Math.abs(center-hitCenter)<46);
-    });
-    removeMissed(now);
+
+    const h =
+      play.getBoundingClientRect().height;
+
+    const hitY =
+      h * HIT_Y_RATIO;
+
+    const readyLanes =
+      new Set();
+
+    notes.forEach(
+      note => {
+
+        if(
+          note.hit ||
+          note.missed
+        ){
+          return;
+        }
+
+        const y =
+          noteY(
+            note,
+            now
+          );
+
+        note.el.style.setProperty(
+          '--note-y',
+          y + 'px'
+        );
+
+        note.el.style.transform =
+          'translateY(' +
+          y +
+          'px)';
+
+        const center =
+          y + 27;
+
+        const near =
+          Math.abs(
+            center - hitY
+          ) < 55;
+
+        note.el.classList.toggle(
+          'near-hit',
+          near
+        );
+
+        if(near){
+
+          readyLanes.add(
+            note.lane
+          );
+
+        }
+
+        /*
+          Si la nota ya ha pasado suficientemente
+          la zona de golpe, cuenta como fallo.
+        */
+
+        if(
+          now -
+          note.targetTime >
+          HIT_WINDOW
+        ){
+
+          missNote(
+            note
+          );
+
+        }
+
+      }
+    );
+
+    lanes.forEach(
+      (lane,index) => {
+
+        lane.classList.toggle(
+          'ready',
+          readyLanes.has(index)
+        );
+
+      }
+    );
+
+    hitZone.classList.toggle(
+      'ready',
+      readyLanes.size > 0
+    );
+
+    removeOldNotes();
+
   }
 
-  function pulseBeat(){
-    play.classList.remove('beat');
-    void play.offsetWidth;
-    play.classList.add('beat');
+  /* ========================================================
+     LIMPIEZA
+  ======================================================== */
+
+  function removeOldNotes(){
+
+    notes =
+      notes.filter(
+        note => {
+
+          if(
+            note.hit ||
+            note.missed
+          ){
+
+            return false;
+
+          }
+
+          return true;
+
+        }
+      );
+
   }
 
-  function scheduleMusic(){
-    targetTimes=[];
-    const base=startTime+FIRST_TARGET_OFFSET;
-    for(let i=0;i<TOTAL_BEATS;i++){
-      const t=base+i*BEAT;
-      targetTimes.push(t);
-      metronomeTone(t,i%8===0);
-      const value=pattern[i];
-      (Array.isArray(value)?value:[value]).forEach(l=>laneTone(l,t));
-    }
-    lastTarget=targetTimes[targetTimes.length-1];
-  }
+  /* ========================================================
+     SPAWN LOOP
+  ======================================================== */
 
-  function tick(now){
-    if(!running)return;
+  function spawnUntil(now){
 
-    while(beatIndex<TOTAL_BEATS && targetTimes[beatIndex]-TRAVEL<=now){
-      spawnPattern(pattern[beatIndex],targetTimes[beatIndex]);
-      pulseBeat();
+    while(
+      beatIndex <
+      pattern.length
+    ){
+
+      const targetTime =
+        startTime +
+        START_DELAY +
+        beatIndex * BEAT;
+
+      /*
+        Crear la nota antes de que llegue
+        a pantalla.
+      */
+
+      if(
+        targetTime - now >
+        TRAVEL
+      ){
+
+        break;
+
+      }
+
+      const value =
+        pattern[beatIndex];
+
+      if(
+        value >= 8
+      ){
+
+        /*
+          Decodificación de nota doble.
+        */
+
+        const packed =
+          value - 8;
+
+        const laneA =
+          (packed >> 2) & 3;
+
+        const laneB =
+          packed & 3;
+
+        spawnNote(
+          laneA,
+          targetTime
+        );
+
+        spawnNote(
+          laneB,
+          targetTime
+        );
+
+      }else{
+
+        spawnNote(
+          value - 1,
+          targetTime
+        );
+
+      }
+
       beatIndex++;
+
     }
+
+  }
+
+  /* ========================================================
+     LOOP PRINCIPAL
+  ======================================================== */
+
+  function loop(now){
+
+    if(!running){
+      return;
+    }
+
+    spawnUntil(now);
 
     updateNotes(now);
 
-    if(beatIndex>=TOTAL_BEATS && notes.length===0 && now>lastTarget+HIT_WINDOW+80){
-      finish();
+    /*
+      Pulso visual en cada beat.
+    */
+
+    const elapsed =
+      now -
+      (
+        startTime +
+        START_DELAY
+      );
+
+    const currentBeat =
+      Math.floor(
+        elapsed / BEAT
+      );
+
+    if(
+      currentBeat >= 0 &&
+      currentBeat !== lastBeat
+    ){
+
+      lastBeat =
+        currentBeat;
+
+      beatPulse();
+
+    }
+
+    /*
+      Fin de partida:
+      esperamos a que termine el último beat
+      y que desaparezcan las últimas notas.
+    */
+
+    const endTime =
+      startTime +
+      START_DELAY +
+      TOTAL_BEATS * BEAT +
+      TRAVEL +
+      250;
+
+    if(now >= endTime){
+
+      finishGame();
+
       return;
-    }
-    raf=requestAnimationFrame(tick);
-  }
 
-  function tapLane(lane){
-    if(!running)return;
-
-    const now=performance.now();
-    let candidate=null;
-    let delta=Infinity;
-
-    for(const n of notes){
-      if(n.hit||n.missed||n.lane!==lane)continue;
-      const d=Math.abs(now-n.targetTime);
-      if(d<delta){delta=d;candidate=n}
     }
 
-    if(!candidate||delta>HIT_WINDOW){
-      combo=0;
-      feedbackMessage('MISS');
-      scheduleTone(now,190,.10,'sawtooth',.035);
-      if(window.Companion)Companion.play('sad');
-      pressKey(lane);
-      updateHud();
-      return;
-    }
+    animationFrame =
+      requestAnimationFrame(
+        loop
+      );
 
-    candidate.hit=true;
-    candidate.el.classList.add('hit');
-    setTimeout(()=>candidate.el.remove(),150);
-    notes=notes.filter(n=>n!==candidate);
-
-    let points=0,kind='';
-    if(delta<=42){points=100;kind='PERFECT'}
-    else if(delta<=82){points=65;kind='GOOD'}
-    else{points=35;kind='OK'}
-
-    const multiplier=Math.min(4,1+Math.floor(combo/5));
-    score+=points*multiplier;
-    combo++;
-    maxCombo=Math.max(maxCombo,combo);
-
-    feedbackMessage(kind+'  +'+points*multiplier);
-    scheduleTone(now,kind==='PERFECT'?880:kind==='GOOD'?660:520,.07,'triangle',.045);
-    pressKey(lane);
-    if(window.Companion)Companion.play(combo>=8?'cheer':'wave');
-    updateHud();
   }
 
-  function pressKey(lane){
-    keys[lane].classList.add('active');
-    lanes[lane].classList.add('pressed');
-    setTimeout(()=>{
-      keys[lane].classList.remove('active');
-      lanes[lane].classList.remove('pressed');
-    },110);
+  /* ========================================================
+     BEAT VISUAL
+  ======================================================== */
+
+  function beatPulse(){
+
+    const pulse =
+      document.getElementById(
+        'beat-pulse'
+      );
+
+    pulse.style.transform =
+      'scaleX(1.035)';
+
+    setTimeout(
+      () => {
+
+        pulse.style.transform =
+          'scaleX(1)';
+
+      },
+      70
+    );
+
   }
 
-  function keyLane(key){
-    const k=key.toLowerCase();
-    if(k==='a')return 0;if(k==='s')return 1;if(k==='d')return 2;
-    return -1;
-  }
+  /* ========================================================
+     COUNTDOWN
+  ======================================================== */
 
-  function showCountdown(){
-    return new Promise(resolve=>{
-      let n=3;
-      function step(){
-        if(n===0){
-          countdown.textContent='¡YA!';
-          countdown.classList.remove('show');void countdown.offsetWidth;countdown.classList.add('show');
-          setTimeout(resolve,260);
-          return;
+  function countdown(){
+
+    return new Promise(
+      resolve => {
+
+        const values =
+          ['3','2','1','¡YA!'];
+
+        let index = 0;
+
+        function next(){
+
+          if(
+            index >=
+            values.length
+          ){
+
+            countdownEl.className =
+              '';
+
+            resolve();
+
+            return;
+
+          }
+
+          countdownEl.textContent =
+            values[index];
+
+          countdownEl.className =
+            'show';
+
+          void countdownEl.offsetWidth;
+
+          index++;
+
+          setTimeout(
+            next,
+            index === values.length
+              ? 420
+              : 700
+          );
+
         }
-        countdown.textContent=n;
-        countdown.classList.remove('show');void countdown.offsetWidth;countdown.classList.add('show');
-        if(!muted) scheduleTone(performance.now(),n===1?440:330,.08,'square',.04);
-        n--;setTimeout(step,420);
+
+        next();
+
       }
-      step();
-    });
+    );
+
   }
 
-  async function begin(){
-    ensureAudio();
-    cancelAnimationFrame(raf);
-    clearNotes();
-    score=0;combo=0;maxCombo=0;beatIndex=0;
-    pattern=makePattern();
-    updateHud();
-    overlay.style.display='none';
-    result.style.display='none';
-    start.disabled=true;
-    await showCountdown();
-    start.disabled=false;
-    startTime=performance.now();
-    scheduleMusic();
-    const now=performance.now();
-    running=true;
-    nextSpawn=now;
-    raf=requestAnimationFrame(tick);
+  /* ========================================================
+     START
+  ======================================================== */
+
+  async function startGame(){
+
+    initAudio();
+
+    cancelAnimationFrame(
+      animationFrame
+    );
+
+    notes.forEach(
+      note => {
+
+        if(note.el.parentNode){
+          note.el.remove();
+        }
+
+      }
+    );
+
+    notes = [];
+
+    score = 0;
+
+    combo = 0;
+
+    maxCombo = 0;
+
+    beatIndex = 0;
+
+    lastBeat = -1;
+
+    pattern =
+      makePattern();
+
+    scoreEl.textContent =
+      '0';
+
+    comboTopEl.textContent =
+      '0';
+
+    comboEl.textContent =
+      '';
+
+    feedbackEl.className =
+      '';
+
+    lanes.forEach(
+      lane =>
+        lane.classList.remove(
+          'ready'
+        )
+    );
+
+    hitZone.classList.remove(
+      'ready'
+    );
+
+    overlay.classList.add(
+      'hidden'
+    );
+
+    running = false;
+
+    await countdown();
+
+    startTime =
+      performance.now();
+
+    running = true;
+
+    animationFrame =
+      requestAnimationFrame(
+        loop
+      );
+
   }
 
-  function finish(){
-    running=false;
-    cancelAnimationFrame(raf);
-    clearNotes();
+  /* ========================================================
+     FIN
+  ======================================================== */
 
-    const isRecord=score>best;
-    if(isRecord){
-      best=score;
-      try{sessionStorage.setItem(KEY,String(best))}catch(e){}
+  function finishGame(){
+
+    if(!running){
+      return;
     }
 
-    title.textContent=isRecord?'¡NUEVO RÉCORD!':'RITMO COMPLETADO';
-    text.textContent='';
-    result.style.display='block';
-    result.innerHTML='PUNTUACIÓN: <strong>'+score+'</strong><br>COMBO MÁXIMO: '+maxCombo+(isRecord?'':'<br>MEJOR: '+best);
-    start.textContent='REINTENTAR';
-    overlay.style.display='flex';
-    [660,830,1040,1320].forEach((f,i)=>setTimeout(()=>{if(!muted)toneNow(f)},i*65));
-    if(window.Companion)Companion.play('cheer');
-    updateHud();
+    running = false;
+
+    cancelAnimationFrame(
+      animationFrame
+    );
+
+    lanes.forEach(
+      lane =>
+        lane.classList.remove(
+          'ready'
+        )
+    );
+
+    hitZone.classList.remove(
+      'ready'
+    );
+
+    notes.forEach(
+      note => {
+
+        if(note.el.parentNode){
+          note.el.remove();
+        }
+
+      }
+    );
+
+    notes = [];
+
+    let record = false;
+
+    if(score > best){
+
+      best = score;
+
+      record = true;
+
+      try{
+
+        sessionStorage.setItem(
+          KEY,
+          String(best)
+        );
+
+      }catch(e){}
+
+      bestEl.textContent =
+        best;
+
+      blipPlay('cheer');
+
+    }else{
+
+      blipPlay('wave');
+
+    }
+
+    showEndScreen(
+      record
+    );
+
   }
 
-  function toneNow(freq){
-    if(muted||!ctx)return;
-    const now=ctx.currentTime;
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.type='triangle';o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);
-    g.gain.setValueAtTime(.045,now);g.gain.exponentialRampToValueAtTime(.0001,now+.08);
-    o.start(now);o.stop(now+.08);
+  /* ========================================================
+     END SCREEN
+  ======================================================== */
+
+  function showEndScreen(
+    record
+  ){
+
+    overlay.innerHTML = `
+
+      <div class="overlay-title">
+        FIN
+      </div>
+
+      <div class="result">
+        PUNTUACIÓN
+        <strong>${score}</strong>
+      </div>
+
+      <div class="result">
+        COMBO MÁXIMO
+        <strong>${maxCombo}</strong>
+      </div>
+
+      ${
+        record
+          ? `
+            <div class="new-record">
+              ★ NUEVO RÉCORD ★
+            </div>
+          `
+          : `
+            <div style="height:18px"></div>
+          `
+      }
+
+      <button id="again-btn">
+        JUGAR OTRA VEZ
+      </button>
+
+    `;
+
+    overlay.classList.remove(
+      'hidden'
+    );
+
+    document
+      .getElementById('again-btn')
+      .addEventListener(
+        'click',
+        startGame
+      );
+
   }
 
-  lanes.forEach((lane,index)=>{
-    lane.addEventListener('pointerdown',e=>{
-      e.preventDefault();
-      tapLane(index);
-    });
-  });
+  /* ========================================================
+     START BUTTON
+  ======================================================== */
 
-  document.addEventListener('keydown',e=>{
-    if(e.repeat)return;
-    const lane=keyLane(e.key);
-    if(lane!==-1){e.preventDefault();tapLane(lane)}
-  });
+  startBtn.addEventListener(
+    'click',
+    startGame
+  );
 
-  start.addEventListener('click',begin);
-  restart.addEventListener('click',begin);
-  mute.addEventListener('click',()=>{
-    muted=!muted;
-    mute.textContent='SONIDO: '+(muted?'OFF':'ON');
-    if(!muted)ensureAudio();
-  });
-
-  updateHud();
 })();
 </script>
-<script src="../assets/companion.js"></script>
-<script>Companion.mount(document.getElementById('blip-slot'),{size:36});</script>
-<script>
-if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js').catch(()=>{}))}
-</script>
+
 </body>
 </html>
