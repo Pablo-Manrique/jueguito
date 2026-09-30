@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sigue el Ritmo · Mini Arcade</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../assets/favicon-48.png">
+<link rel="apple-touch-icon" href="../assets/icon-180.png">
+<meta name="theme-color" content="#14121f">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/companion.css">
+<style>
+#game-root{display:flex;flex-direction:column;align-items:center;width:100%}
+#hud{width:100%;max-width:420px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.stat{border:1px solid var(--grid);background:var(--panel);padding:7px 3px;text-align:center}
+.stat b{display:block;font-size:7px;color:var(--dim);margin-bottom:3px}
+.stat span{font-size:10px;color:var(--ink)}
+#hud2{width:100%;max-width:420px;display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+.mini-btn{font-family:inherit;font-size:10px;background:transparent;color:var(--dim);border:1px solid var(--grid);padding:9px 12px;min-height:36px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mini-btn:hover{color:var(--ink);border-color:var(--dim)}
+.mini-btn:active{transform:translate(1px,1px)}
+.blip-watch{display:flex;justify-content:center;margin-bottom:8px}
+
+/* Campo vertical: tres carriles, inspirado en Piano Tiles */
+#play{position:relative;width:100%;max-width:370px;aspect-ratio:.70;border:3px solid var(--grid);background:var(--panel);box-shadow:0 0 0 4px var(--bg),6px 6px 0 rgba(0,0,0,.35);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr)}
+.lane{position:relative;overflow:hidden;border-right:1px solid var(--grid);background:linear-gradient(to bottom,rgba(255,255,255,.018),rgba(255,255,255,.004));cursor:pointer}
+.lane:last-child{border-right:none}
+.lane:nth-child(2){background:linear-gradient(to bottom,rgba(255,255,255,.026),rgba(255,255,255,.006))}
+.lane.pressed{background:rgba(255,255,255,.075)}
+
+/* Zona de golpe */
+.hit-zone{position:absolute;left:0;right:0;bottom:10%;height:76px;border-top:2px solid var(--c3);background:linear-gradient(to bottom,rgba(255,255,255,.015),rgba(255,255,255,.055));pointer-events:none;z-index:3}
+.hit-zone::before{content:"";position:absolute;left:7px;right:7px;top:0;height:1px;background:var(--c3);opacity:.35}
+.hit-zone-label{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);font-size:6px;letter-spacing:1px;color:var(--dim);opacity:.65;white-space:nowrap}
+
+/* Teclas inferiores */
+.key-row{position:absolute;left:0;right:0;bottom:0;height:10%;display:grid;grid-template-columns:repeat(3,1fr);z-index:4;pointer-events:none}
+.key{border-top:1px solid var(--grid);border-right:1px solid var(--grid);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--dim);background:rgba(0,0,0,.08)}
+.key:last-child{border-right:none}.key.active{background:rgba(255,255,255,.08);color:var(--ink);box-shadow:inset 0 2px 0 var(--c3)}
+
+/* Las piezas caen desde fuera de pantalla y se mantienen visibles durante todo el trayecto */
+.note{position:absolute;left:5%;width:90%;height:66px;top:0;border:2px solid rgba(0,0,0,.38);box-shadow:3px 3px 0 rgba(0,0,0,.30),0 0 12px rgba(255,255,255,.035);z-index:2;pointer-events:none;will-change:transform}
+.note.a{background:var(--c1)}.note.b{background:var(--c2)}.note.c{background:var(--c3)}
+.note::before{content:"";position:absolute;left:10%;right:10%;top:7px;height:3px;background:rgba(255,255,255,.22)}
+.note::after{content:"";position:absolute;left:50%;top:50%;width:13px;height:13px;border:1px solid rgba(20,18,31,.35);transform:translate(-50%,-50%) rotate(45deg)}
+.note.near{filter:brightness(1.15);box-shadow:3px 3px 0 rgba(0,0,0,.3),0 0 18px rgba(255,255,255,.12)}
+.note.hit{animation:note-hit .15s ease-out forwards}
+
+#feedback{position:absolute;left:50%;top:25%;transform:translate(-50%,-50%);font-size:14px;color:var(--ink);opacity:0;pointer-events:none;z-index:7;text-align:center;white-space:nowrap}
+#feedback.show{animation:feedback .55s ease}
+#combo{position:absolute;left:50%;bottom:11%;transform:translateX(-50%);font-size:9px;color:var(--dim);letter-spacing:.7px;z-index:5;pointer-events:none}
+#pulse{position:absolute;left:10%;right:10%;bottom:calc(10% + 38px);height:2px;background:var(--c3);opacity:.10;pointer-events:none;z-index:5}
+#play.beat #pulse{animation:pulse .18s ease}
+#countdown{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:30px;color:var(--ink);opacity:0;pointer-events:none;z-index:9}
+#countdown.show{animation:countdown .45s ease}
+
+#overlay{position:absolute;inset:0;background:rgba(20,18,31,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:18px;z-index:10}
+#overlay h2{font-size:14px;margin:0;color:var(--c3)}
+#overlay p{font-size:9px;color:var(--dim);line-height:1.9;margin:0;max-width:330px}
+#result{display:none;font-size:10px;color:var(--ink);line-height:2}
+#overlay button{font-family:inherit;font-size:11px;background:var(--c2);color:#14121f;border:0;padding:13px 20px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);touch-action:manipulation}
+#overlay button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+#foot{margin-top:10px;font-size:8px;color:var(--dim);text-align:center;line-height:1.8;max-width:390px}
+
+@keyframes feedback{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-65%) scale(1)}}
+@keyframes countdown{0%{opacity:0;transform:translate(-50%,-50%) scale(.65)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.18)}}
+@keyframes pulse{0%{opacity:.10}35%{opacity:.65}100%{opacity:.10}}
+@keyframes note-hit{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(8px) scale(.94)}}
+@media(max-width:360px){#hud{grid-template-columns:repeat(2,1fr)}#play{max-width:340px}.note{height:58px}.hit-zone{height:68px}}
+</style>
+</head>
+<body>
+<div class="top-nav"><a class="back-link" href="../index.html">← MENÚ</a><span class="page-title">SIGUE EL RITMO</span></div>
+<div id="game-root">
+  <div id="hud">
+    <div class="stat"><b>PUNTOS</b><span id="score">0</span></div>
+    <div class="stat"><b>COMBO</b><span id="combo-v">0</span></div>
+    <div class="stat"><b>RITMO</b><span id="mult">1x</span></div>
+    <div class="stat"><b>MEJOR</b><span id="best">—</span></div>
+  </div>
+
+  <div id="hud2"><button class="mini-btn" id="mute">SONIDO: ON</button><button class="mini-btn" id="restart">REINICIAR</button></div>
+  <div class="blip-watch" id="blip-slot"></div>
+
+  <div id="play">
+    <div id="lanes">
+      <div class="lane" data-lane="0"><div class="lane-notes"></div></div>
+      <div class="lane" data-lane="1"><div class="lane-notes"></div></div>
+      <div class="lane" data-lane="2"><div class="lane-notes"></div></div>
+    </div>
+
+    <div class="hit-zone"><span class="hit-zone-label">TOCA AQUÍ</span></div>
+    <div class="key-row"><div class="key" data-key="0">A</div><div class="key" data-key="1">S</div><div class="key" data-key="2">D</div></div>
+    <div id="pulse"></div>
+    <div id="feedback"></div>
+    <div id="combo"></div>
+    <div id="countdown"></div>
+
+    <div id="overlay">
+      <h2 id="title">SIGUE EL RITMO</h2>
+      <p id="text">Tres carriles. Las piezas caen desde arriba y debes tocar su carril cuando entren en la zona marcada. Anticípate: se ven venir desde bastante antes.</p>
+      <div id="result"></div>
+      <button id="start">EMPEZAR</button>
+    </div>
+  </div>
+
+  <div id="foot">3 carriles · toca el carril o pulsa A / S / D · ritmo generado en el navegador</div>
+</div>
+
+<script>
+(()=>{
+  const play=document.getElementById('play');
+  const lanes=[...document.querySelectorAll('.lane')];
+  const laneNotes=lanes.map(l=>l.querySelector('.lane-notes'));
+  const keys=[...document.querySelectorAll('.key')];
+  const overlay=document.getElementById('overlay');
+  const title=document.getElementById('title');
+  const text=document.getElementById('text');
+  const result=document.getElementById('result');
+  const start=document.getElementById('start');
+  const restart=document.getElementById('restart');
+  const mute=document.getElementById('mute');
+  const scoreEl=document.getElementById('score');
+  const comboEl=document.getElementById('combo-v');
+  const multEl=document.getElementById('mult');
+  const bestEl=document.getElementById('best');
+  const feedback=document.getElementById('feedback');
+  const comboText=document.getElementById('combo');
+  const countdown=document.getElementById('countdown');
+
+  const KEY='miniArcade.ritmo.best';
+  const BPM=108;
+  const BEAT=60000/BPM;
+  const TOTAL_BEATS=64;
+  const TRAVEL=1850;
+  const HIT_WINDOW=135;
+  const HIT_Y_RATIO=.80;
+  const FIRST_TARGET_OFFSET=1900;
+
+  let best=0,running=false,muted=false,ctx=null,raf=0;
+  let notes=[],pattern=[],targetTimes=[];
+  let beatIndex=0,score=0,combo=0,maxCombo=0,startTime=0,nextSpawn=0,lastTarget=0;
+
+  try{best=parseInt(sessionStorage.getItem(KEY),10)||0}catch(e){}
+
+  function updateHud(){
+    scoreEl.textContent=score;
+    comboEl.textContent=combo;
+    multEl.textContent=Math.min(4,1+Math.floor(combo/5))+'x';
+    bestEl.textContent=best||'—';
+    comboText.textContent=combo>=3?'COMBO ×'+combo:'';
+  }
+
+  function ensureAudio(){
+    if(!ctx){
+      try{ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){ctx=null}
+    }
+    if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{});
+  }
+
+  function scheduleTone(targetTime,freq,dur=.055,type='square',vol=.035){
+    if(muted||!ctx)return;
+    const delay=Math.max(0,(targetTime-performance.now())/1000);
+    const when=ctx.currentTime+delay;
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.type=type;o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);
+    g.gain.setValueAtTime(vol,when);
+    g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+    o.start(when);o.stop(when+dur);
+  }
+
+  function laneTone(lane,time){
+    const freqs=[261.63,329.63,392.00];
+    scheduleTone(time,freqs[lane],.075,'triangle',.045);
+  }
+
+  function metronomeTone(time,accent){
+    scheduleTone(time,accent?156:104,.045,'square',accent?.032:.021);
+  }
+
+  function feedbackMessage(msg){
+    feedback.textContent=msg;
+    feedback.classList.remove('show');
+    void feedback.offsetWidth;
+    feedback.classList.add('show');
+  }
+
+  function clearNotes(){
+    notes.forEach(n=>n.el.remove());
+    notes=[];
+  }
+
+  /* Patrón musical por bloques de 8 tiempos. Más simple al principio,
+     con silencios y dobles notas después. */
+  function makePattern(){
+    return [
+      0,1,2,1, 0,1,2,1,
+      0,2,1,2, 0,1,2,0,
+      0,1,0,2, 1,2,1,0,
+      0,2,0,1, 2,1,2,0,
+      [0,1],2,1,[1,2], 0,2,1,0,
+      [0,2],1,0,[0,1], 2,1,[1,2],2,
+      0,[0,2],1,2, [0,1],2,0,1,
+      2,[0,1],0,2, [1,2],0,1,2
+    ];
+  }
+
+  function spawnNote(lane,targetTime){
+    const el=document.createElement('div');
+    el.className='note '+['a','b','c'][lane];
+    laneNotes[lane].appendChild(el);
+    notes.push({el,lane,targetTime,hit:false,missed:false});
+  }
+
+  function spawnPattern(value,targetTime){
+    const lanesAtTime=Array.isArray(value)?value:[value];
+    lanesAtTime.forEach(lane=>spawnNote(lane,targetTime));
+  }
+
+  function noteTop(n,now){
+    const h=play.getBoundingClientRect().height;
+    const noteH=n.el.getBoundingClientRect().height||66;
+    const hitCenter=h*HIT_Y_RATIO;
+    const startCenter=-noteH-18;
+    const progress=1-(n.targetTime-now)/TRAVEL;
+    return startCenter+(hitCenter-startCenter)*progress-noteH/2;
+  }
+
+  function removeMissed(now){
+    notes.forEach(n=>{
+      if(n.hit||n.missed)return;
+      if(now>n.targetTime+HIT_WINDOW){
+        n.missed=true;
+        n.el.remove();
+        combo=0;
+        feedbackMessage('MISS');
+        scheduleTone(now,190,.10,'sawtooth',.035);
+        if(window.Companion)Companion.play('sad');
+      }
+    });
+    notes=notes.filter(n=>!n.missed&&!n.hit);
+  }
+
+  function updateNotes(now){
+    const h=play.getBoundingClientRect().height;
+    const hitCenter=h*HIT_Y_RATIO;
+    const noteH=66;
+    notes.forEach(n=>{
+      if(n.hit||n.missed)return;
+      const top=noteTop(n,now);
+      n.el.style.transform='translateY('+top+'px)';
+      const center=top+(n.el.getBoundingClientRect().height||noteH)/2;
+      n.el.classList.toggle('near',Math.abs(center-hitCenter)<46);
+    });
+    removeMissed(now);
+  }
+
+  function pulseBeat(){
+    play.classList.remove('beat');
+    void play.offsetWidth;
+    play.classList.add('beat');
+  }
+
+  function scheduleMusic(){
+    targetTimes=[];
+    const base=startTime+FIRST_TARGET_OFFSET;
+    for(let i=0;i<TOTAL_BEATS;i++){
+      const t=base+i*BEAT;
+      targetTimes.push(t);
+      metronomeTone(t,i%8===0);
+      const value=pattern[i];
+      (Array.isArray(value)?value:[value]).forEach(l=>laneTone(l,t));
+    }
+    lastTarget=targetTimes[targetTimes.length-1];
+  }
+
+  function tick(now){
+    if(!running)return;
+
+    while(beatIndex<TOTAL_BEATS && targetTimes[beatIndex]-TRAVEL<=now){
+      spawnPattern(pattern[beatIndex],targetTimes[beatIndex]);
+      pulseBeat();
+      beatIndex++;
+    }
+
+    updateNotes(now);
+
+    if(beatIndex>=TOTAL_BEATS && notes.length===0 && now>lastTarget+HIT_WINDOW+80){
+      finish();
+      return;
+    }
+    raf=requestAnimationFrame(tick);
+  }
+
+  function tapLane(lane){
+    if(!running)return;
+
+    const now=performance.now();
+    let candidate=null;
+    let delta=Infinity;
+
+    for(const n of notes){
+      if(n.hit||n.missed||n.lane!==lane)continue;
+      const d=Math.abs(now-n.targetTime);
+      if(d<delta){delta=d;candidate=n}
+    }
+
+    if(!candidate||delta>HIT_WINDOW){
+      combo=0;
+      feedbackMessage('MISS');
+      scheduleTone(now,190,.10,'sawtooth',.035);
+      if(window.Companion)Companion.play('sad');
+      pressKey(lane);
+      updateHud();
+      return;
+    }
+
+    candidate.hit=true;
+    candidate.el.classList.add('hit');
+    setTimeout(()=>candidate.el.remove(),150);
+    notes=notes.filter(n=>n!==candidate);
+
+    let points=0,kind='';
+    if(delta<=42){points=100;kind='PERFECT'}
+    else if(delta<=82){points=65;kind='GOOD'}
+    else{points=35;kind='OK'}
+
+    const multiplier=Math.min(4,1+Math.floor(combo/5));
+    score+=points*multiplier;
+    combo++;
+    maxCombo=Math.max(maxCombo,combo);
+
+    feedbackMessage(kind+'  +'+points*multiplier);
+    scheduleTone(now,kind==='PERFECT'?880:kind==='GOOD'?660:520,.07,'triangle',.045);
+    pressKey(lane);
+    if(window.Companion)Companion.play(combo>=8?'cheer':'wave');
+    updateHud();
+  }
+
+  function pressKey(lane){
+    keys[lane].classList.add('active');
+    lanes[lane].classList.add('pressed');
+    setTimeout(()=>{
+      keys[lane].classList.remove('active');
+      lanes[lane].classList.remove('pressed');
+    },110);
+  }
+
+  function keyLane(key){
+    const k=key.toLowerCase();
+    if(k==='a')return 0;if(k==='s')return 1;if(k==='d')return 2;
+    return -1;
+  }
+
+  function showCountdown(){
+    return new Promise(resolve=>{
+      let n=3;
+      function step(){
+        if(n===0){
+          countdown.textContent='¡YA!';
+          countdown.classList.remove('show');void countdown.offsetWidth;countdown.classList.add('show');
+          setTimeout(resolve,260);
+          return;
+        }
+        countdown.textContent=n;
+        countdown.classList.remove('show');void countdown.offsetWidth;countdown.classList.add('show');
+        if(!muted) scheduleTone(performance.now(),n===1?440:330,.08,'square',.04);
+        n--;setTimeout(step,420);
+      }
+      step();
+    });
+  }
+
+  async function begin(){
+    ensureAudio();
+    cancelAnimationFrame(raf);
+    clearNotes();
+    score=0;combo=0;maxCombo=0;beatIndex=0;
+    pattern=makePattern();
+    updateHud();
+    overlay.style.display='none';
+    result.style.display='none';
+    start.disabled=true;
+    await showCountdown();
+    start.disabled=false;
+    startTime=performance.now();
+    scheduleMusic();
+    const now=performance.now();
+    running=true;
+    nextSpawn=now;
+    raf=requestAnimationFrame(tick);
+  }
+
+  function finish(){
+    running=false;
+    cancelAnimationFrame(raf);
+    clearNotes();
+
+    const isRecord=score>best;
+    if(isRecord){
+      best=score;
+      try{sessionStorage.setItem(KEY,String(best))}catch(e){}
+    }
+
+    title.textContent=isRecord?'¡NUEVO RÉCORD!':'RITMO COMPLETADO';
+    text.textContent='';
+    result.style.display='block';
+    result.innerHTML='PUNTUACIÓN: <strong>'+score+'</strong><br>COMBO MÁXIMO: '+maxCombo+(isRecord?'':'<br>MEJOR: '+best);
+    start.textContent='REINTENTAR';
+    overlay.style.display='flex';
+    [660,830,1040,1320].forEach((f,i)=>setTimeout(()=>{if(!muted)toneNow(f)},i*65));
+    if(window.Companion)Companion.play('cheer');
+    updateHud();
+  }
+
+  function toneNow(freq){
+    if(muted||!ctx)return;
+    const now=ctx.currentTime;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='triangle';o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);
+    g.gain.setValueAtTime(.045,now);g.gain.exponentialRampToValueAtTime(.0001,now+.08);
+    o.start(now);o.stop(now+.08);
+  }
+
+  lanes.forEach((lane,index)=>{
+    lane.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      tapLane(index);
+    });
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.repeat)return;
+    const lane=keyLane(e.key);
+    if(lane!==-1){e.preventDefault();tapLane(lane)}
+  });
+
+  start.addEventListener('click',begin);
+  restart.addEventListener('click',begin);
+  mute.addEventListener('click',()=>{
+    muted=!muted;
+    mute.textContent='SONIDO: '+(muted?'OFF':'ON');
+    if(!muted)ensureAudio();
+  });
+
+  updateHud();
+})();
+</script>
+<script src="../assets/companion.js"></script>
+<script>Companion.mount(document.getElementById('blip-slot'),{size:36});</script>
+<script>
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
