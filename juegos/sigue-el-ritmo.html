@@ -2,246 +2,165 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Sigue el Ritmo · Mini Arcade</title>
 
 <link rel="manifest" href="../manifest.json">
 <link rel="icon" type="image/png" href="../assets/favicon-48.png">
 <link rel="apple-touch-icon" href="../assets/icon-180.png">
 
+<meta name="theme-color" content="#14121f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mini Arcade">
+
+<link rel="stylesheet" href="../assets/theme.css">
 <link rel="stylesheet" href="../assets/companion.css">
 
 <style>
-:root{
-  --bg:#08090d;
-  --panel:#11131a;
-  --text:#f4f5f7;
-  --muted:#858995;
 
-  --c1:#ff5f56;
-  --c2:#ffd166;
-  --c3:#66e3ff;
-  --c4:#a78bfa;
+/* =========================================================
+   CONTENEDOR
+========================================================= */
 
-  --good:#7dff9b;
-  --bad:#ff6b7a;
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  min-height:100%;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-
-body{
-  display:flex;
-  justify-content:center;
-  overflow-x:hidden;
-}
-
-button{
-  font:inherit;
-}
-
-#app{
-  width:100%;
-  max-width:520px;
-  min-height:100vh;
-  padding:18px 14px 28px;
+#game-root{
   display:flex;
   flex-direction:column;
-}
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
-}
-
-.back{
-  text-decoration:none;
-  color:var(--muted);
-  font-size:14px;
-  padding:8px 0;
-}
-
-.back:hover{
-  color:var(--text);
-}
-
-.title-wrap{
-  flex:1;
-  text-align:center;
-}
-
-h1{
-  margin:0;
-  font-size:21px;
-  letter-spacing:.08em;
-  font-weight:800;
-}
-
-.subtitle{
-  margin-top:3px;
-  color:var(--muted);
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-
-.best{
-  min-width:65px;
-  text-align:right;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.25;
-}
-
-.best strong{
-  display:block;
-  color:var(--text);
-  font-size:17px;
-}
-
-/* =========================================================
-   INFO
-========================================================= */
-
-.info{
-  display:flex;
-  justify-content:space-between;
   align-items:center;
   width:100%;
-  max-width:390px;
-  margin:0 auto 10px;
-  color:var(--muted);
-  font-size:12px;
 }
 
-.info strong{
-  color:var(--text);
+
+/* =========================================================
+   HUD
+========================================================= */
+
+#hud{
+  width:100%;
+  max-width:440px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-bottom:8px;
+
+  font-size:clamp(8px, 2.6vw, 10px);
+
+  letter-spacing:.5px;
+
+  gap:8px;
 }
 
-#score{
-  font-size:15px;
+#hud .stat{
+  color:var(--dim);
 }
+
+#hud .val{
+  color:var(--ink);
+  margin-left:4px;
+}
+
+#combo-val{
+  color:var(--c2);
+}
+
+#best-val.pop,
+#combo-val.pop{
+  animation:pop-scale .35s ease;
+}
+
+
+/* =========================================================
+   VIDAS
+========================================================= */
 
 #lives{
   display:flex;
-  gap:5px;
   align-items:center;
+  gap:5px;
 }
 
 .life{
-  width:9px;
-  height:9px;
-  border-radius:50%;
+  width:10px;
+  height:10px;
+
+  border:1px solid var(--c3);
+
   background:var(--c3);
-  box-shadow:0 0 7px rgba(102,227,255,.25);
+
+  box-shadow:
+    2px 2px 0 rgba(0,0,0,.25);
+
   transition:
     opacity .15s ease,
-    transform .15s ease,
-    background .15s ease;
+    transform .15s ease;
 }
 
 .life.lost{
   opacity:.18;
-  transform:scale(.75);
-  background:rgba(255,255,255,.25);
+  transform:scale(.7);
+
+  background:transparent;
+
   box-shadow:none;
 }
 
-#combo{
-  position:absolute;
-  left:50%;
-  bottom:7%;
-  transform:translateX(-50%);
-  z-index:8;
-
-  min-width:100px;
-  text-align:center;
-
-  font-size:18px;
-  font-weight:800;
-  letter-spacing:.05em;
-
-  text-shadow:0 0 12px rgba(255,255,255,.2);
-
-  pointer-events:none;
-}
-
-#combo.hot{
-  animation:comboPop .18s ease-out;
-}
-
-@keyframes comboPop{
-  0%{
-    transform:translateX(-50%) scale(.8);
-    opacity:.4;
-  }
-
-  100%{
-    transform:translateX(-50%) scale(1);
-    opacity:1;
-  }
-}
 
 /* =========================================================
-   GAME BOARD
+   TABLERO
 ========================================================= */
 
-#play{
+#board{
   position:relative;
 
   width:100%;
-  max-width:390px;
+  max-width:440px;
 
-  aspect-ratio:.68;
+  aspect-ratio:3 / 5.35;
 
-  margin:0 auto;
+  background:var(--panel);
+
+  border:3px solid var(--grid);
+
+  box-shadow:
+    0 0 0 4px var(--bg),
+    6px 6px 0 rgba(0,0,0,.35);
 
   overflow:hidden;
 
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:18px;
-
-  background:
-    radial-gradient(
-      circle at 50% 100%,
-      rgba(255,255,255,.055),
-      transparent 45%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.018),
-      rgba(255,255,255,.008)
-    );
-
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.35),
-    inset 0 0 30px rgba(255,255,255,.015);
-
   touch-action:none;
-  user-select:none;
 }
 
+
 /* =========================================================
-   LANES
+   FONDO
+========================================================= */
+
+#board::before{
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  pointer-events:none;
+
+  background:
+
+    linear-gradient(
+      90deg,
+      transparent 0,
+      rgba(255,255,255,.015) 50%,
+      transparent 100%
+    );
+
+  opacity:.8;
+}
+
+
+/* =========================================================
+   CARRILES
 ========================================================= */
 
 #lanes{
@@ -250,28 +169,35 @@ h1{
 
   display:grid;
   grid-template-columns:repeat(3,1fr);
+
+  z-index:1;
 }
 
 .lane{
   position:relative;
 
-  border-right:1px solid rgba(255,255,255,.075);
+  border-right:2px solid var(--grid);
 
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,.008),
-      rgba(255,255,255,.018)
+      rgba(255,255,255,.005),
+      transparent
     );
 
   transition:
-    background .08s ease,
-    box-shadow .08s ease;
+    background .08s ease;
 }
 
 .lane:last-child{
   border-right:none;
 }
+
+
+/*
+   Pequeña guía central vertical.
+   Mucho más discreta que la antigua línea horizontal.
+*/
 
 .lane::after{
   content:"";
@@ -279,19 +205,14 @@ h1{
   position:absolute;
 
   left:50%;
+  top:0;
   bottom:0;
 
   width:1px;
-  height:100%;
 
   transform:translateX(-50%);
 
-  background:linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255,255,255,.02) 55%,
-    rgba(255,255,255,.075) 100%
-  );
+  background:rgba(255,255,255,.025);
 
   pointer-events:none;
 }
@@ -300,38 +221,40 @@ h1{
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,.012),
-      rgba(255,255,255,.07)
+      transparent 50%,
+      rgba(61,218,215,.055) 100%
     );
-
-  box-shadow:
-    inset 0 -70px 60px rgba(255,255,255,.055);
 }
+
+
+/* =========================================================
+   TECLAS
+========================================================= */
 
 .lane-key{
   position:absolute;
 
   left:50%;
-  bottom:10px;
+  bottom:9px;
 
   transform:translateX(-50%);
 
   width:38px;
-  height:38px;
+  height:32px;
 
   display:flex;
   align-items:center;
   justify-content:center;
 
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;
+  color:var(--dim);
 
-  color:rgba(255,255,255,.35);
+  border:2px solid var(--grid);
 
-  font-size:13px;
-  font-weight:800;
+  background:var(--bg);
 
-  background:rgba(255,255,255,.025);
+  font-size:10px;
+
+  z-index:4;
 
   transition:
     color .08s ease,
@@ -341,18 +264,29 @@ h1{
 }
 
 .lane.ready .lane-key{
-  color:rgba(255,255,255,.85);
+  color:var(--ink);
 
-  border-color:rgba(255,255,255,.3);
+  border-color:var(--c2);
 
-  background:rgba(255,255,255,.09);
+  background:
+    rgba(61,218,215,.1);
 
-  transform:translateX(-50%) scale(1.05);
+  transform:
+    translateX(-50%)
+    translateY(-2px);
 }
 
+
 /* =========================================================
-   HIT ZONE
+   ZONA DE GOLPE
 ========================================================= */
+
+/*
+   IMPORTANTE:
+   No hay ninguna segunda línea por encima.
+   La zona es una franja translúcida y una única
+   referencia fina en el centro.
+*/
 
 #hit-zone{
   position:absolute;
@@ -362,51 +296,62 @@ h1{
 
   bottom:25%;
 
-  height:82px;
-
-  border-top:2px solid var(--c3);
-  border-bottom:1px solid rgba(102,227,255,.3);
+  height:78px;
 
   background:
-    linear-gradient(
-      to bottom,
-      rgba(255,255,255,.025),
-      rgba(255,255,255,.07),
-      rgba(255,255,255,.025)
-    );
-
-  box-shadow:
-    0 -1px 12px rgba(102,227,255,.06),
-    0 1px 10px rgba(102,227,255,.03);
-
-  pointer-events:none;
+    rgba(61,218,215,.055);
 
   z-index:3;
 
+  pointer-events:none;
+
   transition:
     background .08s ease,
-    box-shadow .08s ease,
-    border-color .08s ease;
+    box-shadow .08s ease;
+}
+
+
+/*
+   Única línea de referencia.
+   Fina y centrada dentro de la zona.
+*/
+
+#hit-zone::before{
+  content:"";
+
+  position:absolute;
+
+  left:0;
+  right:0;
+
+  top:50%;
+
+  height:2px;
+
+  transform:translateY(-50%);
+
+  background:var(--c2);
+
+  box-shadow:
+    0 0 7px rgba(61,218,215,.35);
 }
 
 #hit-zone.ready{
   background:
-    linear-gradient(
-      to bottom,
-      rgba(255,255,255,.045),
-      rgba(255,255,255,.13),
-      rgba(255,255,255,.045)
-    );
-
-  border-top-color:rgba(102,227,255,.95);
+    rgba(61,218,215,.10);
 
   box-shadow:
-    0 -2px 20px rgba(102,227,255,.14),
-    0 2px 15px rgba(102,227,255,.07);
+    inset 0 0 25px rgba(61,218,215,.05);
 }
 
+#hit-zone.ready::before{
+  box-shadow:
+    0 0 12px rgba(61,218,215,.6);
+}
+
+
 /* =========================================================
-   NOTES
+   NOTAS
 ========================================================= */
 
 .note{
@@ -415,21 +360,26 @@ h1{
   top:0;
 
   width:33.3333%;
-  height:54px;
+  height:52px;
 
-  border-radius:12px;
-
-  transform:translateY(-90px);
+  border:2px solid rgba(255,255,255,.13);
 
   z-index:5;
 
+  transform:translateY(-80px);
+
   box-shadow:
-    0 6px 20px rgba(0,0,0,.25);
+    4px 4px 0 rgba(0,0,0,.28);
 
   transition:
-    filter .06s ease,
-    opacity .08s ease;
+    filter .07s ease,
+    opacity .09s ease;
 }
+
+
+/*
+   Interior pixelado.
+*/
 
 .note::after{
   content:"";
@@ -438,60 +388,44 @@ h1{
 
   inset:5px;
 
-  border:1px solid rgba(255,255,255,.28);
-
-  border-radius:8px;
+  border:1px solid rgba(255,255,255,.25);
 
   pointer-events:none;
 }
 
+
+/* Colores */
+
 .note.a{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,95,86,.95),
-      rgba(255,95,86,.65)
-    );
+  background:var(--c1);
 }
 
 .note.b{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,209,102,.95),
-      rgba(255,209,102,.65)
-    );
+  background:var(--c2);
 }
 
 .note.c{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(102,227,255,.95),
-      rgba(102,227,255,.65)
-    );
+  background:var(--c3);
 }
 
 .note.d{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(167,139,250,.95),
-      rgba(167,139,250,.65)
-    );
+  background:var(--c4);
 }
+
+
+/*
+   Cuando está cerca del punto correcto.
+*/
 
 .note.near-hit{
   filter:
-    brightness(1.25)
-    drop-shadow(
-      0 0 12px rgba(255,255,255,.22)
-    );
+    brightness(1.15);
 
-  transform:
-    translateY(var(--note-y))
-    scale(1.025);
+  box-shadow:
+    0 0 12px rgba(255,255,255,.22),
+    4px 4px 0 rgba(0,0,0,.22);
 }
+
 
 /* =========================================================
    FEEDBACK
@@ -501,7 +435,7 @@ h1{
   position:absolute;
 
   left:50%;
-  top:41%;
+  top:42%;
 
   transform:translate(-50%,-50%);
 
@@ -509,77 +443,122 @@ h1{
 
   pointer-events:none;
 
-  font-size:17px;
-  font-weight:900;
+  font-size:clamp(10px,3vw,12px);
 
-  letter-spacing:.08em;
+  font-weight:bold;
+
+  letter-spacing:.5px;
 
   opacity:0;
 
   white-space:nowrap;
-
-  text-shadow:0 0 14px rgba(255,255,255,.18);
 }
 
 #feedback.show{
   animation:feedback .42s ease-out forwards;
 }
 
-#feedback.good{
-  color:var(--good);
+#feedback.perfect{
+  color:var(--c2);
 }
 
-#feedback.perfect{
+#feedback.good{
   color:var(--c3);
 }
 
 #feedback.bad{
-  color:var(--bad);
+  color:var(--c1);
 }
 
 @keyframes feedback{
+
   0%{
     opacity:0;
-    transform:translate(-50%,-40%) scale(.8);
+    transform:
+      translate(-50%,-40%)
+      scale(.8);
   }
 
-  20%{
+  18%{
     opacity:1;
   }
 
   100%{
     opacity:0;
-    transform:translate(-50%,-90%) scale(1.05);
+    transform:
+      translate(-50%,-90%)
+      scale(1.05);
   }
+
 }
+
 
 /* =========================================================
-   MISS FLASH
+   FLASH DE FALLO
 ========================================================= */
 
-#play.miss{
-  animation:missFlash .22s ease-out;
+#board.miss{
+  animation:shake .24s ease;
 }
 
-@keyframes missFlash{
+@keyframes shake{
+
   0%{
-    box-shadow:
-      0 18px 60px rgba(0,0,0,.35),
-      inset 0 0 0 rgba(255,80,90,0);
+    transform:translateX(0);
   }
 
-  45%{
-    box-shadow:
-      0 18px 60px rgba(0,0,0,.35),
-      inset 0 0 45px rgba(255,80,90,.13);
+  20%{
+    transform:translateX(-4px);
+  }
+
+  40%{
+    transform:translateX(4px);
+  }
+
+  60%{
+    transform:translateX(-3px);
+  }
+
+  80%{
+    transform:translateX(2px);
   }
 
   100%{
-    box-shadow:
-      0 18px 60px rgba(0,0,0,.35),
-      inset 0 0 0 rgba(255,80,90,0);
+    transform:translateX(0);
   }
+
 }
+
+
+/* =========================================================
+   COMBO
+========================================================= */
+
+#combo{
+  position:absolute;
+
+  left:50%;
+  bottom:6%;
+
+  transform:translateX(-50%);
+
+  z-index:8;
+
+  color:var(--c3);
+
+  font-size:clamp(9px,2.8vw,11px);
+
+  white-space:nowrap;
+
+  pointer-events:none;
+
+  opacity:.9;
+}
+
+#combo.pop{
+  animation:pop-scale .3s ease;
+}
+
 
 /* =========================================================
    COUNTDOWN
@@ -591,27 +570,30 @@ h1{
   inset:0;
 
   display:flex;
-  align-items:center;
+
   justify-content:center;
+  align-items:center;
 
   z-index:20;
 
-  font-size:58px;
-  font-weight:900;
+  color:var(--c3);
+
+  font-size:clamp(28px,11vw,52px);
+
+  opacity:0;
 
   pointer-events:none;
 
   text-shadow:
-    0 0 30px rgba(255,255,255,.18);
-
-  opacity:0;
+    4px 4px 0 rgba(0,0,0,.35);
 }
 
 #countdown.show{
-  animation:countdown .72s ease-out forwards;
+  animation:countdown .65s ease-out forwards;
 }
 
 @keyframes countdown{
+
   0%{
     opacity:0;
     transform:scale(1.35);
@@ -625,7 +607,9 @@ h1{
     opacity:0;
     transform:scale(.9);
   }
+
 }
+
 
 /* =========================================================
    OVERLAY
@@ -633,137 +617,139 @@ h1{
 
 #overlay{
   position:absolute;
-
   inset:0;
 
   z-index:30;
 
   display:flex;
+
   flex-direction:column;
 
-  align-items:center;
   justify-content:center;
+  align-items:center;
 
-  padding:30px;
+  gap:13px;
+
+  padding:20px;
 
   text-align:center;
 
   background:
-    radial-gradient(
-      circle at center,
-      rgba(8,9,13,.72),
-      rgba(8,9,13,.96)
-    );
-
-  backdrop-filter:blur(4px);
+    rgba(20,18,31,.94);
 }
 
 #overlay.hidden{
   display:none;
 }
 
-.overlay-title{
-  font-size:25px;
-  font-weight:900;
+#overlay h2{
+  margin:0;
 
-  letter-spacing:.08em;
+  font-size:clamp(12px,4vw,15px);
 
-  margin-bottom:8px;
+  color:var(--c3);
 }
 
-.overlay-text{
-  max-width:285px;
-
-  color:var(--muted);
-
-  font-size:13px;
-
-  line-height:1.5;
-
-  margin-bottom:22px;
+#overlay.lost h2{
+  color:var(--c1);
 }
 
-#start-btn,
-#again-btn{
-  border:1px solid rgba(255,255,255,.18);
+#overlay p{
+  margin:0;
 
-  border-radius:12px;
+  max-width:330px;
 
-  padding:12px 24px;
+  color:var(--dim);
 
-  color:var(--text);
+  font-size:clamp(8px,2.5vw,9px);
 
-  background:rgba(255,255,255,.07);
+  line-height:1.9;
+}
+
+#overlay-score{
+  color:var(--ink);
+
+  font-size:clamp(9px,2.8vw,11px);
+}
+
+#overlay button{
+
+  font-family:inherit;
+
+  font-size:clamp(9px,2.8vw,10px);
+
+  background:var(--c1);
+
+  color:#14121f;
+
+  border:none;
+
+  padding:13px 20px;
 
   cursor:pointer;
 
-  font-weight:800;
+  box-shadow:
+    3px 3px 0 rgba(0,0,0,.4);
 
-  letter-spacing:.04em;
-
-  transition:
-    transform .12s ease,
-    background .12s ease,
-    border-color .12s ease;
+  touch-action:manipulation;
 }
 
-#start-btn:hover,
-#again-btn:hover{
-  background:rgba(255,255,255,.12);
-  border-color:rgba(255,255,255,.3);
+#overlay button:active{
+
+  transform:
+    translate(2px,2px);
+
+  box-shadow:
+    1px 1px 0 rgba(0,0,0,.4);
 }
 
-#start-btn:active,
-#again-btn:active{
-  transform:scale(.96);
-}
-
-.result{
-  margin:0 0 4px;
-
-  font-size:13px;
-
-  color:var(--muted);
-}
-
-.result strong{
-  color:var(--text);
-
-  font-size:28px;
-}
-
-.new-record{
-  color:var(--good);
-
-  font-size:12px;
-
-  font-weight:800;
-
-  margin:6px 0 18px;
-}
 
 /* =========================================================
-   HELP
+   AYUDA
 ========================================================= */
 
-.help{
-  width:100%;
-  max-width:390px;
+#foot-note{
 
-  margin:12px auto 0;
+  margin-top:10px;
+
+  max-width:440px;
+
+  color:var(--dim);
 
   text-align:center;
 
-  color:var(--muted);
+  font-size:clamp(7px,2vw,8px);
 
-  font-size:11px;
-
-  line-height:1.5;
+  line-height:1.8;
 }
 
-.help strong{
-  color:rgba(255,255,255,.65);
+
+/* =========================================================
+   ANIMACIONES HUD
+========================================================= */
+
+@keyframes pop-scale{
+
+  0%{
+    transform:scale(1);
+  }
+
+  40%{
+    transform:
+      scale(1.45)
+      rotate(-4deg);
+  }
+
+  70%{
+    transform:scale(.9);
+  }
+
+  100%{
+    transform:scale(1);
+  }
+
 }
+
 
 /* =========================================================
    RESPONSIVE
@@ -771,152 +757,131 @@ h1{
 
 @media (max-height:700px){
 
-  #app{
-    padding-top:10px;
+  body{
+    padding-top:12px;
   }
 
-  .top{
-    margin-bottom:8px;
-  }
-
-  .info{
-    margin-bottom:6px;
-  }
-
-  .help{
-    margin-top:7px;
-  }
-}
-
-@media (min-width:600px){
-
-  #app{
-    padding-top:28px;
+  .top-nav{
+    margin-bottom:10px;
   }
 
 }
+
 </style>
 </head>
 
 <body>
 
-<div id="app">
-
-  <div class="top">
-
-    <a class="back" href="../index.html">
-      ← Arcade
-    </a>
-
-    <div class="title-wrap">
-
-      <h1>SIGUE EL RITMO</h1>
-
-      <div class="subtitle">
-        No pierdas el ritmo
-      </div>
-
-    </div>
-
-    <div class="best">
-
-      RÉCORD
-
-      <strong id="best">0</strong>
-
-    </div>
-
+  <div class="top-nav">
+    <a class="back-link" href="../index.html">← MENÚ</a>
+    <span class="page-title">SIGUE EL RITMO</span>
   </div>
 
 
-  <div class="info">
+  <div id="game-root">
 
-    <div>
-      PUNTOS
-      <strong id="score">0</strong>
+
+    <!-- HUD -->
+
+    <div id="hud">
+
+      <div>
+        <span class="stat">PUNTOS</span>
+        <span class="val" id="score-val">0</span>
+      </div>
+
+
+      <div>
+        <span class="stat">COMBO</span>
+        <span class="val" id="combo-val">0</span>
+      </div>
+
+
+      <div id="lives">
+
+        <span class="life"></span>
+        <span class="life"></span>
+        <span class="life"></span>
+
+      </div>
+
+
+      <div>
+        <span class="stat">MEJOR</span>
+        <span class="val" id="best-val">0</span>
+      </div>
+
     </div>
 
-    <div id="lives">
 
-      <span class="life"></span>
-      <span class="life"></span>
-      <span class="life"></span>
+    <!-- TABLERO -->
+
+    <div id="board">
+
+
+      <!-- CARRILES -->
+
+      <div id="lanes">
+
+        <div class="lane" data-lane="0">
+          <span class="lane-key">A</span>
+        </div>
+
+        <div class="lane" data-lane="1">
+          <span class="lane-key">S</span>
+        </div>
+
+        <div class="lane" data-lane="2">
+          <span class="lane-key">D</span>
+        </div>
+
+      </div>
+
+
+      <!-- ZONA DE GOLPE -->
+
+      <div id="hit-zone"></div>
+
+
+      <!-- FEEDBACK -->
+
+      <div id="feedback"></div>
+
+      <div id="combo"></div>
+
+      <div id="countdown"></div>
+
+
+      <!-- PANTALLA INICIAL -->
+
+      <div id="overlay">
+
+        <h2>SIGUE EL RITMO</h2>
+
+        <p>
+          Toca cada carril cuando la nota
+          llegue a la zona de golpe.
+          Mantén el ritmo y aguanta
+          todo lo que puedas.
+          Tienes 3 vidas.
+        </p>
+
+        <button id="start-btn">
+          EMPEZAR
+        </button>
+
+      </div>
 
     </div>
 
-    <div>
-      COMBO
-      <strong id="combo-top">0</strong>
+
+    <div id="foot-note">
+      móvil: toca cualquier punto del carril
+      &middot;
+      PC: A &middot; S &middot; D
     </div>
 
   </div>
-
-
-  <div id="play">
-
-    <div id="lanes">
-
-      <div class="lane" data-lane="0">
-        <span class="lane-key">A</span>
-      </div>
-
-      <div class="lane" data-lane="1">
-        <span class="lane-key">S</span>
-      </div>
-
-      <div class="lane" data-lane="2">
-        <span class="lane-key">D</span>
-      </div>
-
-    </div>
-
-
-    <!--
-      Esta es ahora la única referencia horizontal
-      importante del juego.
-    -->
-
-    <div id="hit-zone"></div>
-
-    <div id="feedback"></div>
-
-    <div id="combo"></div>
-
-    <div id="countdown"></div>
-
-
-    <div id="overlay">
-
-      <div class="overlay-title">
-        SIGUE EL RITMO
-      </div>
-
-      <div class="overlay-text">
-        Toca el carril cuando la nota llegue
-        a la zona iluminada.
-        Tienes 3 vidas.
-      </div>
-
-      <button id="start-btn">
-        EMPEZAR
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <div class="help">
-
-    <strong>Móvil:</strong>
-    toca cualquier punto del carril ·
-
-    <strong>PC:</strong>
-    A · S · D
-
-  </div>
-
-</div>
 
 
 <script src="../assets/companion.js"></script>
@@ -928,57 +893,34 @@ h1{
      CONFIGURACIÓN
   ======================================================== */
 
-  const KEY =
+  const BEST_KEY =
     'miniArcade.ritmo.best';
-
-  /*
-    Velocidad inicial.
-    El juego irá acelerando progresivamente.
-  */
 
   const START_BPM = 104;
 
   const MAX_BPM = 132;
 
-  /*
-    Cada X beats aumenta ligeramente la dificultad.
-  */
-
-  const DIFFICULTY_STEP = 18;
-
-  /*
-    Tiempo que tarda una nota desde que aparece
-    hasta la zona de golpe.
-  */
-
-  const TRAVEL = 1850;
-
-  /*
-    Ventana de golpe.
-
-    150 ms es bastante jugable en móvil,
-    pero exige seguir el ritmo.
-  */
-
   const HIT_WINDOW = 150;
 
-  /*
-    Posición de la zona de golpe.
-  */
-
   const HIT_Y_RATIO = .68;
+
+  const HIT_ZONE_HEIGHT = 78;
+
+  const TRAVEL = 1850;
 
   const START_DELAY = 1150;
 
   const MAX_LIVES = 3;
+
+  const BEATS_PER_MEASURE = 4;
 
 
   /* ========================================================
      ELEMENTOS
   ======================================================== */
 
-  const play =
-    document.getElementById('play');
+  const board =
+    document.getElementById('board');
 
   const lanes =
     [...document.querySelectorAll('.lane')];
@@ -993,16 +935,16 @@ h1{
     document.getElementById('start-btn');
 
   const scoreEl =
-    document.getElementById('score');
-
-  const comboTopEl =
-    document.getElementById('combo-top');
+    document.getElementById('score-val');
 
   const comboEl =
+    document.getElementById('combo-val');
+
+  const comboDisplay =
     document.getElementById('combo');
 
   const bestEl =
-    document.getElementById('best');
+    document.getElementById('best-val');
 
   const feedbackEl =
     document.getElementById('feedback');
@@ -1018,8 +960,6 @@ h1{
      ESTADO
   ======================================================== */
 
-  let best = 0;
-
   let score = 0;
 
   let combo = 0;
@@ -1028,23 +968,23 @@ h1{
 
   let lives = MAX_LIVES;
 
+  let best = 0;
+
   let running = false;
 
-  let animationFrame = 0;
+  let raf = 0;
 
   let notes = [];
 
-  /*
-    Próximo beat que se generará.
-  */
+  let nextMeasureTime = 0;
 
-  let nextBeatTime = 0;
+  let measureIndex = 0;
 
-  let beatIndex = 0;
+  let producedEvents = 0;
 
   let lastLane = 1;
 
-  let startTime = 0;
+  let audioCtx = null;
 
 
   /* ========================================================
@@ -1055,7 +995,7 @@ h1{
 
     best =
       parseInt(
-        sessionStorage.getItem(KEY),
+        sessionStorage.getItem(BEST_KEY),
         10
       ) || 0;
 
@@ -1070,25 +1010,437 @@ h1{
 
 
   /* ========================================================
-     BLIP
+     DIFICULTAD
   ======================================================== */
 
-  function blipPlay(gesture){
+  function difficulty(){
 
-    try{
+    /*
+      Una fase cada ~32 notas.
+
+      0 = introducción
+      1 = fácil
+      2 = medio
+      3 = difícil
+      4 = muy difícil
+      5 = máximo
+    */
+
+    return Math.min(
+      5,
+      Math.floor(
+        producedEvents / 32
+      )
+    );
+
+  }
+
+
+  function bpm(){
+
+    const d =
+      difficulty();
+
+    return Math.min(
+      MAX_BPM,
+      START_BPM + d * 5.5
+    );
+
+  }
+
+
+  function beatDuration(){
+
+    return (
+      60000 /
+      bpm()
+    );
+
+  }
+
+
+  /* ========================================================
+     PATRONES
+  ======================================================== */
+
+  /*
+    No usamos puro random.
+
+    Son pequeñas frases de 4 tiempos que
+    dan una sensación mucho más musical.
+  */
+
+  const MOTIFS = [
+
+    [0,1,2,1],
+
+    [1,0,1,2],
+
+    [2,1,0,1],
+
+    [0,2,1,2],
+
+    [1,2,1,0],
+
+    [2,0,1,0]
+
+  ];
+
+
+  function chooseMotif(){
+
+    const d =
+      difficulty();
+
+    /*
+      Conforme aumenta la dificultad,
+      damos algo más de peso a patrones
+      menos previsibles.
+    */
+
+    let index =
+      Math.floor(
+        Math.random() *
+        MOTIFS.length
+      );
+
+    if(
+      d >= 3 &&
+      Math.random() < .35
+    ){
+
+      index =
+        Math.floor(
+          Math.random() *
+          MOTIFS.length
+        );
+
+    }
+
+    return [
+      ...MOTIFS[index]
+    ];
+
+  }
+
+
+  /* ========================================================
+     GENERACIÓN DE COMPASE
+  ======================================================== */
+
+  function generateMeasure(){
+
+    const d =
+      difficulty();
+
+    const beat =
+      beatDuration();
+
+    const motif =
+      chooseMotif();
+
+
+    /*
+      De vez en cuando invertimos la dirección.
+    */
+
+    if(
+      Math.random() <
+      .18 + d * .025
+    ){
+
+      motif.reverse();
+
+    }
+
+
+    /*
+      A partir de dificultad media,
+      puede haber un pequeño cambio de
+      ritmo dentro del compás.
+    */
+
+    const addOffbeat =
+      d >= 2 &&
+      Math.random() <
+      (
+        .16 +
+        (d - 2) * .08
+      );
+
+
+    /*
+      ¿Habrá una doble?
+    */
+
+    const addDouble =
+      d >= 1 &&
+      Math.random() <
+      (
+        .08 +
+        d * .035
+      );
+
+
+    for(
+      let i = 0;
+      i < BEATS_PER_MEASURE;
+      i++
+    ){
+
+      const target =
+        nextMeasureTime +
+        i * beat;
+
+
+      let lane =
+        motif[i];
+
+
+      /*
+        Evita demasiadas repeticiones
+        consecutivas del mismo carril.
+      */
 
       if(
-        window.Companion &&
-        typeof Companion.play === 'function'
+        lane === lastLane &&
+        Math.random() < .35
       ){
 
-        Companion.play(
-          gesture
+        lane =
+          (
+            lane +
+            (
+              Math.random() < .5
+                ? 1
+                : 2
+            )
+          ) % 3;
+
+      }
+
+
+      /*
+        Doble nota.
+
+        No la ponemos en el primer beat
+        y evitamos que coincida con un
+        offbeat difícil.
+      */
+
+      const isDouble =
+        addDouble &&
+        i >= 1 &&
+        i === 2;
+
+
+      if(isDouble){
+
+        let other;
+
+        do{
+
+          other =
+            Math.floor(
+              Math.random() * 3
+            );
+
+        }while(
+          other === lane
+        );
+
+
+        spawnNoteGroup(
+          [lane,other],
+          target
+        );
+
+
+        lastLane =
+          lane;
+
+
+      }else{
+
+        spawnNoteGroup(
+          [lane],
+          target
+        );
+
+
+        lastLane =
+          lane;
+
+      }
+
+
+      /*
+        Nota a contratiempo.
+
+        Solo aparece en fases medias/altas.
+        No se añade todos los compases.
+      */
+
+      if(
+        addOffbeat &&
+        i === 1
+      ){
+
+        let offLane;
+
+        if(
+          Math.random() < .55
+        ){
+
+          offLane =
+            (lane + 1) % 3;
+
+        }else{
+
+          offLane =
+            (lane + 2) % 3;
+
+        }
+
+
+        spawnNoteGroup(
+          [offLane],
+          target + beat * .5
         );
 
       }
 
-    }catch(e){}
+    }
+
+
+    nextMeasureTime +=
+      BEATS_PER_MEASURE *
+      beat;
+
+    measureIndex++;
+
+  }
+
+
+  /* ========================================================
+     SPAWN
+  ======================================================== */
+
+  function spawnNoteGroup(
+    laneIndexes,
+    targetTime
+  ){
+
+    laneIndexes.forEach(
+      laneIndex => {
+
+        const el =
+          document.createElement(
+            'div'
+          );
+
+
+        el.className =
+          'note ' +
+          ['a','b','c','d'][
+            laneIndex % 4
+          ];
+
+
+        el.style.left =
+          (
+            laneIndex *
+            100 /
+            3
+          ) + '%';
+
+
+        board.appendChild(el);
+
+
+        notes.push({
+
+          el,
+
+          lane:
+            laneIndex,
+
+          targetTime,
+
+          hit:false,
+
+          missed:false
+
+        });
+
+      }
+    );
+
+
+    producedEvents++;
+
+  }
+
+
+  function spawnUntil(now){
+
+    /*
+      Mantenemos siempre un tramo de notas
+      ya preparado fuera de la pantalla.
+    */
+
+    while(
+      nextMeasureTime -
+      now <=
+      TRAVEL
+    ){
+
+      generateMeasure();
+
+    }
+
+  }
+
+
+  /* ========================================================
+     POSICIÓN
+  ======================================================== */
+
+  function noteY(
+    note,
+    now
+  ){
+
+    const h =
+      board.getBoundingClientRect()
+        .height;
+
+
+    const hitY =
+      h * HIT_Y_RATIO;
+
+
+    const startY =
+      -72;
+
+
+    const progress =
+      1 -
+      (
+        note.targetTime -
+        now
+      ) /
+      TRAVEL;
+
+
+    return (
+      startY +
+      (
+        hitY -
+        startY
+      ) *
+      progress
+    );
 
   }
 
@@ -1096,8 +1448,6 @@ h1{
   /* ========================================================
      AUDIO
   ======================================================== */
-
-  let audioCtx = null;
 
   function initAudio(){
 
@@ -1112,6 +1462,7 @@ h1{
           )();
 
       }
+
 
       if(
         audioCtx.state ===
@@ -1130,7 +1481,7 @@ h1{
   function tone(
     frequency,
     duration=.06,
-    type='sine',
+    type='square',
     volume=.025
   ){
 
@@ -1138,398 +1489,56 @@ h1{
       return;
     }
 
+
     try{
 
       const now =
         audioCtx.currentTime;
 
-      const oscillator =
+
+      const osc =
         audioCtx.createOscillator();
 
       const gain =
         audioCtx.createGain();
 
-      oscillator.type =
+
+      osc.type =
         type;
 
-      oscillator.frequency
-        .setValueAtTime(
-          frequency,
-          now
-        );
 
-      gain.gain
-        .setValueAtTime(
-          volume,
-          now
-        );
+      osc.frequency.setValueAtTime(
+        frequency,
+        now
+      );
 
-      gain.gain
-        .exponentialRampToValueAtTime(
-          .0001,
-          now + duration
-        );
 
-      oscillator.connect(gain);
+      gain.gain.setValueAtTime(
+        volume,
+        now
+      );
+
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        now + duration
+      );
+
+
+      osc.connect(gain);
 
       gain.connect(
         audioCtx.destination
       );
 
-      oscillator.start(now);
 
-      oscillator.stop(
+      osc.start(now);
+
+      osc.stop(
         now + duration
       );
 
     }catch(e){}
-
-  }
-
-
-  /* ========================================================
-     DIFICULTAD
-  ======================================================== */
-
-  function getDifficulty(){
-
-    /*
-      0 al principio.
-      1 cada vez más rápido.
-
-      Nunca supera MAX_BPM.
-    */
-
-    return Math.min(
-      1,
-      Math.floor(
-        beatIndex /
-        DIFFICULTY_STEP
-      ) / 6
-    );
-
-  }
-
-
-  function getBPM(){
-
-    const difficulty =
-      getDifficulty();
-
-    return (
-      START_BPM +
-      (MAX_BPM - START_BPM) *
-      difficulty
-    );
-
-  }
-
-
-  function getBeatDuration(){
-
-    return (
-      60000 /
-      getBPM()
-    );
-
-  }
-
-
-  /* ========================================================
-     PATRÓN
-  ======================================================== */
-
-  /*
-    Genera el siguiente patrón de forma progresiva.
-
-    Al principio:
-      - muchos cambios sencillos
-      - pocas repeticiones
-      - prácticamente ninguna doble
-
-    Más adelante:
-      - repeticiones
-      - cambios rápidos
-      - dobles
-      - secuencias de 2-3 carriles
-  */
-
-  function makeNextPattern(){
-
-    const difficulty =
-      getDifficulty();
-
-    const r =
-      Math.random();
-
-
-    /* -----------------------------------------------
-       Primeros beats: enseñar el juego
-    ------------------------------------------------ */
-
-    if(beatIndex < 5){
-
-      lastLane =
-        (lastLane + 1) % 3;
-
-      return {
-        lanes:[lastLane]
-      };
-
-    }
-
-
-    /* -----------------------------------------------
-       DOBLE NOTA
-    ------------------------------------------------ */
-
-    const doubleChance =
-      .04 +
-      difficulty * .18;
-
-    if(
-      r < doubleChance &&
-      beatIndex > 12
-    ){
-
-      let other;
-
-      do{
-
-        other =
-          Math.floor(
-            Math.random() * 3
-          );
-
-      }while(
-        other === lastLane
-      );
-
-      return {
-        lanes:[
-          lastLane,
-          other
-        ]
-      };
-
-    }
-
-
-    /* -----------------------------------------------
-       CAMBIO DE CARRIL
-    ------------------------------------------------ */
-
-    let lane;
-
-    /*
-      A mayor dificultad, menos probabilidad
-      de repetir carril.
-    */
-
-    const stayChance =
-      .34 -
-      difficulty * .16;
-
-    if(
-      r < stayChance
-    ){
-
-      lane =
-        lastLane;
-
-    }else{
-
-      /*
-        Evitamos saltos artificialmente predecibles.
-      */
-
-      const direction =
-        Math.random() < .5
-          ? 1
-          : -1;
-
-      lane =
-        lastLane +
-        direction;
-
-      if(lane < 0){
-        lane = 1;
-      }
-
-      if(lane > 2){
-        lane = 1;
-      }
-
-    }
-
-
-    lastLane =
-      lane;
-
-
-    /* -----------------------------------------------
-       SECUENCIAS ESPECIALES
-    ------------------------------------------------ */
-
-    /*
-      Cada cierto tiempo introducimos un cambio
-      más marcado para romper monotonía.
-    */
-
-    if(
-      beatIndex % 11 === 0 &&
-      difficulty > .15
-    ){
-
-      lane =
-        (lastLane + 1) % 3;
-
-      lastLane =
-        lane;
-
-    }
-
-
-    return {
-      lanes:[lane]
-    };
-
-  }
-
-
-  /* ========================================================
-     SPAWN
-  ======================================================== */
-
-  function spawnNote(
-    laneIndex,
-    targetTime
-  ){
-
-    const el =
-      document.createElement(
-        'div'
-      );
-
-    el.className =
-      'note ' +
-      ['a','b','c','d'][
-        laneIndex % 4
-      ];
-
-    el.style.left =
-      (
-        laneIndex *
-        100 /
-        3
-      ) + '%';
-
-    el.dataset.lane =
-      laneIndex;
-
-    play.appendChild(el);
-
-    notes.push({
-
-      el,
-
-      lane:
-        laneIndex,
-
-      targetTime,
-
-      hit:false,
-
-      missed:false
-
-    });
-
-  }
-
-
-  /* ========================================================
-     GENERAR NOTAS INFINITAMENTE
-  ======================================================== */
-
-  function spawnUntil(now){
-
-    /*
-      Mientras el siguiente beat esté suficientemente
-      cerca como para tener que aparecer en pantalla,
-      seguimos generando.
-    */
-
-    while(
-      nextBeatTime - now <=
-      TRAVEL
-    ){
-
-      const pattern =
-        makeNextPattern();
-
-
-      pattern.lanes.forEach(
-        lane => {
-
-          spawnNote(
-            lane,
-            nextBeatTime
-          );
-
-        }
-      );
-
-
-      beatIndex++;
-
-
-      /*
-        El intervalo cambia progresivamente.
-      */
-
-      nextBeatTime +=
-        getBeatDuration();
-
-    }
-
-  }
-
-
-  /* ========================================================
-     POSICIÓN DE NOTA
-  ======================================================== */
-
-  function noteY(
-    note,
-    now
-  ){
-
-    const h =
-      play.getBoundingClientRect()
-        .height;
-
-    const hitY =
-      h * HIT_Y_RATIO;
-
-    const startY =
-      -90;
-
-    const progress =
-      1 -
-      (
-        note.targetTime -
-        now
-      ) /
-      TRAVEL;
-
-    return (
-      startY +
-      (
-        hitY -
-        startY
-      ) *
-      progress
-    );
 
   }
 
@@ -1584,55 +1593,72 @@ h1{
       return;
     }
 
+
     lives--;
 
     updateLives();
 
+
     combo = 0;
 
-    comboTopEl.textContent =
+    comboEl.textContent =
       '0';
 
-    comboEl.textContent =
+    comboDisplay.textContent =
       '';
+
 
     feedback(
       lives > 0
-        ? '¡FALLO!'
+        ? 'FALLO'
         : 'GAME OVER',
       'bad'
     );
 
+
     tone(
-      180,
-      .1,
+      160,
+      .14,
       'sawtooth',
-      .022
-    );
-
-    blipPlay(
-      lives > 0
-        ? 'sad'
-        : 'sleep'
+      .025
     );
 
 
-    play.classList.remove(
+    board.classList.remove(
       'miss'
     );
 
-    void play.offsetWidth;
+    void board.offsetWidth;
 
-    play.classList.add(
+    board.classList.add(
       'miss'
     );
+
+
+    if(
+      window.Companion &&
+      typeof Companion.play ===
+      'function'
+    ){
+
+      try{
+
+        Companion.play(
+          lives > 0
+            ? 'sad'
+            : 'sleep'
+        );
+
+      }catch(e){}
+
+    }
 
 
     if(lives <= 0){
 
       setTimeout(
         finishGame,
-        280
+        260
       );
 
     }
@@ -1665,6 +1691,7 @@ h1{
     const perfect =
       delta <= 60;
 
+
     const good =
       delta <= 115;
 
@@ -1680,10 +1707,11 @@ h1{
 
       tone(
         880,
-        .08,
-        'sine',
-        .035
+        .075,
+        'square',
+        .03
       );
+
 
     }else if(good){
 
@@ -1696,10 +1724,11 @@ h1{
 
       tone(
         660,
-        .07,
-        'sine',
-        .028
+        .065,
+        'square',
+        .024
       );
+
 
     }else{
 
@@ -1712,15 +1741,16 @@ h1{
 
       tone(
         520,
-        .06,
-        'sine',
-        .024
+        .05,
+        'square',
+        .02
       );
 
     }
 
 
     combo++;
+
 
     maxCombo =
       Math.max(
@@ -1730,10 +1760,15 @@ h1{
 
 
     /*
-      Bonus por mantener el ritmo.
+      Bonus de combo.
+
+      Lo hacemos algo más generoso
+      para que sobrevivir tenga recompensa.
     */
 
-    if(combo >= 5){
+    if(
+      combo >= 5
+    ){
 
       score +=
         Math.min(
@@ -1749,81 +1784,83 @@ h1{
     scoreEl.textContent =
       score;
 
-    comboTopEl.textContent =
+
+    comboEl.textContent =
       combo;
 
 
-    comboEl.textContent =
+    comboDisplay.textContent =
       combo >= 2
         ? combo + '× COMBO'
         : '';
 
 
-    comboEl.classList.remove(
-      'hot'
+    comboDisplay.classList.remove(
+      'pop'
     );
 
-    void comboEl.offsetWidth;
+    void comboDisplay.offsetWidth;
 
-    if(combo >= 2){
+    if(
+      combo >= 2
+    ){
 
-      comboEl.classList.add(
-        'hot'
+      comboDisplay.classList.add(
+        'pop'
       );
 
     }
 
 
-    note.el.style.opacity =
-      '0';
-
-    setTimeout(
-      () => {
-
-        if(
-          note.el.parentNode
-        ){
-
-          note.el.remove();
-
-        }
-
-      },
-      100
-    );
-
-
-    blipPlay(
-      perfect
-        ? 'cheer'
-        : 'wave'
-    );
-
-  }
-
-
-  /* ========================================================
-     MISS DE UNA NOTA
-  ======================================================== */
-
-  function missNote(note){
-
     if(
-      note.hit ||
-      note.missed
+      score >
+      best
     ){
 
-      return;
+      best =
+        score;
+
+      bestEl.textContent =
+        best;
+
+      bestEl.classList.remove(
+        'pop'
+      );
+
+      void bestEl.offsetWidth;
+
+      bestEl.classList.add(
+        'pop'
+      );
+
+
+      try{
+
+        sessionStorage.setItem(
+          BEST_KEY,
+          String(best)
+        );
+
+      }catch(e){}
 
     }
 
-    note.missed = true;
 
-    loseLife();
-
+    /*
+      Animación simple de desaparición.
+    */
 
     note.el.style.opacity =
       '0';
+
+    note.el.style.transform =
+      'translateY(' +
+      noteY(
+        note,
+        performance.now()
+      ) +
+      'px) scale(1.12)';
+
 
     setTimeout(
       () => {
@@ -1837,14 +1874,33 @@ h1{
         }
 
       },
-      100
+      90
     );
+
+
+    if(
+      window.Companion &&
+      typeof Companion.play ===
+      'function'
+    ){
+
+      try{
+
+        Companion.play(
+          perfect
+            ? 'cheer'
+            : 'wave'
+        );
+
+      }catch(e){}
+
+    }
 
   }
 
 
   /* ========================================================
-     INPUT
+     TOQUE
   ======================================================== */
 
   function tapLane(
@@ -1862,6 +1918,7 @@ h1{
 
     let candidate =
       null;
+
 
     let bestDelta =
       Infinity;
@@ -1922,7 +1979,7 @@ h1{
 
 
   /* ========================================================
-     POINTER / MÓVIL
+     TOUCH
   ======================================================== */
 
   lanes.forEach(
@@ -1965,6 +2022,17 @@ h1{
         event.key.toLowerCase();
 
 
+      if(
+        key === 'a' ||
+        key === 's' ||
+        key === 'd'
+      ){
+
+        event.preventDefault();
+
+      }
+
+
       if(key === 'a'){
         tapLane(0);
       }
@@ -1975,17 +2043,6 @@ h1{
 
       if(key === 'd'){
         tapLane(2);
-      }
-
-
-      if(
-        key === 'a' ||
-        key === 's' ||
-        key === 'd'
-      ){
-
-        event.preventDefault();
-
       }
 
     }
@@ -1999,8 +2056,9 @@ h1{
   function updateNotes(now){
 
     const h =
-      play.getBoundingClientRect()
+      board.getBoundingClientRect()
         .height;
+
 
     const hitY =
       h * HIT_Y_RATIO;
@@ -2010,83 +2068,76 @@ h1{
       new Set();
 
 
-    notes.forEach(
-      note => {
+    for(
+      const note of notes
+    ){
 
-        if(
-          note.hit ||
-          note.missed
-        ){
+      if(
+        note.hit ||
+        note.missed
+      ){
 
-          return;
-
-        }
-
-
-        const y =
-          noteY(
-            note,
-            now
-          );
-
-
-        note.el.style.setProperty(
-          '--note-y',
-          y + 'px'
-        );
-
-
-        note.el.style.transform =
-          'translateY(' +
-          y +
-          'px)';
-
-
-        const center =
-          y + 27;
-
-
-        const near =
-          Math.abs(
-            center -
-            hitY
-          ) < 55;
-
-
-        note.el.classList.toggle(
-          'near-hit',
-          near
-        );
-
-
-        if(near){
-
-          readyLanes.add(
-            note.lane
-          );
-
-        }
-
-
-        /*
-          Si la nota ya ha pasado la ventana
-          de golpe, se pierde una vida.
-        */
-
-        if(
-          now -
-          note.targetTime >
-          HIT_WINDOW
-        ){
-
-          missNote(
-            note
-          );
-
-        }
+        continue;
 
       }
-    );
+
+
+      const y =
+        noteY(
+          note,
+          now
+        );
+
+
+      note.el.style.transform =
+        'translateY(' +
+        y +
+        'px)';
+
+
+      const center =
+        y + 26;
+
+
+      const near =
+        Math.abs(
+          center -
+          hitY
+        ) < 55;
+
+
+      note.el.classList.toggle(
+        'near-hit',
+        near
+      );
+
+
+      if(near){
+
+        readyLanes.add(
+          note.lane
+        );
+
+      }
+
+
+      /*
+        La nota ha pasado.
+      */
+
+      if(
+        now -
+        note.targetTime >
+        HIT_WINDOW
+      ){
+
+        missNote(
+          note
+        );
+
+      }
+
+    }
 
 
     lanes.forEach(
@@ -2113,6 +2164,51 @@ h1{
 
 
   /* ========================================================
+     MISS
+  ======================================================== */
+
+  function missNote(note){
+
+    if(
+      note.hit ||
+      note.missed
+    ){
+
+      return;
+
+    }
+
+
+    note.missed =
+      true;
+
+
+    loseLife();
+
+
+    note.el.style.opacity =
+      '0';
+
+
+    setTimeout(
+      () => {
+
+        if(
+          note.el.parentNode
+        ){
+
+          note.el.remove();
+
+        }
+
+      },
+      80
+    );
+
+  }
+
+
+  /* ========================================================
      LIMPIEZA
   ======================================================== */
 
@@ -2120,14 +2216,11 @@ h1{
 
     notes =
       notes.filter(
-        note => {
-
-          return !(
+        note =>
+          !(
             note.hit ||
             note.missed
-          );
-
-        }
+          )
       );
 
   }
@@ -2144,30 +2237,17 @@ h1{
     }
 
 
-    /*
-      Generación infinita.
-    */
-
     spawnUntil(now);
-
-
-    /*
-      Movimiento.
-    */
 
     updateNotes(now);
 
-
-    /*
-      Si todavía hay vidas seguimos.
-    */
 
     if(
       running &&
       lives > 0
     ){
 
-      animationFrame =
+      raf =
         requestAnimationFrame(
           loop
         );
@@ -2194,6 +2274,7 @@ h1{
             '¡YA!'
           ];
 
+
         let index = 0;
 
 
@@ -2217,8 +2298,10 @@ h1{
           countdownEl.textContent =
             values[index];
 
+
           countdownEl.className =
             'show';
+
 
           void countdownEl.offsetWidth;
 
@@ -2230,8 +2313,8 @@ h1{
             next,
             index ===
               values.length
-              ? 420
-              : 700
+              ? 450
+              : 680
           );
 
         }
@@ -2255,7 +2338,7 @@ h1{
 
 
     cancelAnimationFrame(
-      animationFrame
+      raf
     );
 
 
@@ -2285,7 +2368,9 @@ h1{
 
     lives = MAX_LIVES;
 
-    beatIndex = 0;
+    measureIndex = 0;
+
+    producedEvents = 0;
 
     lastLane = 1;
 
@@ -2293,10 +2378,10 @@ h1{
     scoreEl.textContent =
       '0';
 
-    comboTopEl.textContent =
+    comboEl.textContent =
       '0';
 
-    comboEl.textContent =
+    comboDisplay.textContent =
       '';
 
 
@@ -2316,10 +2401,6 @@ h1{
     );
 
 
-    feedbackEl.className =
-      '';
-
-
     overlay.classList.add(
       'hidden'
     );
@@ -2331,24 +2412,19 @@ h1{
     await countdown();
 
 
-    startTime =
+    const now =
       performance.now();
 
 
-    /*
-      El primer beat se coloca después
-      del pequeño retraso inicial.
-    */
-
-    nextBeatTime =
-      startTime +
+    nextMeasureTime =
+      now +
       START_DELAY;
 
 
     running = true;
 
 
-    animationFrame =
+    raf =
       requestAnimationFrame(
         loop
       );
@@ -2357,7 +2433,7 @@ h1{
 
 
   /* ========================================================
-     FIN
+     GAME OVER
   ======================================================== */
 
   function finishGame(){
@@ -2371,7 +2447,7 @@ h1{
 
 
     cancelAnimationFrame(
-      animationFrame
+      raf
     );
 
 
@@ -2406,84 +2482,36 @@ h1{
     notes = [];
 
 
-    let record = false;
+    const isRecord =
+      score === best &&
+      score > 0;
 
-
-    if(score > best){
-
-      best = score;
-
-      record = true;
-
-
-      try{
-
-        sessionStorage.setItem(
-          KEY,
-          String(best)
-        );
-
-      }catch(e){}
-
-
-      bestEl.textContent =
-        best;
-
-
-      blipPlay(
-        'cheer'
-      );
-
-    }else{
-
-      blipPlay(
-        'sad'
-      );
-
-    }
-
-
-    showEndScreen(
-      record
-    );
-
-  }
-
-
-  /* ========================================================
-     END SCREEN
-  ======================================================== */
-
-  function showEndScreen(
-    record
-  ){
 
     overlay.innerHTML = `
 
-      <div class="overlay-title">
+      <h2>
         GAME OVER
-      </div>
+      </h2>
 
-      <div class="result">
-        PUNTUACIÓN
-        <strong>${score}</strong>
-      </div>
-
-      <div class="result">
-        COMBO MÁXIMO
-        <strong>${maxCombo}</strong>
+      <div id="overlay-score">
+        ${score} PUNTOS
+        <br>
+        <span style="color:var(--dim)">
+          COMBO MÁXIMO: ${maxCombo}
+        </span>
       </div>
 
       ${
-        record
+        isRecord
           ? `
-            <div class="new-record">
+            <div style="
+              color:var(--c3);
+              font-size:9px;
+            ">
               ★ NUEVO RÉCORD ★
             </div>
           `
-          : `
-            <div style="height:18px"></div>
-          `
+          : ''
       }
 
       <button id="again-btn">
@@ -2507,17 +2535,37 @@ h1{
         startGame
       );
 
+
+    if(
+      window.Companion &&
+      typeof Companion.play ===
+      'function'
+    ){
+
+      try{
+
+        Companion.play(
+          isRecord
+            ? 'cheer'
+            : 'sad'
+        );
+
+      }catch(e){}
+
+    }
+
   }
 
 
   /* ========================================================
-     START BUTTON
+     INICIO
   ======================================================== */
 
   startBtn.addEventListener(
     'click',
     startGame
   );
+
 
 })();
 </script>
