@@ -70,7 +70,7 @@ button{
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:14px;
+  margin-bottom:12px;
 }
 
 .back{
@@ -126,9 +126,9 @@ h1{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin:0 auto 10px;
   width:100%;
   max-width:390px;
+  margin:0 auto 10px;
   color:var(--muted);
   font-size:12px;
 }
@@ -139,6 +139,31 @@ h1{
 
 #score{
   font-size:15px;
+}
+
+#lives{
+  display:flex;
+  gap:5px;
+  align-items:center;
+}
+
+.life{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--c3);
+  box-shadow:0 0 7px rgba(102,227,255,.25);
+  transition:
+    opacity .15s ease,
+    transform .15s ease,
+    background .15s ease;
+}
+
+.life.lost{
+  opacity:.18;
+  transform:scale(.75);
+  background:rgba(255,255,255,.25);
+  box-shadow:none;
 }
 
 #combo{
@@ -165,8 +190,15 @@ h1{
 }
 
 @keyframes comboPop{
-  0%{transform:translateX(-50%) scale(.8);opacity:.4}
-  100%{transform:translateX(-50%) scale(1);opacity:1}
+  0%{
+    transform:translateX(-50%) scale(.8);
+    opacity:.4;
+  }
+
+  100%{
+    transform:translateX(-50%) scale(1);
+    opacity:1;
+  }
 }
 
 /* =========================================================
@@ -189,9 +221,11 @@ h1{
   border-radius:18px;
 
   background:
-    radial-gradient(circle at 50% 100%,
+    radial-gradient(
+      circle at 50% 100%,
       rgba(255,255,255,.055),
-      transparent 45%),
+      transparent 45%
+    ),
     linear-gradient(
       180deg,
       rgba(255,255,255,.018),
@@ -241,7 +275,9 @@ h1{
 
 .lane::after{
   content:"";
+
   position:absolute;
+
   left:50%;
   bottom:0;
 
@@ -253,14 +289,12 @@ h1{
   background:linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(255,255,255,.025) 55%,
-    rgba(255,255,255,.08) 100%
+    rgba(255,255,255,.02) 55%,
+    rgba(255,255,255,.075) 100%
   );
 
   pointer-events:none;
 }
-
-/* Carril preparado para recibir nota */
 
 .lane.ready{
   background:
@@ -308,7 +342,9 @@ h1{
 
 .lane.ready .lane-key{
   color:rgba(255,255,255,.85);
+
   border-color:rgba(255,255,255,.3);
+
   background:rgba(255,255,255,.09);
 
   transform:translateX(-50%) scale(1.05);
@@ -317,12 +353,6 @@ h1{
 /* =========================================================
    HIT ZONE
 ========================================================= */
-
-/*
-   La zona de golpe está bastante más arriba que antes.
-   No es necesario tocar exactamente la línea:
-   toda esta franja cuenta como referencia visual.
-*/
 
 #hit-zone{
   position:absolute;
@@ -335,7 +365,7 @@ h1{
   height:82px;
 
   border-top:2px solid var(--c3);
-  border-bottom:2px solid rgba(102,227,255,.35);
+  border-bottom:1px solid rgba(102,227,255,.3);
 
   background:
     linear-gradient(
@@ -350,6 +380,7 @@ h1{
     0 1px 10px rgba(102,227,255,.03);
 
   pointer-events:none;
+
   z-index:3;
 
   transition:
@@ -372,37 +403,6 @@ h1{
   box-shadow:
     0 -2px 20px rgba(102,227,255,.14),
     0 2px 15px rgba(102,227,255,.07);
-}
-
-/* Línea central de pulso */
-
-#beat-pulse{
-  position:absolute;
-
-  left:0;
-  right:0;
-
-  bottom:calc(25% + 41px);
-
-  height:2px;
-
-  background:rgba(255,255,255,.28);
-
-  box-shadow:
-    0 0 8px rgba(255,255,255,.08);
-
-  pointer-events:none;
-  z-index:4;
-
-  opacity:.65;
-
-  transition:
-    opacity .08s ease,
-    transform .08s ease;
-}
-
-#hit-zone.ready + #beat-pulse{
-  opacity:1;
 }
 
 /* =========================================================
@@ -435,9 +435,11 @@ h1{
   content:"";
 
   position:absolute;
+
   inset:5px;
 
   border:1px solid rgba(255,255,255,.28);
+
   border-radius:8px;
 
   pointer-events:none;
@@ -482,7 +484,9 @@ h1{
 .note.near-hit{
   filter:
     brightness(1.25)
-    drop-shadow(0 0 12px rgba(255,255,255,.22));
+    drop-shadow(
+      0 0 12px rgba(255,255,255,.22)
+    );
 
   transform:
     translateY(var(--note-y))
@@ -546,6 +550,34 @@ h1{
   100%{
     opacity:0;
     transform:translate(-50%,-90%) scale(1.05);
+  }
+}
+
+/* =========================================================
+   MISS FLASH
+========================================================= */
+
+#play.miss{
+  animation:missFlash .22s ease-out;
+}
+
+@keyframes missFlash{
+  0%{
+    box-shadow:
+      0 18px 60px rgba(0,0,0,.35),
+      inset 0 0 0 rgba(255,80,90,0);
+  }
+
+  45%{
+    box-shadow:
+      0 18px 60px rgba(0,0,0,.35),
+      inset 0 0 45px rgba(255,80,90,.13);
+  }
+
+  100%{
+    box-shadow:
+      0 18px 60px rgba(0,0,0,.35),
+      inset 0 0 0 rgba(255,80,90,0);
   }
 }
 
@@ -640,11 +672,12 @@ h1{
 }
 
 .overlay-text{
-  max-width:280px;
+  max-width:285px;
 
   color:var(--muted);
 
   font-size:13px;
+
   line-height:1.5;
 
   margin-bottom:22px;
@@ -689,23 +722,28 @@ h1{
   margin:0 0 4px;
 
   font-size:13px;
+
   color:var(--muted);
 }
 
 .result strong{
   color:var(--text);
+
   font-size:28px;
 }
 
 .new-record{
   color:var(--good);
+
   font-size:12px;
+
   font-weight:800;
+
   margin:6px 0 18px;
 }
 
 /* =========================================================
-   BOTTOM HELP
+   HELP
 ========================================================= */
 
 .help{
@@ -719,6 +757,7 @@ h1{
   color:var(--muted);
 
   font-size:11px;
+
   line-height:1.5;
 }
 
@@ -731,6 +770,7 @@ h1{
 ========================================================= */
 
 @media (max-height:700px){
+
   #app{
     padding-top:10px;
   }
@@ -749,9 +789,11 @@ h1{
 }
 
 @media (min-width:600px){
+
   #app{
     padding-top:28px;
   }
+
 }
 </style>
 </head>
@@ -767,26 +809,48 @@ h1{
     </a>
 
     <div class="title-wrap">
+
       <h1>SIGUE EL RITMO</h1>
-      <div class="subtitle">Toca las notas al llegar</div>
+
+      <div class="subtitle">
+        No pierdas el ritmo
+      </div>
+
     </div>
 
     <div class="best">
+
       RÉCORD
+
       <strong id="best">0</strong>
+
     </div>
 
   </div>
+
 
   <div class="info">
+
     <div>
-      PUNTOS <strong id="score">0</strong>
+      PUNTOS
+      <strong id="score">0</strong>
+    </div>
+
+    <div id="lives">
+
+      <span class="life"></span>
+      <span class="life"></span>
+      <span class="life"></span>
+
     </div>
 
     <div>
-      COMBO <strong id="combo-top">0</strong>
+      COMBO
+      <strong id="combo-top">0</strong>
     </div>
+
   </div>
+
 
   <div id="play">
 
@@ -806,15 +870,20 @@ h1{
 
     </div>
 
-    <div id="hit-zone"></div>
 
-    <div id="beat-pulse"></div>
+    <!--
+      Esta es ahora la única referencia horizontal
+      importante del juego.
+    -->
+
+    <div id="hit-zone"></div>
 
     <div id="feedback"></div>
 
     <div id="combo"></div>
 
     <div id="countdown"></div>
+
 
     <div id="overlay">
 
@@ -823,8 +892,9 @@ h1{
       </div>
 
       <div class="overlay-text">
-        Toca el carril cuando la nota llegue a la zona iluminada.
-        No necesitas pulsar exactamente sobre la línea.
+        Toca el carril cuando la nota llegue
+        a la zona iluminada.
+        Tienes 3 vidas.
       </div>
 
       <button id="start-btn">
@@ -835,12 +905,19 @@ h1{
 
   </div>
 
+
   <div class="help">
-    <strong>Móvil:</strong> toca cualquier punto del carril ·
-    <strong>PC:</strong> A · S · D
+
+    <strong>Móvil:</strong>
+    toca cualquier punto del carril ·
+
+    <strong>PC:</strong>
+    A · S · D
+
   </div>
 
 </div>
+
 
 <script src="../assets/companion.js"></script>
 
@@ -851,62 +928,91 @@ h1{
      CONFIGURACIÓN
   ======================================================== */
 
-  const KEY = 'miniArcade.ritmo.best';
+  const KEY =
+    'miniArcade.ritmo.best';
 
-  const BPM = 108;
-  const BEAT = 60000 / BPM;
+  /*
+    Velocidad inicial.
+    El juego irá acelerando progresivamente.
+  */
 
-  const TOTAL_BEATS = 72;
+  const START_BPM = 104;
+
+  const MAX_BPM = 132;
+
+  /*
+    Cada X beats aumenta ligeramente la dificultad.
+  */
+
+  const DIFFICULTY_STEP = 18;
 
   /*
     Tiempo que tarda una nota desde que aparece
-    hasta llegar a la zona de golpe.
+    hasta la zona de golpe.
   */
+
   const TRAVEL = 1850;
 
   /*
-    Ventana de acierto.
-    140 ms permite jugar cómodamente en móvil
-    sin hacer que el juego sea demasiado fácil.
+    Ventana de golpe.
+
+    150 ms es bastante jugable en móvil,
+    pero exige seguir el ritmo.
   */
+
   const HIT_WINDOW = 150;
 
   /*
-    Zona de golpe.
-
-    Antes estaba alrededor del 76%.
-    Ahora está más arriba para que resulte mucho
-    más natural visualmente.
+    Posición de la zona de golpe.
   */
+
   const HIT_Y_RATIO = .68;
 
   const START_DELAY = 1150;
+
+  const MAX_LIVES = 3;
+
 
   /* ========================================================
      ELEMENTOS
   ======================================================== */
 
-  const play = document.getElementById('play');
+  const play =
+    document.getElementById('play');
 
-  const lanes = [...document.querySelectorAll('.lane')];
+  const lanes =
+    [...document.querySelectorAll('.lane')];
 
-  const overlay = document.getElementById('overlay');
+  const lifeEls =
+    [...document.querySelectorAll('.life')];
 
-  const startBtn = document.getElementById('start-btn');
+  const overlay =
+    document.getElementById('overlay');
 
-  const scoreEl = document.getElementById('score');
+  const startBtn =
+    document.getElementById('start-btn');
 
-  const comboTopEl = document.getElementById('combo-top');
+  const scoreEl =
+    document.getElementById('score');
 
-  const comboEl = document.getElementById('combo');
+  const comboTopEl =
+    document.getElementById('combo-top');
 
-  const bestEl = document.getElementById('best');
+  const comboEl =
+    document.getElementById('combo');
 
-  const feedbackEl = document.getElementById('feedback');
+  const bestEl =
+    document.getElementById('best');
 
-  const countdownEl = document.getElementById('countdown');
+  const feedbackEl =
+    document.getElementById('feedback');
 
-  const hitZone = document.getElementById('hit-zone');
+  const countdownEl =
+    document.getElementById('countdown');
+
+  const hitZone =
+    document.getElementById('hit-zone');
+
 
   /* ========================================================
      ESTADO
@@ -920,9 +1026,7 @@ h1{
 
   let maxCombo = 0;
 
-  let beatIndex = 0;
-
-  let startTime = 0;
+  let lives = MAX_LIVES;
 
   let running = false;
 
@@ -930,56 +1034,64 @@ h1{
 
   let notes = [];
 
-  let pattern = [];
+  /*
+    Próximo beat que se generará.
+  */
 
-  let lastBeat = -1;
+  let nextBeatTime = 0;
+
+  let beatIndex = 0;
+
+  let lastLane = 1;
+
+  let startTime = 0;
+
 
   /* ========================================================
      RÉCORD
   ======================================================== */
 
   try{
-    best = parseInt(
-      sessionStorage.getItem(KEY),
-      10
-    ) || 0;
+
+    best =
+      parseInt(
+        sessionStorage.getItem(KEY),
+        10
+      ) || 0;
+
   }catch(e){
+
     best = 0;
+
   }
 
-  bestEl.textContent = best;
+  bestEl.textContent =
+    best;
+
 
   /* ========================================================
      BLIP
   ======================================================== */
 
-  let blip = null;
-
-  try{
-    if(window.Companion){
-      blip = Companion.mount(
-        document.createElement('div'),
-        {
-          size:34
-        }
-      );
-    }
-  }catch(e){
-    blip = null;
-  }
-
   function blipPlay(gesture){
 
     try{
+
       if(
         window.Companion &&
         typeof Companion.play === 'function'
       ){
-        Companion.play(gesture);
+
+        Companion.play(
+          gesture
+        );
+
       }
+
     }catch(e){}
 
   }
+
 
   /* ========================================================
      AUDIO
@@ -994,18 +1106,26 @@ h1{
       if(!audioCtx){
 
         audioCtx =
-          new (window.AudioContext ||
-          window.webkitAudioContext)();
+          new (
+            window.AudioContext ||
+            window.webkitAudioContext
+          )();
 
       }
 
-      if(audioCtx.state === 'suspended'){
+      if(
+        audioCtx.state ===
+        'suspended'
+      ){
+
         audioCtx.resume();
+
       }
 
     }catch(e){}
 
   }
+
 
   function tone(
     frequency,
@@ -1014,11 +1134,14 @@ h1{
     volume=.025
   ){
 
-    if(!audioCtx) return;
+    if(!audioCtx){
+      return;
+    }
 
     try{
 
-      const now = audioCtx.currentTime;
+      const now =
+        audioCtx.currentTime;
 
       const oscillator =
         audioCtx.createOscillator();
@@ -1026,150 +1149,253 @@ h1{
       const gain =
         audioCtx.createGain();
 
-      oscillator.type = type;
+      oscillator.type =
+        type;
 
-      oscillator.frequency.setValueAtTime(
-        frequency,
-        now
-      );
+      oscillator.frequency
+        .setValueAtTime(
+          frequency,
+          now
+        );
 
-      gain.gain.setValueAtTime(
-        volume,
-        now
-      );
+      gain.gain
+        .setValueAtTime(
+          volume,
+          now
+        );
 
-      gain.gain.exponentialRampToValueAtTime(
-        .0001,
-        now + duration
-      );
+      gain.gain
+        .exponentialRampToValueAtTime(
+          .0001,
+          now + duration
+        );
 
       oscillator.connect(gain);
 
-      gain.connect(audioCtx.destination);
+      gain.connect(
+        audioCtx.destination
+      );
 
       oscillator.start(now);
 
-      oscillator.stop(now + duration);
+      oscillator.stop(
+        now + duration
+      );
 
     }catch(e){}
 
   }
 
+
+  /* ========================================================
+     DIFICULTAD
+  ======================================================== */
+
+  function getDifficulty(){
+
+    /*
+      0 al principio.
+      1 cada vez más rápido.
+
+      Nunca supera MAX_BPM.
+    */
+
+    return Math.min(
+      1,
+      Math.floor(
+        beatIndex /
+        DIFFICULTY_STEP
+      ) / 6
+    );
+
+  }
+
+
+  function getBPM(){
+
+    const difficulty =
+      getDifficulty();
+
+    return (
+      START_BPM +
+      (MAX_BPM - START_BPM) *
+      difficulty
+    );
+
+  }
+
+
+  function getBeatDuration(){
+
+    return (
+      60000 /
+      getBPM()
+    );
+
+  }
+
+
   /* ========================================================
      PATRÓN
   ======================================================== */
 
-  function makePattern(){
+  /*
+    Genera el siguiente patrón de forma progresiva.
 
-    const p = [];
+    Al principio:
+      - muchos cambios sencillos
+      - pocas repeticiones
+      - prácticamente ninguna doble
 
-    let lastLane = 1;
+    Más adelante:
+      - repeticiones
+      - cambios rápidos
+      - dobles
+      - secuencias de 2-3 carriles
+  */
 
-    for(
-      let i = 0;
-      i < TOTAL_BEATS;
-      i++
-    ){
+  function makeNextPattern(){
 
-      const r = Math.random();
+    const difficulty =
+      getDifficulty();
 
-      /*
-        Primeros compases:
-        patrón sencillo para que el jugador
-        entre en ritmo.
-      */
+    const r =
+      Math.random();
 
-      if(i < 4){
 
-        lastLane =
-          (lastLane + 1) % 3;
+    /* -----------------------------------------------
+       Primeros beats: enseñar el juego
+    ------------------------------------------------ */
 
-        p.push(lastLane);
+    if(beatIndex < 5){
 
-        continue;
-      }
+      lastLane =
+        (lastLane + 1) % 3;
 
-      /*
-        A partir de aquí aparecen ocasionalmente
-        notas dobles.
-      */
-
-      const doubleChance =
-        i < 16
-          ? .15
-          : i < 40
-            ? .22
-            : .30;
-
-      if(
-        i % 8 === 6 &&
-        r < doubleChance
-      ){
-
-        const other =
-          (lastLane +
-            1 +
-            Math.floor(
-              Math.random() * 2
-            )) % 3;
-
-        p.push(
-          8 +
-          (lastLane << 2) +
-          other
-        );
-
-        continue;
-      }
-
-      let lane;
-
-      /*
-        Mantener ocasionalmente el mismo carril
-        evita que el juego se convierta simplemente
-        en "izquierda-derecha-izquierda-derecha".
-      */
-
-      if(r < .38){
-
-        lane = lastLane;
-
-      }else if(r < .70){
-
-        lane =
-          (lastLane + 1) % 3;
-
-      }else{
-
-        lane =
-          (lastLane + 2) % 3;
-
-      }
-
-      /*
-        Cambio de carril periódico para mantener
-        sensación musical.
-      */
-
-      if(
-        i % 8 === 0 &&
-        r < .72
-      ){
-
-        lane =
-          (lastLane + 1) % 3;
-
-      }
-
-      lastLane = lane;
-
-      p.push(lane + 1);
+      return {
+        lanes:[lastLane]
+      };
 
     }
 
-    return p;
+
+    /* -----------------------------------------------
+       DOBLE NOTA
+    ------------------------------------------------ */
+
+    const doubleChance =
+      .04 +
+      difficulty * .18;
+
+    if(
+      r < doubleChance &&
+      beatIndex > 12
+    ){
+
+      let other;
+
+      do{
+
+        other =
+          Math.floor(
+            Math.random() * 3
+          );
+
+      }while(
+        other === lastLane
+      );
+
+      return {
+        lanes:[
+          lastLane,
+          other
+        ]
+      };
+
+    }
+
+
+    /* -----------------------------------------------
+       CAMBIO DE CARRIL
+    ------------------------------------------------ */
+
+    let lane;
+
+    /*
+      A mayor dificultad, menos probabilidad
+      de repetir carril.
+    */
+
+    const stayChance =
+      .34 -
+      difficulty * .16;
+
+    if(
+      r < stayChance
+    ){
+
+      lane =
+        lastLane;
+
+    }else{
+
+      /*
+        Evitamos saltos artificialmente predecibles.
+      */
+
+      const direction =
+        Math.random() < .5
+          ? 1
+          : -1;
+
+      lane =
+        lastLane +
+        direction;
+
+      if(lane < 0){
+        lane = 1;
+      }
+
+      if(lane > 2){
+        lane = 1;
+      }
+
+    }
+
+
+    lastLane =
+      lane;
+
+
+    /* -----------------------------------------------
+       SECUENCIAS ESPECIALES
+    ------------------------------------------------ */
+
+    /*
+      Cada cierto tiempo introducimos un cambio
+      más marcado para romper monotonía.
+    */
+
+    if(
+      beatIndex % 11 === 0 &&
+      difficulty > .15
+    ){
+
+      lane =
+        (lastLane + 1) % 3;
+
+      lastLane =
+        lane;
+
+    }
+
+
+    return {
+      lanes:[lane]
+    };
 
   }
+
 
   /* ========================================================
      SPAWN
@@ -1181,7 +1407,9 @@ h1{
   ){
 
     const el =
-      document.createElement('div');
+      document.createElement(
+        'div'
+      );
 
     el.className =
       'note ' +
@@ -1190,7 +1418,11 @@ h1{
       ];
 
     el.style.left =
-      (laneIndex * 100 / 3) + '%';
+      (
+        laneIndex *
+        100 /
+        3
+      ) + '%';
 
     el.dataset.lane =
       laneIndex;
@@ -1201,7 +1433,8 @@ h1{
 
       el,
 
-      lane:laneIndex,
+      lane:
+        laneIndex,
 
       targetTime,
 
@@ -1213,8 +1446,57 @@ h1{
 
   }
 
+
   /* ========================================================
-     POSICIÓN
+     GENERAR NOTAS INFINITAMENTE
+  ======================================================== */
+
+  function spawnUntil(now){
+
+    /*
+      Mientras el siguiente beat esté suficientemente
+      cerca como para tener que aparecer en pantalla,
+      seguimos generando.
+    */
+
+    while(
+      nextBeatTime - now <=
+      TRAVEL
+    ){
+
+      const pattern =
+        makeNextPattern();
+
+
+      pattern.lanes.forEach(
+        lane => {
+
+          spawnNote(
+            lane,
+            nextBeatTime
+          );
+
+        }
+      );
+
+
+      beatIndex++;
+
+
+      /*
+        El intervalo cambia progresivamente.
+      */
+
+      nextBeatTime +=
+        getBeatDuration();
+
+    }
+
+  }
+
+
+  /* ========================================================
+     POSICIÓN DE NOTA
   ======================================================== */
 
   function noteY(
@@ -1223,25 +1505,34 @@ h1{
   ){
 
     const h =
-      play.getBoundingClientRect().height;
+      play.getBoundingClientRect()
+        .height;
 
     const hitY =
       h * HIT_Y_RATIO;
 
-    const startY = -90;
+    const startY =
+      -90;
 
     const progress =
       1 -
-      (note.targetTime - now) /
+      (
+        note.targetTime -
+        now
+      ) /
       TRAVEL;
 
     return (
       startY +
-      (hitY - startY) *
+      (
+        hitY -
+        startY
+      ) *
       progress
     );
 
   }
+
 
   /* ========================================================
      FEEDBACK
@@ -1258,17 +1549,96 @@ h1{
     feedbackEl.className =
       '';
 
-    /*
-      Forzar reflow para que la animación
-      pueda repetirse rápidamente.
-    */
-
     void feedbackEl.offsetWidth;
 
     feedbackEl.className =
-      'show ' + type;
+      'show ' +
+      type;
 
   }
+
+
+  /* ========================================================
+     VIDAS
+  ======================================================== */
+
+  function updateLives(){
+
+    lifeEls.forEach(
+      (life,index) => {
+
+        life.classList.toggle(
+          'lost',
+          index >= lives
+        );
+
+      }
+    );
+
+  }
+
+
+  function loseLife(){
+
+    if(!running){
+      return;
+    }
+
+    lives--;
+
+    updateLives();
+
+    combo = 0;
+
+    comboTopEl.textContent =
+      '0';
+
+    comboEl.textContent =
+      '';
+
+    feedback(
+      lives > 0
+        ? '¡FALLO!'
+        : 'GAME OVER',
+      'bad'
+    );
+
+    tone(
+      180,
+      .1,
+      'sawtooth',
+      .022
+    );
+
+    blipPlay(
+      lives > 0
+        ? 'sad'
+        : 'sleep'
+    );
+
+
+    play.classList.remove(
+      'miss'
+    );
+
+    void play.offsetWidth;
+
+    play.classList.add(
+      'miss'
+    );
+
+
+    if(lives <= 0){
+
+      setTimeout(
+        finishGame,
+        280
+      );
+
+    }
+
+  }
+
 
   /* ========================================================
      HIT
@@ -1279,22 +1649,25 @@ h1{
     delta
   ){
 
-    if(note.hit || note.missed){
+    if(
+      note.hit ||
+      note.missed
+    ){
+
       return;
+
     }
+
 
     note.hit = true;
 
-    /*
-      Cuanto más cerca del momento exacto,
-      mayor recompensa.
-    */
 
     const perfect =
-      delta <= 65;
+      delta <= 60;
 
     const good =
       delta <= 115;
+
 
     if(perfect){
 
@@ -1346,6 +1719,7 @@ h1{
 
     }
 
+
     combo++;
 
     maxCombo =
@@ -1354,19 +1728,23 @@ h1{
         combo
       );
 
+
     /*
-      Bonus progresivo por combo.
+      Bonus por mantener el ritmo.
     */
 
     if(combo >= 5){
 
       score +=
         Math.min(
-          15,
-          Math.floor(combo / 5) * 2
+          20,
+          Math.floor(
+            combo / 5
+          ) * 2
         );
 
     }
+
 
     scoreEl.textContent =
       score;
@@ -1374,10 +1752,12 @@ h1{
     comboTopEl.textContent =
       combo;
 
+
     comboEl.textContent =
       combo >= 2
         ? combo + '× COMBO'
         : '';
+
 
     comboEl.classList.remove(
       'hot'
@@ -1393,87 +1773,75 @@ h1{
 
     }
 
+
     note.el.style.opacity =
       '0';
 
-    note.el.style.transform =
-      'translateY(' +
-      noteY(
-        note,
-        performance.now()
-      ) +
-      'px) scale(1.18)';
+    setTimeout(
+      () => {
 
-    setTimeout(() => {
+        if(
+          note.el.parentNode
+        ){
 
-      if(note.el.parentNode){
+          note.el.remove();
 
-        note.el.remove();
+        }
 
-      }
+      },
+      100
+    );
 
-    },120);
 
-    if(perfect){
-
-      blipPlay('cheer');
-
-    }else{
-
-      blipPlay('wave');
-
-    }
+    blipPlay(
+      perfect
+        ? 'cheer'
+        : 'wave'
+    );
 
   }
 
+
   /* ========================================================
-     MISS
+     MISS DE UNA NOTA
   ======================================================== */
 
   function missNote(note){
 
-    if(note.hit || note.missed){
+    if(
+      note.hit ||
+      note.missed
+    ){
+
       return;
+
     }
 
     note.missed = true;
 
-    combo = 0;
+    loseLife();
 
-    comboTopEl.textContent =
-      combo;
-
-    comboEl.textContent =
-      '';
-
-    feedback(
-      'FALLO',
-      'bad'
-    );
-
-    tone(
-      180,
-      .09,
-      'sawtooth',
-      .018
-    );
-
-    blipPlay('sad');
 
     note.el.style.opacity =
       '0';
 
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      if(note.el.parentNode){
+        if(
+          note.el.parentNode
+        ){
 
-        note.el.remove();
+          note.el.remove();
 
-      }
+        }
 
-    },100);
+      },
+      100
+    );
 
   }
+
 
   /* ========================================================
      INPUT
@@ -1487,23 +1855,32 @@ h1{
       return;
     }
 
+
     const now =
       performance.now();
 
-    let candidate = null;
+
+    let candidate =
+      null;
 
     let bestDelta =
       Infinity;
 
-    for(const note of notes){
+
+    for(
+      const note of notes
+    ){
 
       if(
         note.hit ||
         note.missed ||
         note.lane !== laneIndex
       ){
+
         continue;
+
       }
+
 
       const delta =
         Math.abs(
@@ -1511,8 +1888,10 @@ h1{
           note.targetTime
         );
 
+
       if(
-        delta < bestDelta
+        delta <
+        bestDelta
       ){
 
         bestDelta =
@@ -1525,9 +1904,11 @@ h1{
 
     }
 
+
     if(
       candidate &&
-      bestDelta <= HIT_WINDOW
+      bestDelta <=
+      HIT_WINDOW
     ){
 
       hitNote(
@@ -1535,48 +1916,13 @@ h1{
         bestDelta
       );
 
-    }else{
-
-      /*
-        Pulsar demasiado pronto no rompe
-        el combo. Solo se ignora.
-        Esto evita castigar toques accidentales.
-      */
-
-      const closest =
-        notes
-          .filter(n =>
-            !n.hit &&
-            !n.missed &&
-            n.lane === laneIndex
-          )
-          .sort(
-            (a,b) =>
-              Math.abs(
-                a.targetTime - now
-              ) -
-              Math.abs(
-                b.targetTime - now
-              )
-          )[0];
-
-      if(
-        closest &&
-        closest.targetTime < now - HIT_WINDOW
-      ){
-
-        missNote(
-          closest
-        );
-
-      }
-
     }
 
   }
 
+
   /* ========================================================
-     POINTER
+     POINTER / MÓVIL
   ======================================================== */
 
   lanes.forEach(
@@ -1601,6 +1947,7 @@ h1{
     }
   );
 
+
   /* ========================================================
      TECLADO
   ======================================================== */
@@ -1613,8 +1960,10 @@ h1{
         return;
       }
 
+
       const key =
         event.key.toLowerCase();
+
 
       if(key === 'a'){
         tapLane(0);
@@ -1627,6 +1976,7 @@ h1{
       if(key === 'd'){
         tapLane(2);
       }
+
 
       if(
         key === 'a' ||
@@ -1641,6 +1991,7 @@ h1{
     }
   );
 
+
   /* ========================================================
      UPDATE
   ======================================================== */
@@ -1648,13 +1999,16 @@ h1{
   function updateNotes(now){
 
     const h =
-      play.getBoundingClientRect().height;
+      play.getBoundingClientRect()
+        .height;
 
     const hitY =
       h * HIT_Y_RATIO;
 
+
     const readyLanes =
       new Set();
+
 
     notes.forEach(
       note => {
@@ -1663,8 +2017,11 @@ h1{
           note.hit ||
           note.missed
         ){
+
           return;
+
         }
+
 
         const y =
           noteY(
@@ -1672,28 +2029,35 @@ h1{
             now
           );
 
+
         note.el.style.setProperty(
           '--note-y',
           y + 'px'
         );
+
 
         note.el.style.transform =
           'translateY(' +
           y +
           'px)';
 
+
         const center =
           y + 27;
 
+
         const near =
           Math.abs(
-            center - hitY
+            center -
+            hitY
           ) < 55;
+
 
         note.el.classList.toggle(
           'near-hit',
           near
         );
+
 
         if(near){
 
@@ -1703,9 +2067,10 @@ h1{
 
         }
 
+
         /*
-          Si la nota ya ha pasado suficientemente
-          la zona de golpe, cuenta como fallo.
+          Si la nota ya ha pasado la ventana
+          de golpe, se pierde una vida.
         */
 
         if(
@@ -1723,6 +2088,7 @@ h1{
       }
     );
 
+
     lanes.forEach(
       (lane,index) => {
 
@@ -1734,14 +2100,17 @@ h1{
       }
     );
 
+
     hitZone.classList.toggle(
       'ready',
       readyLanes.size > 0
     );
 
+
     removeOldNotes();
 
   }
+
 
   /* ========================================================
      LIMPIEZA
@@ -1753,99 +2122,19 @@ h1{
       notes.filter(
         note => {
 
-          if(
+          return !(
             note.hit ||
             note.missed
-          ){
-
-            return false;
-
-          }
-
-          return true;
+          );
 
         }
       );
 
   }
 
-  /* ========================================================
-     SPAWN LOOP
-  ======================================================== */
-
-  function spawnUntil(now){
-
-    while(
-      beatIndex <
-      pattern.length
-    ){
-
-      const targetTime =
-        startTime +
-        START_DELAY +
-        beatIndex * BEAT;
-
-      /*
-        Crear la nota antes de que llegue
-        a pantalla.
-      */
-
-      if(
-        targetTime - now >
-        TRAVEL
-      ){
-
-        break;
-
-      }
-
-      const value =
-        pattern[beatIndex];
-
-      if(
-        value >= 8
-      ){
-
-        /*
-          Decodificación de nota doble.
-        */
-
-        const packed =
-          value - 8;
-
-        const laneA =
-          (packed >> 2) & 3;
-
-        const laneB =
-          packed & 3;
-
-        spawnNote(
-          laneA,
-          targetTime
-        );
-
-        spawnNote(
-          laneB,
-          targetTime
-        );
-
-      }else{
-
-        spawnNote(
-          value - 1,
-          targetTime
-        );
-
-      }
-
-      beatIndex++;
-
-    }
-
-  }
 
   /* ========================================================
-     LOOP PRINCIPAL
+     LOOP
   ======================================================== */
 
   function loop(now){
@@ -1854,91 +2143,39 @@ h1{
       return;
     }
 
+
+    /*
+      Generación infinita.
+    */
+
     spawnUntil(now);
+
+
+    /*
+      Movimiento.
+    */
 
     updateNotes(now);
 
+
     /*
-      Pulso visual en cada beat.
+      Si todavía hay vidas seguimos.
     */
-
-    const elapsed =
-      now -
-      (
-        startTime +
-        START_DELAY
-      );
-
-    const currentBeat =
-      Math.floor(
-        elapsed / BEAT
-      );
 
     if(
-      currentBeat >= 0 &&
-      currentBeat !== lastBeat
+      running &&
+      lives > 0
     ){
 
-      lastBeat =
-        currentBeat;
-
-      beatPulse();
-
-    }
-
-    /*
-      Fin de partida:
-      esperamos a que termine el último beat
-      y que desaparezcan las últimas notas.
-    */
-
-    const endTime =
-      startTime +
-      START_DELAY +
-      TOTAL_BEATS * BEAT +
-      TRAVEL +
-      250;
-
-    if(now >= endTime){
-
-      finishGame();
-
-      return;
+      animationFrame =
+        requestAnimationFrame(
+          loop
+        );
 
     }
 
-    animationFrame =
-      requestAnimationFrame(
-        loop
-      );
-
   }
 
-  /* ========================================================
-     BEAT VISUAL
-  ======================================================== */
-
-  function beatPulse(){
-
-    const pulse =
-      document.getElementById(
-        'beat-pulse'
-      );
-
-    pulse.style.transform =
-      'scaleX(1.035)';
-
-    setTimeout(
-      () => {
-
-        pulse.style.transform =
-          'scaleX(1)';
-
-      },
-      70
-    );
-
-  }
 
   /* ========================================================
      COUNTDOWN
@@ -1950,9 +2187,15 @@ h1{
       resolve => {
 
         const values =
-          ['3','2','1','¡YA!'];
+          [
+            '3',
+            '2',
+            '1',
+            '¡YA!'
+          ];
 
         let index = 0;
+
 
         function next(){
 
@@ -1970,6 +2213,7 @@ h1{
 
           }
 
+
           countdownEl.textContent =
             values[index];
 
@@ -1978,16 +2222,20 @@ h1{
 
           void countdownEl.offsetWidth;
 
+
           index++;
+
 
           setTimeout(
             next,
-            index === values.length
+            index ===
+              values.length
               ? 420
               : 700
           );
 
         }
+
 
         next();
 
@@ -1995,6 +2243,7 @@ h1{
     );
 
   }
+
 
   /* ========================================================
      START
@@ -2004,21 +2253,29 @@ h1{
 
     initAudio();
 
+
     cancelAnimationFrame(
       animationFrame
     );
 
+
     notes.forEach(
       note => {
 
-        if(note.el.parentNode){
+        if(
+          note.el.parentNode
+        ){
+
           note.el.remove();
+
         }
 
       }
     );
 
+
     notes = [];
+
 
     score = 0;
 
@@ -2026,12 +2283,12 @@ h1{
 
     maxCombo = 0;
 
+    lives = MAX_LIVES;
+
     beatIndex = 0;
 
-    lastBeat = -1;
+    lastLane = 1;
 
-    pattern =
-      makePattern();
 
     scoreEl.textContent =
       '0';
@@ -2042,8 +2299,9 @@ h1{
     comboEl.textContent =
       '';
 
-    feedbackEl.className =
-      '';
+
+    updateLives();
+
 
     lanes.forEach(
       lane =>
@@ -2052,22 +2310,43 @@ h1{
         )
     );
 
+
     hitZone.classList.remove(
       'ready'
     );
+
+
+    feedbackEl.className =
+      '';
+
 
     overlay.classList.add(
       'hidden'
     );
 
+
     running = false;
 
+
     await countdown();
+
 
     startTime =
       performance.now();
 
+
+    /*
+      El primer beat se coloca después
+      del pequeño retraso inicial.
+    */
+
+    nextBeatTime =
+      startTime +
+      START_DELAY;
+
+
     running = true;
+
 
     animationFrame =
       requestAnimationFrame(
@@ -2075,6 +2354,7 @@ h1{
       );
 
   }
+
 
   /* ========================================================
      FIN
@@ -2086,11 +2366,14 @@ h1{
       return;
     }
 
+
     running = false;
+
 
     cancelAnimationFrame(
       animationFrame
     );
+
 
     lanes.forEach(
       lane =>
@@ -2099,29 +2382,39 @@ h1{
         )
     );
 
+
     hitZone.classList.remove(
       'ready'
     );
 
+
     notes.forEach(
       note => {
 
-        if(note.el.parentNode){
+        if(
+          note.el.parentNode
+        ){
+
           note.el.remove();
+
         }
 
       }
     );
 
+
     notes = [];
 
+
     let record = false;
+
 
     if(score > best){
 
       best = score;
 
       record = true;
+
 
       try{
 
@@ -2132,22 +2425,30 @@ h1{
 
       }catch(e){}
 
+
       bestEl.textContent =
         best;
 
-      blipPlay('cheer');
+
+      blipPlay(
+        'cheer'
+      );
 
     }else{
 
-      blipPlay('wave');
+      blipPlay(
+        'sad'
+      );
 
     }
+
 
     showEndScreen(
       record
     );
 
   }
+
 
   /* ========================================================
      END SCREEN
@@ -2160,7 +2461,7 @@ h1{
     overlay.innerHTML = `
 
       <div class="overlay-title">
-        FIN
+        GAME OVER
       </div>
 
       <div class="result">
@@ -2191,18 +2492,23 @@ h1{
 
     `;
 
+
     overlay.classList.remove(
       'hidden'
     );
 
+
     document
-      .getElementById('again-btn')
+      .getElementById(
+        'again-btn'
+      )
       .addEventListener(
         'click',
         startGame
       );
 
   }
+
 
   /* ========================================================
      START BUTTON
