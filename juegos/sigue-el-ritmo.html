@@ -147,7 +147,6 @@
   pointer-events:none;
 
   background:
-
     linear-gradient(
       90deg,
       transparent 0,
@@ -194,10 +193,7 @@
 }
 
 
-/*
-   Pequeña guía central vertical.
-   Mucho más discreta que la antigua línea horizontal.
-*/
+/* Guía vertical muy discreta */
 
 .lane::after{
   content:"";
@@ -224,6 +220,17 @@
       transparent 50%,
       rgba(61,218,215,.055) 100%
     );
+}
+
+
+/* Feedback instantáneo al tocar */
+
+.lane.tap{
+  background:
+    rgba(255,210,63,.10);
+
+  box-shadow:
+    inset 0 0 25px rgba(255,210,63,.08);
 }
 
 
@@ -281,20 +288,16 @@
    ZONA DE GOLPE
 ========================================================= */
 
-/*
-   IMPORTANTE:
-   No hay ninguna segunda línea por encima.
-   La zona es una franja translúcida y una única
-   referencia fina en el centro.
-*/
-
 #hit-zone{
   position:absolute;
 
   left:0;
   right:0;
 
-  bottom:25%;
+  /*
+    Un poco más baja que antes.
+  */
+  bottom:20%;
 
   height:78px;
 
@@ -312,8 +315,8 @@
 
 
 /*
-   Única línea de referencia.
-   Fina y centrada dentro de la zona.
+   ÚNICA línea de referencia.
+   No hay otra línea horizontal encima.
 */
 
 #hit-zone::before{
@@ -376,11 +379,6 @@
     opacity .09s ease;
 }
 
-
-/*
-   Interior pixelado.
-*/
-
 .note::after{
   content:"";
 
@@ -392,9 +390,6 @@
 
   pointer-events:none;
 }
-
-
-/* Colores */
 
 .note.a{
   background:var(--c1);
@@ -411,11 +406,6 @@
 .note.d{
   background:var(--c4);
 }
-
-
-/*
-   Cuando está cerca del punto correcto.
-*/
 
 .note.near-hit{
   filter:
@@ -650,10 +640,6 @@
   color:var(--c3);
 }
 
-#overlay.lost h2{
-  color:var(--c1);
-}
-
 #overlay p{
   margin:0;
 
@@ -725,7 +711,7 @@
 
 
 /* =========================================================
-   ANIMACIONES HUD
+   ANIMACIONES
 ========================================================= */
 
 @keyframes pop-scale{
@@ -750,138 +736,111 @@
 
 }
 
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-height:700px){
-
-  body{
-    padding-top:12px;
-  }
-
-  .top-nav{
-    margin-bottom:10px;
-  }
-
-}
-
 </style>
 </head>
 
+
 <body>
 
-  <div class="top-nav">
-    <a class="back-link" href="../index.html">← MENÚ</a>
-    <span class="page-title">SIGUE EL RITMO</span>
-  </div>
+<div class="top-nav">
+  <a class="back-link" href="../index.html">← MENÚ</a>
+  <span class="page-title">SIGUE EL RITMO</span>
+</div>
 
 
-  <div id="game-root">
+<div id="game-root">
 
+  <!-- HUD -->
 
-    <!-- HUD -->
+  <div id="hud">
 
-    <div id="hud">
-
-      <div>
-        <span class="stat">PUNTOS</span>
-        <span class="val" id="score-val">0</span>
-      </div>
-
-
-      <div>
-        <span class="stat">COMBO</span>
-        <span class="val" id="combo-val">0</span>
-      </div>
-
-
-      <div id="lives">
-
-        <span class="life"></span>
-        <span class="life"></span>
-        <span class="life"></span>
-
-      </div>
-
-
-      <div>
-        <span class="stat">MEJOR</span>
-        <span class="val" id="best-val">0</span>
-      </div>
-
+    <div>
+      <span class="stat">PUNTOS</span>
+      <span class="val" id="score-val">0</span>
     </div>
 
-
-    <!-- TABLERO -->
-
-    <div id="board">
-
-
-      <!-- CARRILES -->
-
-      <div id="lanes">
-
-        <div class="lane" data-lane="0">
-          <span class="lane-key">A</span>
-        </div>
-
-        <div class="lane" data-lane="1">
-          <span class="lane-key">S</span>
-        </div>
-
-        <div class="lane" data-lane="2">
-          <span class="lane-key">D</span>
-        </div>
-
-      </div>
-
-
-      <!-- ZONA DE GOLPE -->
-
-      <div id="hit-zone"></div>
-
-
-      <!-- FEEDBACK -->
-
-      <div id="feedback"></div>
-
-      <div id="combo"></div>
-
-      <div id="countdown"></div>
-
-
-      <!-- PANTALLA INICIAL -->
-
-      <div id="overlay">
-
-        <h2>SIGUE EL RITMO</h2>
-
-        <p>
-          Toca cada carril cuando la nota
-          llegue a la zona de golpe.
-          Mantén el ritmo y aguanta
-          todo lo que puedas.
-          Tienes 3 vidas.
-        </p>
-
-        <button id="start-btn">
-          EMPEZAR
-        </button>
-
-      </div>
-
+    <div>
+      <span class="stat">COMBO</span>
+      <span class="val" id="combo-val">0</span>
     </div>
 
+    <div id="lives">
+      <span class="life"></span>
+      <span class="life"></span>
+      <span class="life"></span>
+    </div>
 
-    <div id="foot-note">
-      móvil: toca cualquier punto del carril
-      &middot;
-      PC: A &middot; S &middot; D
+    <div>
+      <span class="stat">MEJOR</span>
+      <span class="val" id="best-val">0</span>
     </div>
 
   </div>
+
+
+  <!-- TABLERO -->
+
+  <div id="board">
+
+    <div id="lanes">
+
+      <div class="lane" data-lane="0">
+        <span class="lane-key">A</span>
+      </div>
+
+      <div class="lane" data-lane="1">
+        <span class="lane-key">S</span>
+      </div>
+
+      <div class="lane" data-lane="2">
+        <span class="lane-key">D</span>
+      </div>
+
+    </div>
+
+
+    <!-- ZONA DE GOLPE -->
+
+    <div id="hit-zone"></div>
+
+
+    <div id="feedback"></div>
+
+    <div id="combo"></div>
+
+    <div id="countdown"></div>
+
+
+    <!-- INICIO -->
+
+    <div id="overlay">
+
+      <h2>SIGUE EL RITMO</h2>
+
+      <p>
+        Toca cada carril cuando la nota
+        llegue a la zona de golpe.
+        Mantén el ritmo y aguanta
+        todo lo que puedas.
+        Tienes 3 vidas.
+      </p>
+
+      <button id="start-btn">
+        EMPEZAR
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div id="foot-note">
+    móvil: toca cualquier punto del carril
+    &middot;
+    PC: A &middot; S &middot; D
+  </div>
+
+</div>
 
 
 <script src="../assets/companion.js"></script>
@@ -900,11 +859,10 @@
 
   const MAX_BPM = 132;
 
-  const HIT_WINDOW = 150;
-
-  const HIT_Y_RATIO = .68;
-
-  const HIT_ZONE_HEIGHT = 78;
+  /*
+    Ventana ligeramente más permisiva.
+  */
+  const HIT_WINDOW = 180;
 
   const TRAVEL = 1850;
 
@@ -921,6 +879,9 @@
 
   const board =
     document.getElementById('board');
+
+  const hitZone =
+    document.getElementById('hit-zone');
 
   const lanes =
     [...document.querySelectorAll('.lane')];
@@ -951,9 +912,6 @@
 
   const countdownEl =
     document.getElementById('countdown');
-
-  const hitZone =
-    document.getElementById('hit-zone');
 
 
   /* ========================================================
@@ -1005,8 +963,28 @@
 
   }
 
-  bestEl.textContent =
-    best;
+  bestEl.textContent = best;
+
+
+  /* ========================================================
+     POSICIÓN REAL DE LA ZONA DE GOLPE
+  ======================================================== */
+
+  function getHitY(){
+
+    const boardRect =
+      board.getBoundingClientRect();
+
+    const zoneRect =
+      hitZone.getBoundingClientRect();
+
+    return (
+      zoneRect.top -
+      boardRect.top +
+      zoneRect.height / 2
+    );
+
+  }
 
 
   /* ========================================================
@@ -1014,17 +992,6 @@
   ======================================================== */
 
   function difficulty(){
-
-    /*
-      Una fase cada ~32 notas.
-
-      0 = introducción
-      1 = fácil
-      2 = medio
-      3 = difícil
-      4 = muy difícil
-      5 = máximo
-    */
 
     return Math.min(
       5,
@@ -1051,10 +1018,7 @@
 
   function beatDuration(){
 
-    return (
-      60000 /
-      bpm()
-    );
+    return 60000 / bpm();
 
   }
 
@@ -1062,13 +1026,6 @@
   /* ========================================================
      PATRONES
   ======================================================== */
-
-  /*
-    No usamos puro random.
-
-    Son pequeñas frases de 4 tiempos que
-    dan una sensación mucho más musical.
-  */
 
   const MOTIFS = [
 
@@ -1089,33 +1046,11 @@
 
   function chooseMotif(){
 
-    const d =
-      difficulty();
-
-    /*
-      Conforme aumenta la dificultad,
-      damos algo más de peso a patrones
-      menos previsibles.
-    */
-
-    let index =
+    const index =
       Math.floor(
         Math.random() *
         MOTIFS.length
       );
-
-    if(
-      d >= 3 &&
-      Math.random() < .35
-    ){
-
-      index =
-        Math.floor(
-          Math.random() *
-          MOTIFS.length
-        );
-
-    }
 
     return [
       ...MOTIFS[index]
@@ -1140,10 +1075,6 @@
       chooseMotif();
 
 
-    /*
-      De vez en cuando invertimos la dirección.
-    */
-
     if(
       Math.random() <
       .18 + d * .025
@@ -1154,12 +1085,6 @@
     }
 
 
-    /*
-      A partir de dificultad media,
-      puede haber un pequeño cambio de
-      ritmo dentro del compás.
-    */
-
     const addOffbeat =
       d >= 2 &&
       Math.random() <
@@ -1168,10 +1093,6 @@
         (d - 2) * .08
       );
 
-
-    /*
-      ¿Habrá una doble?
-    */
 
     const addDouble =
       d >= 1 &&
@@ -1197,11 +1118,6 @@
         motif[i];
 
 
-      /*
-        Evita demasiadas repeticiones
-        consecutivas del mismo carril.
-      */
-
       if(
         lane === lastLane &&
         Math.random() < .35
@@ -1219,14 +1135,6 @@
 
       }
 
-
-      /*
-        Doble nota.
-
-        No la ponemos en el primer beat
-        y evitamos que coincida con un
-        offbeat difícil.
-      */
 
       const isDouble =
         addDouble &&
@@ -1256,10 +1164,6 @@
         );
 
 
-        lastLane =
-          lane;
-
-
       }else{
 
         spawnNoteGroup(
@@ -1267,19 +1171,11 @@
           target
         );
 
-
-        lastLane =
-          lane;
-
       }
 
 
-      /*
-        Nota a contratiempo.
+      lastLane = lane;
 
-        Solo aparece en fases medias/altas.
-        No se añade todos los compases.
-      */
 
       if(
         addOffbeat &&
@@ -1335,17 +1231,13 @@
       laneIndex => {
 
         const el =
-          document.createElement(
-            'div'
-          );
-
+          document.createElement('div');
 
         el.className =
           'note ' +
           ['a','b','c','d'][
             laneIndex % 4
           ];
-
 
         el.style.left =
           (
@@ -1354,9 +1246,7 @@
             3
           ) + '%';
 
-
         board.appendChild(el);
-
 
         notes.push({
 
@@ -1384,11 +1274,6 @@
 
   function spawnUntil(now){
 
-    /*
-      Mantenemos siempre un tramo de notas
-      ya preparado fuera de la pantalla.
-    */
-
     while(
       nextMeasureTime -
       now <=
@@ -1403,7 +1288,7 @@
 
 
   /* ========================================================
-     POSICIÓN
+     POSICIÓN DE LAS NOTAS
   ======================================================== */
 
   function noteY(
@@ -1411,18 +1296,11 @@
     now
   ){
 
-    const h =
-      board.getBoundingClientRect()
-        .height;
-
-
     const hitY =
-      h * HIT_Y_RATIO;
-
+      getHitY();
 
     const startY =
       -72;
-
 
     const progress =
       1 -
@@ -1431,7 +1309,6 @@
         now
       ) /
       TRAVEL;
-
 
     return (
       startY +
@@ -1495,7 +1372,6 @@
       const now =
         audioCtx.currentTime;
 
-
       const osc =
         audioCtx.createOscillator();
 
@@ -1506,18 +1382,15 @@
       osc.type =
         type;
 
-
       osc.frequency.setValueAtTime(
         frequency,
         now
       );
 
-
       gain.gain.setValueAtTime(
         volume,
         now
       );
-
 
       gain.gain.exponentialRampToValueAtTime(
         .0001,
@@ -1624,15 +1497,11 @@
     );
 
 
-    board.classList.remove(
-      'miss'
-    );
+    board.classList.remove('miss');
 
     void board.offsetWidth;
 
-    board.classList.add(
-      'miss'
-    );
+    board.classList.add('miss');
 
 
     if(
@@ -1689,11 +1558,10 @@
 
 
     const perfect =
-      delta <= 60;
-
+      delta <= 65;
 
     const good =
-      delta <= 115;
+      delta <= 125;
 
 
     if(perfect){
@@ -1751,20 +1619,12 @@
 
     combo++;
 
-
     maxCombo =
       Math.max(
         maxCombo,
         combo
       );
 
-
-    /*
-      Bonus de combo.
-
-      Lo hacemos algo más generoso
-      para que sobrevivir tenga recompensa.
-    */
 
     if(
       combo >= 5
@@ -1783,7 +1643,6 @@
 
     scoreEl.textContent =
       score;
-
 
     comboEl.textContent =
       combo;
@@ -1823,6 +1682,7 @@
       bestEl.textContent =
         best;
 
+
       bestEl.classList.remove(
         'pop'
       );
@@ -1845,10 +1705,6 @@
 
     }
 
-
-    /*
-      Animación simple de desaparición.
-    */
 
     note.el.style.opacity =
       '0';
@@ -1900,8 +1756,45 @@
 
 
   /* ========================================================
-     TOQUE
+     PULSACIÓN
   ======================================================== */
+
+  function flashLane(
+    laneIndex
+  ){
+
+    const lane =
+      lanes[laneIndex];
+
+    if(!lane){
+      return;
+    }
+
+
+    lane.classList.remove(
+      'tap'
+    );
+
+    void lane.offsetWidth;
+
+    lane.classList.add(
+      'tap'
+    );
+
+
+    setTimeout(
+      () => {
+
+        lane.classList.remove(
+          'tap'
+        );
+
+      },
+      100
+    );
+
+  }
+
 
   function tapLane(
     laneIndex
@@ -1918,7 +1811,6 @@
 
     let candidate =
       null;
-
 
     let bestDelta =
       Infinity;
@@ -1964,8 +1856,7 @@
 
     if(
       candidate &&
-      bestDelta <=
-      HIT_WINDOW
+      bestDelta <= HIT_WINDOW
     ){
 
       hitNote(
@@ -1979,28 +1870,81 @@
 
 
   /* ========================================================
-     TOUCH
+     INPUT TÁCTIL / RATÓN
   ======================================================== */
 
-  lanes.forEach(
-    (lane,index) => {
+  /*
+    El tablero entero recibe la pulsación.
+    El carril se calcula según la posición X.
 
-      lane.addEventListener(
-        'pointerdown',
-        event => {
+    Esto evita depender de que el dedo caiga
+    exactamente sobre el elemento .lane.
+  */
 
-          event.preventDefault();
+  board.addEventListener(
+    'pointerdown',
+    event => {
 
-          initAudio();
+      if(!running){
+        return;
+      }
 
-          tapLane(index);
 
-        },
-        {
-          passive:false
-        }
+      if(
+        event.isPrimary === false
+      ){
+
+        return;
+
+      }
+
+
+      event.preventDefault();
+
+      initAudio();
+
+
+      const rect =
+        board.getBoundingClientRect();
+
+
+      const x =
+        event.clientX -
+        rect.left;
+
+
+      const laneWidth =
+        rect.width / 3;
+
+
+      let laneIndex =
+        Math.floor(
+          x / laneWidth
+        );
+
+
+      laneIndex =
+        Math.max(
+          0,
+          Math.min(
+            2,
+            laneIndex
+          )
+        );
+
+
+      flashLane(
+        laneIndex
       );
 
+
+      tapLane(
+        laneIndex
+      );
+
+    },
+    {
+      passive:false
     }
   );
 
@@ -2034,15 +1978,26 @@
 
 
       if(key === 'a'){
+
+        flashLane(0);
         tapLane(0);
+
       }
+
 
       if(key === 's'){
+
+        flashLane(1);
         tapLane(1);
+
       }
 
+
       if(key === 'd'){
+
+        flashLane(2);
         tapLane(2);
+
       }
 
     }
@@ -2055,13 +2010,8 @@
 
   function updateNotes(now){
 
-    const h =
-      board.getBoundingClientRect()
-        .height;
-
-
     const hitY =
-      h * HIT_Y_RATIO;
+      getHitY();
 
 
     const readyLanes =
@@ -2099,11 +2049,16 @@
         y + 26;
 
 
+      /*
+        Indicador visual ligeramente más generoso
+        que la ventana real de puntuación.
+      */
+
       const near =
         Math.abs(
           center -
           hitY
-        ) < 55;
+        ) < 65;
 
 
       note.el.classList.toggle(
@@ -2122,7 +2077,8 @@
 
 
       /*
-        La nota ha pasado.
+        La nota ha pasado la ventana
+        de acierto.
       */
 
       if(
@@ -2389,10 +2345,14 @@
 
 
     lanes.forEach(
-      lane =>
+      lane => {
+
         lane.classList.remove(
-          'ready'
-        )
+          'ready',
+          'tap'
+        );
+
+      }
     );
 
 
@@ -2452,10 +2412,14 @@
 
 
     lanes.forEach(
-      lane =>
+      lane => {
+
         lane.classList.remove(
-          'ready'
-        )
+          'ready',
+          'tap'
+        );
+
+      }
     );
 
 
