@@ -1,19 +1,14 @@
 <!doctype html>
+
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#14121f">
-  <title>Puntería BLIP · Mini Arcade</title>
-
-  <link rel="manifest" href="../manifest.json">
+  <title>Puntería BLIP · Mini Arcade</title>  <link rel="manifest" href="../manifest.json">
   <link rel="icon" href="../assets/favicon-48.png">
-  <link rel="apple-touch-icon" href="../assets/icon-180.png">
-
-  <link rel="stylesheet" href="../assets/theme.css">
-  <link rel="stylesheet" href="../assets/companion.css">
-
-  <style>
+  <link rel="apple-touch-icon" href="../assets/icon-180.png">  <link rel="stylesheet" href="../assets/theme.css">
+  <link rel="stylesheet" href="../assets/companion.css">  <style>
     .game-page{
       width:100%;
       max-width:600px;
@@ -33,6 +28,7 @@
       color:var(--dim);
       border:1px solid var(--grid);
       padding:8px 12px;
+      text-decoration:none;
     }
 
     .page-title{
@@ -83,7 +79,6 @@
       border:3px solid var(--grid);
       box-shadow:6px 6px 0 rgba(0,0,0,.35);
       overflow:hidden;
-      touch-action:none;
     }
 
     #gameCanvas{
@@ -154,6 +149,7 @@
       color:var(--c3);
       font-size:20px;
       display:block;
+      margin:3px 0 8px;
     }
 
     .game-btn{
@@ -233,89 +229,67 @@
         font-size:10px;
       }
     }
-  </style>
-</head>
-
-<body>
-
-<div class="game-page">
-
-  <nav class="top-nav">
+  </style></head><body><div class="game-page">  <nav class="top-nav">
     <a class="back-link" href="../index.html">← VOLVER</a>
     <span class="page-title">PUNTERÍA BLIP</span>
-  </nav>
-
-  <div class="game-header">
+  </nav>  <div class="game-header">
     <div class="stat">
       <span class="stat-label">PUNTOS</span>
       <span class="stat-value accent" id="score">0</span>
-    </div>
-
-    <div class="stat">
-      <span class="stat-label">TIEMPO</span>
-      <span class="stat-value" id="time">45</span>
-    </div>
-
-    <div class="stat">
-      <span class="stat-label">RACHA</span>
-      <span class="stat-value" id="combo">x1</span>
-    </div>
-  </div>
-
-  <div class="game-shell" id="gameShell">
-
-    <canvas id="gameCanvas"></canvas>
-
-    <div class="blip-slot" id="blip-slot"></div>
-
-    <div class="toast" id="toast"></div>
-
-    <div class="overlay" id="startOverlay">
-      <div class="overlay-box">
-        <h1>🎯 PUNTERÍA BLIP</h1>
-
-        <p>
-          TOCA LOS OBJETIVOS.<br>
-          NO TOQUES LAS BOMBAS.<br>
-          ENCADENA ACIERTOS Y SUPERA TU RÉCORD.
-        </p>
-
-        <button class="game-btn" id="startBtn">
-          EMPEZAR
-        </button>
-      </div>
-    </div>
-
-    <div class="overlay hidden" id="gameOverOverlay">
-      <div class="overlay-box">
-        <h1 id="gameOverTitle">FIN DE PARTIDA</h1>
-
-        <div class="result">
-          PUNTOS
-          <strong id="finalScore">0</strong>
-          PRECISIÓN: <span id="finalAccuracy">0%</span><br>
-          ACIERTOS: <span id="finalHits">0</span><br>
-          MEJOR RACHA: <span id="finalCombo">0</span>
-        </div>
-
-        <button class="game-btn" id="restartBtn">
-          JUGAR OTRA VEZ
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="instructions">
-    TOCA LOS OBJETIVOS PARA DISPARAR · LOS OBJETIVOS PEQUEÑOS DAN MÁS PUNTOS ·
-    LAS BOMBAS QUITAN UNA VIDA · 45 SEGUNDOS
-  </div>
-
+    </div><div class="stat">
+  <span class="stat-label">TIEMPO</span>
+  <span class="stat-value" id="time">45</span>
 </div>
 
-<script src="../assets/companion.js"></script>
+<div class="stat">
+  <span class="stat-label">RACHA</span>
+  <span class="stat-value" id="combo">x1</span>
+</div>
 
-<script>
+  </div>  <div class="game-shell" id="gameShell"><canvas id="gameCanvas"></canvas>
+
+<div class="blip-slot" id="blip-slot"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="startOverlay">
+  <div class="overlay-box">
+    <h1>🎯 PUNTERÍA BLIP</h1>
+
+    <p>
+      TOCA LOS OBJETIVOS.<br>
+      NO TOQUES LAS BOMBAS.<br>
+      ENCADENA ACIERTOS Y SUPERA TU RÉCORD.
+    </p>
+
+    <button class="game-btn" id="startBtn">
+      EMPEZAR
+    </button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="gameOverOverlay">
+  <div class="overlay-box">
+    <h1 id="gameOverTitle">FIN DE PARTIDA</h1>
+
+    <div class="result">
+      PUNTOS
+      <strong id="finalScore">0</strong>
+      PRECISIÓN: <span id="finalAccuracy">0%</span><br>
+      ACIERTOS: <span id="finalHits">0</span><br>
+      MEJOR RACHA: <span id="finalCombo">0</span>
+    </div>
+
+    <button class="game-btn" id="restartBtn">
+      JUGAR OTRA VEZ
+    </button>
+  </div>
+</div>
+
+  </div>  <div class="instructions">
+    TOCA LOS OBJETIVOS PARA DISPARAR · LOS OBJETIVOS PEQUEÑOS DAN MÁS PUNTOS ·
+    LAS BOMBAS QUITAN UNA VIDA · 45 SEGUNDOS
+  </div></div><script src="../assets/companion.js"></script><script>
 (() => {
   'use strict';
 
@@ -344,9 +318,11 @@
 
   const blipSlot = document.getElementById('blip-slot');
 
-  Companion.mount(blipSlot, {
-    size: 42
-  });
+  if (typeof Companion !== 'undefined') {
+    Companion.mount(blipSlot, {
+      size: 42
+    });
+  }
 
   const BEST_KEY = 'miniArcade.punteria.best';
 
@@ -385,15 +361,6 @@
   let shotsFx = [];
 
   let audioCtx = null;
-
-  /*
-   * Tipos:
-   * normal
-   * small
-   * bonus
-   * bomb
-   * moving
-   */
 
   function resize() {
     const rect = shell.getBoundingClientRect();
@@ -440,21 +407,41 @@
     }, duration);
   }
 
+  function blipPlay(animation) {
+    if (
+      typeof Companion !== 'undefined' &&
+      typeof Companion.play === 'function'
+    ) {
+      Companion.play(animation);
+    }
+  }
+
   function ensureAudio() {
     if (!audioCtx) {
       try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx = new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
       } catch (e) {
         audioCtx = null;
       }
     }
 
-    if (audioCtx && audioCtx.state === 'suspended') {
+    if (
+      audioCtx &&
+      audioCtx.state === 'suspended'
+    ) {
       audioCtx.resume().catch(() => {});
     }
   }
 
-  function beep(freq, duration, type = 'square', volume = 0.035) {
+  function beep(
+    freq,
+    duration,
+    type = 'square',
+    volume = 0.035
+  ) {
     if (!audioCtx) return;
 
     try {
@@ -464,7 +451,11 @@
       osc.type = type;
       osc.frequency.value = freq;
 
-      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.setValueAtTime(
+        volume,
+        audioCtx.currentTime
+      );
+
       gain.gain.exponentialRampToValueAtTime(
         0.0001,
         audioCtx.currentTime + duration
@@ -474,7 +465,9 @@
       gain.connect(audioCtx.destination);
 
       osc.start();
-      osc.stop(audioCtx.currentTime + duration);
+      osc.stop(
+        audioCtx.currentTime + duration
+      );
     } catch (e) {}
   }
 
@@ -499,28 +492,27 @@
 
   function sfxBomb() {
     beep(110, .12, 'sawtooth', .04);
-    setTimeout(() => beep(75, .15, 'sawtooth', .035), 55);
+
+    setTimeout(() => {
+      beep(75, .15, 'sawtooth', .035);
+    }, 55);
   }
 
   function sfxRecord() {
     beep(600, .07);
+
     setTimeout(() => beep(800, .07), 70);
+
     setTimeout(() => beep(1000, .11), 140);
   }
 
   function getDifficulty() {
-    /*
-     * 0 al principio, aproximadamente 1 al final.
-     */
     return clamp(elapsed / 45, 0, 1);
   }
 
   function getSpawnInterval() {
     const d = getDifficulty();
 
-    /*
-     * Empieza relajado y termina bastante más frenético.
-     */
     return Math.max(
       0.34,
       0.82 - d * 0.38
@@ -531,10 +523,6 @@
     const d = getDifficulty();
     const r = Math.random();
 
-    /*
-     * Bombas empiezan a aparecer pronto, pero nunca dominan
-     * la pantalla.
-     */
     if (r < 0.10 + d * 0.04) {
       return 'bomb';
     }
@@ -556,11 +544,23 @@
 
   function targetRadius(type) {
     switch (type) {
-      case 'small': return Math.max(10, 15 - getDifficulty() * 2);
-      case 'bonus': return 20;
-      case 'bomb': return 19;
-      case 'moving': return 17;
-      default: return 23;
+      case 'small':
+        return Math.max(
+          10,
+          15 - getDifficulty() * 2
+        );
+
+      case 'bonus':
+        return 20;
+
+      case 'bomb':
+        return 19;
+
+      case 'moving':
+        return 17;
+
+      default:
+        return 23;
     }
   }
 
@@ -587,60 +587,69 @@
 
   function createTarget() {
     const type = chooseTargetType();
-
     const radius = targetRadius(type);
 
-    /*
-     * Reservamos una zona inferior para BLIP.
-     */
     const minY = H * 0.08;
     const maxY = H * 0.68;
 
     const target = {
       id: ++targetId,
       type,
-      x: random(radius + 12, W - radius - 12),
-      y: random(minY + radius, maxY - radius),
+      x: random(
+        radius + 12,
+        W - radius - 12
+      ),
+      y: random(
+        minY + radius,
+        maxY - radius
+      ),
       r: radius,
-
       age: 0,
       life: targetLifetime(type),
-
       vx: 0,
       vy: 0,
-
       pulse: random(0, Math.PI * 2),
       hit: false
     };
 
     if (type === 'moving') {
       const angle = random(0, Math.PI * 2);
-      const speed = 25 + getDifficulty() * 65;
+      const speed =
+        25 + getDifficulty() * 65;
 
-      target.vx = Math.cos(angle) * speed;
-      target.vy = Math.sin(angle) * speed * 0.7;
+      target.vx =
+        Math.cos(angle) * speed;
+
+      target.vy =
+        Math.sin(angle) * speed * 0.7;
     }
 
     targets.push(target);
   }
 
   function spawnBurst() {
-    /*
-     * En la fase final ocasionalmente aparecen dos objetivos
-     * para crear decisiones rápidas.
-     */
     createTarget();
 
-    if (getDifficulty() > 0.68 && Math.random() < 0.18) {
+    if (
+      getDifficulty() > 0.68 &&
+      Math.random() < 0.18
+    ) {
       createTarget();
     }
   }
 
-  function addParticles(x, y, type, success = true) {
+  function addParticles(
+    x,
+    y,
+    type,
+    success = true
+  ) {
     const count = success ? 12 : 8;
 
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
+      const angle =
+        Math.random() * Math.PI * 2;
+
       const speed = random(40, 145);
 
       particles.push({
@@ -648,10 +657,8 @@
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-
         life: random(.28, .55),
         maxLife: .55,
-
         size: random(2, 5),
         type
       });
@@ -670,10 +677,17 @@
 
   function getPoints(type) {
     switch (type) {
-      case 'small': return 50;
-      case 'bonus': return 100;
-      case 'moving': return 35;
-      default: return 25;
+      case 'small':
+        return 50;
+
+      case 'bonus':
+        return 100;
+
+      case 'moving':
+        return 35;
+
+      default:
+        return 25;
     }
   }
 
@@ -681,6 +695,7 @@
     if (combo >= 15) return 4;
     if (combo >= 10) return 3;
     if (combo >= 5) return 2;
+
     return 1;
   }
 
@@ -690,29 +705,51 @@
     hits++;
     combo++;
 
-    maxCombo = Math.max(maxCombo, combo);
+    maxCombo = Math.max(
+      maxCombo,
+      combo
+    );
 
-    const multiplier = comboMultiplier();
-    const base = getPoints(target.type);
-    const points = base * multiplier;
+    const multiplier =
+      comboMultiplier();
+
+    const base =
+      getPoints(target.type);
+
+    const points =
+      base * multiplier;
 
     score += points;
 
     if (target.type === 'bonus') {
-      score += 25 * multiplier;
-      showToast('BONUS +' + (points + 25 * multiplier));
-      Companion.gesture('surprise');
+      const bonus =
+        25 * multiplier;
+
+      score += bonus;
+
+      showToast(
+        'BONUS +' + (points + bonus)
+      );
+
+      blipPlay('surprise');
+
     } else if (combo === 5) {
       showToast('🔥 RACHA x2');
-      Companion.gesture('cheer');
+      blipPlay('cheer');
+
     } else if (combo === 10) {
       showToast('🔥🔥 RACHA x3');
-      Companion.gesture('cheer');
+      blipPlay('cheer');
+
     } else if (combo === 15) {
       showToast('🔥🔥🔥 MODO BLIP');
-      Companion.gesture('cheer');
+      blipPlay('cheer');
+
     } else if (target.type === 'small') {
-      showToast('PRECISIÓN +' + points);
+      showToast(
+        'PRECISIÓN +' + points
+      );
+
     } else {
       showToast('+' + points);
     }
@@ -732,16 +769,16 @@
 
     sfxHit(target.type);
 
-    targets = targets.filter(t => t !== target);
+    targets = targets.filter(
+      t => t !== target
+    );
 
     updateHud();
   }
 
   function hitBomb(target) {
     lives--;
-
     combo = 0;
-
     target.hit = true;
 
     addParticles(
@@ -761,15 +798,19 @@
 
     showToast(
       lives > 0
-        ? '💥 ¡BOMBA!  VIDA -1'
+        ? '💥 ¡BOMBA! VIDA -1'
         : '💥 ¡ÚLTIMA VIDA!'
     );
 
-    Companion.gesture(
-      lives > 0 ? 'surprise' : 'sad'
+    blipPlay(
+      lives > 0
+        ? 'surprise'
+        : 'sad'
     );
 
-    targets = targets.filter(t => t !== target);
+    targets = targets.filter(
+      t => t !== target
+    );
 
     updateHud();
 
@@ -780,7 +821,6 @@
 
   function registerMiss() {
     shots++;
-
     combo = 0;
 
     sfxMiss();
@@ -795,11 +835,12 @@
 
     shots++;
 
-    addShotFx(x, y, false);
+    addShotFx(
+      x,
+      y,
+      false
+    );
 
-    /*
-     * Buscamos el objetivo más cercano al punto tocado.
-     */
     let candidate = null;
     let bestDistance = Infinity;
 
@@ -809,9 +850,13 @@
       const dx = x - target.x;
       const dy = y - target.y;
 
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const distance =
+        Math.sqrt(dx * dx + dy * dy);
 
-      if (distance <= target.r && distance < bestDistance) {
+      if (
+        distance <= target.r &&
+        distance < bestDistance
+      ) {
         bestDistance = distance;
         candidate = target;
       }
@@ -869,22 +914,28 @@
           target.vx *= -1;
         }
 
-        if (target.y < H * .08 + target.r) {
-          target.y = H * .08 + target.r;
+        if (
+          target.y <
+          H * .08 + target.r
+        ) {
+          target.y =
+            H * .08 + target.r;
+
           target.vy *= -1;
         }
 
-        if (target.y > H * .68 - target.r) {
-          target.y = H * .68 - target.r;
+        if (
+          target.y >
+          H * .68 - target.r
+        ) {
+          target.y =
+            H * .68 - target.r;
+
           target.vy *= -1;
         }
       }
     }
 
-    /*
-     * Los objetivos que expiran cuentan como fallo:
-     * pierdes la racha, pero no una vida.
-     */
     const expired = [];
 
     for (const target of targets) {
@@ -898,7 +949,9 @@
         combo = 0;
       }
 
-      targets = targets.filter(t => t !== target);
+      targets = targets.filter(
+        t => t !== target
+      );
     }
 
     for (const p of particles) {
@@ -911,91 +964,699 @@
       p.life -= dt;
     }
 
-    particles = particles.filter(p => p.life > 0);
+    particles = particles.filter(
+      p => p.life > 0
+    );
 
     for (const fx of shotsFx) {
       fx.life -= dt;
     }
 
-    shotsFx = shotsFx.filter(fx => fx.life > 0);
+    shotsFx = shotsFx.filter(
+      fx => fx.life > 0
+    );
 
     updateHud();
   }
 
   function updateHud() {
-    scoreEl.textContent = formatScore(score);
+    scoreEl.textContent =
+      formatScore(score);
 
-    const remaining = Math.max(
-      0,
-      Math.ceil(45 - elapsed)
-    );
+    const remaining =
+      Math.max(
+        0,
+        Math.ceil(45 - elapsed)
+      );
 
-    timeEl.textContent = remaining;
+    timeEl.textContent =
+      remaining;
 
     comboEl.textContent =
       'x' + comboMultiplier();
 
     if (remaining <= 10) {
-      timeEl.style.color = 'var(--c1)';
+      timeEl.style.color =
+        'var(--c1)';
     } else {
-      timeEl.style.color = 'var(--ink)';
+      timeEl.style.color =
+        'var(--ink)';
     }
   }
 
   function drawBackground() {
-    ctx.clearRect(0, 0, W, H);
-
-    /*
-     * Zona superior ligeramente más oscura.
-     */
-    const gradient = ctx.createLinearGradient(
-      0, 0,
-      0, H
+    ctx.clearRect(
+      0,
+      0,
+      W,
+      H
     );
 
-    gradient.addColorStop(0, 'rgba(157,123,255,.035)');
-    gradient.addColorStop(0.65, 'rgba(20,18,31,0)');
-    gradient.addColorStop(1, 'rgba(61,218,215,.035)');
+    const gradient =
+      ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        H
+      );
+
+    gradient.addColorStop(
+      0,
+      'rgba(157,123,255,.035)'
+    );
+
+    gradient.addColorStop(
+      0.65,
+      'rgba(20,18,31,0)'
+    );
+
+    gradient.addColorStop(
+      1,
+      'rgba(61,218,215,.035)'
+    );
 
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, W, H);
 
-    /*
-     * Línea que separa la zona de juego de BLIP.
-     */
+    ctx.fillRect(
+      0,
+      0,
+      W,
+      H
+    );
+
     ctx.save();
 
-    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.strokeStyle =
+      'rgba(255,255,255,.05)';
+
     ctx.lineWidth = 1;
-    ctx.setLineDash([5, 7]);
+
+    ctx.setLineDash([
+      5,
+      7
+    ]);
 
     ctx.beginPath();
-    ctx.moveTo(12, H * .74);
-    ctx.lineTo(W - 12, H * .74);
+
+    ctx.moveTo(
+      12,
+      H * .74
+    );
+
+    ctx.lineTo(
+      W - 12,
+      H * .74
+    );
+
     ctx.stroke();
 
     ctx.restore();
   }
 
-  function drawTarget(target, now) {
+  function drawTarget(
+    target,
+    now
+  ) {
     const pulse =
-      Math.sin(now * .006 + target.pulse) * 0.08 + 1;
+      Math.sin(
+        now * .006 +
+        target.pulse
+      ) * .08 + 1;
 
-    const r = target.r * pulse;
+    const r =
+      target.r * pulse;
 
-    let color = 'var(--c2)';
+    let color =
+      'var(--c2)';
 
     if (target.type === 'small') {
       color = 'var(--c4)';
-    } else if (target.type === 'bonus') {
+    } else if (
+      target.type === 'bonus'
+    ) {
       color = 'var(--c3)';
-    } else if (target.type === 'bomb') {
+    } else if (
+      target.type === 'bomb'
+    ) {
       color = 'var(--c1)';
     }
 
     ctx.save();
 
-    /*
-     * Desaparición progresiva al final de la vida.
-     */
-    const remaining = 1 - target.age / tar
+    const remaining =
+      1 - target.age / target.life;
+
+    if (remaining < .25) {
+      ctx.globalAlpha =
+        clamp(
+          remaining / .25,
+          .2,
+          1
+        );
+    }
+
+    ctx.beginPath();
+
+    ctx.arc(
+      target.x,
+      target.y,
+      r + 6 +
+        Math.sin(now * .01) * 2,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.strokeStyle = color;
+    ctx.globalAlpha *= .25;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.globalAlpha =
+      remaining < .25
+        ? clamp(
+            remaining / .25,
+            .2,
+            1
+          )
+        : 1;
+
+    if (target.type === 'bomb') {
+      drawBomb(
+        target.x,
+        target.y,
+        r,
+        color
+      );
+    } else {
+      drawNormalTarget(
+        target.x,
+        target.y,
+        r,
+        color,
+        target.type
+      );
+    }
+
+    ctx.restore();
+  }
+
+  function drawNormalTarget(
+    x,
+    y,
+    r,
+    color,
+    type
+  ) {
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      r,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      'rgba(20,18,31,.94)';
+
+    ctx.fill();
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      r * .62,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      r * .23,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    if (type === 'bonus') {
+      ctx.beginPath();
+
+      for (let i = 0; i < 4; i++) {
+        const a =
+          i * Math.PI / 2 +
+          Math.PI / 4;
+
+        ctx.moveTo(
+          x + Math.cos(a) *
+            (r + 5),
+          y + Math.sin(a) *
+            (r + 5)
+        );
+
+        ctx.lineTo(
+          x + Math.cos(a) *
+            (r + 9),
+          y + Math.sin(a) *
+            (r + 9)
+        );
+      }
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function drawBomb(
+    x,
+    y,
+    r,
+    color
+  ) {
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      r,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      'rgba(255,93,115,.14)';
+
+    ctx.fill();
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x - r * .5,
+      y - r * .5
+    );
+
+    ctx.lineTo(
+      x + r * .5,
+      y + r * .5
+    );
+
+    ctx.moveTo(
+      x + r * .5,
+      y - r * .5
+    );
+
+    ctx.lineTo(
+      x - r * .5,
+      y + r * .5
+    );
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x + r * .25,
+      y - r * .75
+    );
+
+    ctx.quadraticCurveTo(
+      x + r * .6,
+      y - r * 1.15,
+      x + r * .75,
+      y - r * .85
+    );
+
+    ctx.stroke();
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.save();
+
+      ctx.globalAlpha =
+        clamp(
+          p.life / p.maxLife,
+          0,
+          1
+        );
+
+      let color =
+        'var(--c3)';
+
+      if (p.type === 'bomb') {
+        color = 'var(--c1)';
+      } else if (
+        p.type === 'small'
+      ) {
+        color = 'var(--c4)';
+      } else if (
+        p.type === 'bonus'
+      ) {
+        color = 'var(--c3)';
+      } else {
+        color = 'var(--c2)';
+      }
+
+      ctx.fillStyle = color;
+
+      ctx.fillRect(
+        p.x - p.size / 2,
+        p.y - p.size / 2,
+        p.size,
+        p.size
+      );
+
+      ctx.restore();
+    }
+  }
+
+  function drawShotEffects() {
+    for (const fx of shotsFx) {
+      const progress =
+        1 - fx.life / fx.maxLife;
+
+      const radius =
+        5 + progress * 28;
+
+      ctx.save();
+
+      ctx.globalAlpha =
+        1 - progress;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        fx.x,
+        fx.y,
+        radius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.strokeStyle =
+        fx.hit
+          ? 'var(--c3)'
+          : 'var(--c1)';
+
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  function drawLives() {
+    const y = H - 22;
+
+    ctx.save();
+
+    ctx.font =
+      '8px "Press Start 2P", monospace';
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillStyle =
+      'var(--dim)';
+
+    ctx.fillText(
+      'VIDAS',
+      14,
+      y
+    );
+
+    for (let i = 0; i < 3; i++) {
+      const x =
+        70 + i * 19;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        x,
+        y,
+        6,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        i < lives
+          ? 'var(--c1)'
+          : 'var(--grid)';
+
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  function draw(timestamp) {
+    drawBackground();
+
+    for (const target of targets) {
+      drawTarget(
+        target,
+        timestamp
+      );
+    }
+
+    drawParticles();
+    drawShotEffects();
+    drawLives();
+
+    if (running) {
+      requestAnimationFrame(draw);
+    }
+  }
+
+  function gameLoop(timestamp) {
+    if (!running) return;
+
+    if (!lastTime) {
+      lastTime = timestamp;
+    }
+
+    const dt =
+      Math.min(
+        0.05,
+        (timestamp - lastTime) / 1000
+      );
+
+    lastTime = timestamp;
+
+    update(dt);
+
+    if (running) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  function resetState() {
+    score = 0;
+    hits = 0;
+    shots = 0;
+
+    combo = 0;
+    maxCombo = 0;
+
+    lives = 3;
+
+    elapsed = 0;
+    lastTime = 0;
+
+    spawnTimer = 0;
+    nextSpawn = 0.35;
+
+    targets = [];
+    particles = [];
+    shotsFx = [];
+
+    gameEnded = false;
+
+    timeEl.style.color =
+      'var(--ink)';
+
+    updateHud();
+  }
+
+  function startGame() {
+    ensureAudio();
+
+    resetState();
+
+    startOverlay.classList.add(
+      'hidden'
+    );
+
+    gameOverOverlay.classList.add(
+      'hidden'
+    );
+
+    running = true;
+
+    createTarget();
+
+    blipPlay('wave');
+
+    requestAnimationFrame(
+      gameLoop
+    );
+
+    requestAnimationFrame(
+      draw
+    );
+  }
+
+  function endGame(reason) {
+    if (gameEnded) return;
+
+    gameEnded = true;
+    running = false;
+
+    targets = [];
+
+    const accuracy =
+      shots > 0
+        ? Math.round(
+            (hits / shots) * 100
+          )
+        : 0;
+
+    let isRecord = false;
+
+    if (score > best) {
+      best = score;
+      isRecord = true;
+
+      try {
+        sessionStorage.setItem(
+          BEST_KEY,
+          String(Math.floor(best))
+        );
+      } catch (e) {}
+    }
+
+    finalScoreEl.textContent =
+      formatScore(score);
+
+    finalAccuracyEl.textContent =
+      accuracy + '%';
+
+    finalHitsEl.textContent =
+      hits;
+
+    finalComboEl.textContent =
+      maxCombo;
+
+    if (isRecord && score > 0) {
+      gameOverTitle.textContent =
+        '🏆 NUEVO RÉCORD';
+
+      blipPlay('cheer');
+      sfxRecord();
+
+    } else if (
+      reason === 'SIN VIDAS'
+    ) {
+      gameOverTitle.textContent =
+        '💥 SIN VIDAS';
+
+      blipPlay('sad');
+
+    } else {
+      gameOverTitle.textContent =
+        '⏱ TIEMPO';
+
+      blipPlay('cheer');
+    }
+
+    gameOverOverlay.classList.remove(
+      'hidden'
+    );
+
+    draw(0);
+  }
+
+  function pointerPosition(event) {
+    const rect =
+      canvas.getBoundingClientRect();
+
+    return {
+      x:
+        event.clientX -
+        rect.left,
+
+      y:
+        event.clientY -
+        rect.top
+    };
+  }
+
+  canvas.addEventListener(
+    'pointerdown',
+    event => {
+      if (!running || gameEnded) {
+        return;
+      }
+
+      event.preventDefault();
+
+      ensureAudio();
+
+      const pos =
+        pointerPosition(event);
+
+      fireAt(
+        pos.x,
+        pos.y
+      );
+    },
+    { passive: false }
+  );
+
+  startBtn.addEventListener(
+    'click',
+    startGame
+  );
+
+  restartBtn.addEventListener(
+    'click',
+    startGame
+  );
+
+  canvas.addEventListener(
+    'contextmenu',
+    event => {
+      event.preventDefault();
+    }
+  );
+
+  updateHud();
+
+  draw(0);
+
+})();
+</script></body>
+</html>
