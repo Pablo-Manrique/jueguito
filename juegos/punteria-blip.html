@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#14121f">
+  <title>Puntería BLIP · Mini Arcade</title>
+
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../assets/favicon-48.png">
+  <link rel="apple-touch-icon" href="../assets/icon-180.png">
+
+  <link rel="stylesheet" href="../assets/theme.css">
+  <link rel="stylesheet" href="../assets/companion.css">
+
+  <style>
+    .game-page{
+      width:100%;
+      max-width:600px;
+    }
+
+    .top-nav{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+      font-size:clamp(9px,2.6vw,11px);
+    }
+
+    .back-link{
+      color:var(--dim);
+      border:1px solid var(--grid);
+      padding:8px 12px;
+    }
+
+    .page-title{
+      color:var(--c3);
+      text-align:right;
+    }
+
+    .game-header{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .stat{
+      background:var(--panel);
+      border:2px solid var(--grid);
+      padding:9px 6px;
+      text-align:center;
+    }
+
+    .stat-label{
+      display:block;
+      color:var(--dim);
+      font-size:7px;
+      margin-bottom:7px;
+    }
+
+    .stat-value{
+      display:block;
+      color:var(--ink);
+      font-size:12px;
+    }
+
+    .stat-value.accent{
+      color:var(--c3);
+    }
+
+    .game-shell{
+      position:relative;
+      width:100%;
+      aspect-ratio:3 / 5;
+      background:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+        var(--bg);
+      background-size:24px 24px;
+      border:3px solid var(--grid);
+      box-shadow:6px 6px 0 rgba(0,0,0,.35);
+      overflow:hidden;
+      touch-action:none;
+    }
+
+    #gameCanvas{
+      display:block;
+      width:100%;
+      height:100%;
+      touch-action:none;
+    }
+
+    .blip-slot{
+      position:absolute;
+      left:50%;
+      bottom:7%;
+      transform:translateX(-50%);
+      width:64px;
+      height:64px;
+      pointer-events:none;
+      z-index:4;
+    }
+
+    .overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:rgba(20,18,31,.84);
+      z-index:10;
+      text-align:center;
+    }
+
+    .overlay.hidden{
+      display:none;
+    }
+
+    .overlay-box{
+      width:100%;
+      max-width:380px;
+      background:var(--panel);
+      border:3px solid var(--grid);
+      box-shadow:6px 6px 0 rgba(0,0,0,.45);
+      padding:22px 18px;
+    }
+
+    .overlay h1{
+      margin:0 0 14px;
+      color:var(--c3);
+      font-size:clamp(14px,4vw,19px);
+      line-height:1.5;
+    }
+
+    .overlay p{
+      margin:0 0 18px;
+      color:var(--dim);
+      font-size:8px;
+      line-height:2;
+    }
+
+    .result{
+      margin:14px 0 18px;
+      color:var(--ink);
+      font-size:10px;
+      line-height:2.2;
+    }
+
+    .result strong{
+      color:var(--c3);
+      font-size:20px;
+      display:block;
+    }
+
+    .game-btn{
+      display:inline-block;
+      width:100%;
+      border:0;
+      background:var(--c1);
+      color:var(--bg);
+      font-family:inherit;
+      font-size:9px;
+      padding:13px 14px;
+      cursor:pointer;
+      box-shadow:4px 4px 0 rgba(0,0,0,.4);
+      touch-action:manipulation;
+    }
+
+    .game-btn:active{
+      transform:translate(2px,2px);
+      box-shadow:2px 2px 0 rgba(0,0,0,.4);
+    }
+
+    .instructions{
+      margin-top:14px;
+      background:var(--panel);
+      border:2px solid var(--grid);
+      padding:12px 14px;
+      color:var(--dim);
+      font-size:7px;
+      line-height:2;
+      text-align:center;
+    }
+
+    .toast{
+      position:absolute;
+      left:50%;
+      top:34%;
+      transform:translate(-50%,-50%);
+      z-index:8;
+      pointer-events:none;
+      font-size:10px;
+      color:var(--c3);
+      text-shadow:3px 3px 0 rgba(0,0,0,.6);
+      white-space:nowrap;
+      opacity:0;
+    }
+
+    .toast.show{
+      animation:toast .65s ease-out forwards;
+    }
+
+    @keyframes toast{
+      0%{
+        opacity:0;
+        transform:translate(-50%,-20%) scale(.8);
+      }
+      20%{
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.15);
+      }
+      100%{
+        opacity:0;
+        transform:translate(-50%,-100%) scale(1);
+      }
+    }
+
+    @media(max-width:420px){
+      .blip-slot{
+        width:54px;
+        height:54px;
+      }
+
+      .stat{
+        padding:8px 4px;
+      }
+
+      .stat-value{
+        font-size:10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="game-page">
+
+  <nav class="top-nav">
+    <a class="back-link" href="../index.html">← VOLVER</a>
+    <span class="page-title">PUNTERÍA BLIP</span>
+  </nav>
+
+  <div class="game-header">
+    <div class="stat">
+      <span class="stat-label">PUNTOS</span>
+      <span class="stat-value accent" id="score">0</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">TIEMPO</span>
+      <span class="stat-value" id="time">45</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">RACHA</span>
+      <span class="stat-value" id="combo">x1</span>
+    </div>
+  </div>
+
+  <div class="game-shell" id="gameShell">
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="blip-slot" id="blip-slot"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="overlay" id="startOverlay">
+      <div class="overlay-box">
+        <h1>🎯 PUNTERÍA BLIP</h1>
+
+        <p>
+          TOCA LOS OBJETIVOS.<br>
+          NO TOQUES LAS BOMBAS.<br>
+          ENCADENA ACIERTOS Y SUPERA TU RÉCORD.
+        </p>
+
+        <button class="game-btn" id="startBtn">
+          EMPEZAR
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="gameOverOverlay">
+      <div class="overlay-box">
+        <h1 id="gameOverTitle">FIN DE PARTIDA</h1>
+
+        <div class="result">
+          PUNTOS
+          <strong id="finalScore">0</strong>
+          PRECISIÓN: <span id="finalAccuracy">0%</span><br>
+          ACIERTOS: <span id="finalHits">0</span><br>
+          MEJOR RACHA: <span id="finalCombo">0</span>
+        </div>
+
+        <button class="game-btn" id="restartBtn">
+          JUGAR OTRA VEZ
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="instructions">
+    TOCA LOS OBJETIVOS PARA DISPARAR · LOS OBJETIVOS PEQUEÑOS DAN MÁS PUNTOS ·
+    LAS BOMBAS QUITAN UNA VIDA · 45 SEGUNDOS
+  </div>
+
+</div>
+
+<script src="../assets/companion.js"></script>
+
+<script>
+(() => {
+  'use strict';
+
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const shell = document.getElementById('gameShell');
+
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+  const comboEl = document.getElementById('combo');
+
+  const startOverlay = document.getElementById('startOverlay');
+  const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const finalScoreEl = document.getElementById('finalScore');
+  const finalAccuracyEl = document.getElementById('finalAccuracy');
+  const finalHitsEl = document.getElementById('finalHits');
+  const finalComboEl = document.getElementById('finalCombo');
+  const gameOverTitle = document.getElementById('gameOverTitle');
+
+  const toastEl = document.getElementById('toast');
+
+  const blipSlot = document.getElementById('blip-slot');
+
+  Companion.mount(blipSlot, {
+    size: 42
+  });
+
+  const BEST_KEY = 'miniArcade.punteria.best';
+
+  let best = 0;
+
+  try {
+    best = parseInt(sessionStorage.getItem(BEST_KEY) || '0', 10) || 0;
+  } catch (e) {}
+
+  let W = 0;
+  let H = 0;
+  let dpr = 1;
+
+  let running = false;
+  let gameEnded = false;
+
+  let score = 0;
+  let hits = 0;
+  let shots = 0;
+
+  let combo = 0;
+  let maxCombo = 0;
+
+  let lives = 3;
+
+  let elapsed = 0;
+  let lastTime = 0;
+
+  let spawnTimer = 0;
+  let nextSpawn = 0.75;
+
+  let targetId = 0;
+
+  let targets = [];
+  let particles = [];
+  let shotsFx = [];
+
+  let audioCtx = null;
+
+  /*
+   * Tipos:
+   * normal
+   * small
+   * bonus
+   * bomb
+   * moving
+   */
+
+  function resize() {
+    const rect = shell.getBoundingClientRect();
+
+    W = Math.max(1, rect.width);
+    H = Math.max(1, rect.height);
+
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  function random(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function formatScore(v) {
+    return Math.max(0, Math.floor(v)).toLocaleString('es-ES');
+  }
+
+  function showToast(text, duration = 650) {
+    toastEl.textContent = text;
+    toastEl.classList.remove('show');
+
+    void toastEl.offsetWidth;
+
+    toastEl.classList.add('show');
+
+    window.setTimeout(() => {
+      toastEl.classList.remove('show');
+    }, duration);
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        audioCtx = null;
+      }
+    }
+
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  }
+
+  function beep(freq, duration, type = 'square', volume = 0.035) {
+    if (!audioCtx) return;
+
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = type;
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + duration
+      );
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  function sfxHit(type) {
+    if (type === 'bonus') {
+      beep(720, .07);
+      setTimeout(() => beep(980, .08), 45);
+      return;
+    }
+
+    if (type === 'small') {
+      beep(620, .055);
+      return;
+    }
+
+    beep(480, .05);
+  }
+
+  function sfxMiss() {
+    beep(150, .08, 'sawtooth', .025);
+  }
+
+  function sfxBomb() {
+    beep(110, .12, 'sawtooth', .04);
+    setTimeout(() => beep(75, .15, 'sawtooth', .035), 55);
+  }
+
+  function sfxRecord() {
+    beep(600, .07);
+    setTimeout(() => beep(800, .07), 70);
+    setTimeout(() => beep(1000, .11), 140);
+  }
+
+  function getDifficulty() {
+    /*
+     * 0 al principio, aproximadamente 1 al final.
+     */
+    return clamp(elapsed / 45, 0, 1);
+  }
+
+  function getSpawnInterval() {
+    const d = getDifficulty();
+
+    /*
+     * Empieza relajado y termina bastante más frenético.
+     */
+    return Math.max(
+      0.34,
+      0.82 - d * 0.38
+    );
+  }
+
+  function chooseTargetType() {
+    const d = getDifficulty();
+    const r = Math.random();
+
+    /*
+     * Bombas empiezan a aparecer pronto, pero nunca dominan
+     * la pantalla.
+     */
+    if (r < 0.10 + d * 0.04) {
+      return 'bomb';
+    }
+
+    if (r < 0.22 + d * 0.04) {
+      return 'bonus';
+    }
+
+    if (r < 0.43 + d * 0.12) {
+      return 'small';
+    }
+
+    if (r < 0.63 + d * 0.17) {
+      return 'moving';
+    }
+
+    return 'normal';
+  }
+
+  function targetRadius(type) {
+    switch (type) {
+      case 'small': return Math.max(10, 15 - getDifficulty() * 2);
+      case 'bonus': return 20;
+      case 'bomb': return 19;
+      case 'moving': return 17;
+      default: return 23;
+    }
+  }
+
+  function targetLifetime(type) {
+    const d = getDifficulty();
+
+    switch (type) {
+      case 'small':
+        return 1.35 - d * 0.22;
+
+      case 'bonus':
+        return 1.15 - d * 0.15;
+
+      case 'bomb':
+        return 1.5 - d * 0.15;
+
+      case 'moving':
+        return 1.8 - d * 0.3;
+
+      default:
+        return 1.8 - d * 0.3;
+    }
+  }
+
+  function createTarget() {
+    const type = chooseTargetType();
+
+    const radius = targetRadius(type);
+
+    /*
+     * Reservamos una zona inferior para BLIP.
+     */
+    const minY = H * 0.08;
+    const maxY = H * 0.68;
+
+    const target = {
+      id: ++targetId,
+      type,
+      x: random(radius + 12, W - radius - 12),
+      y: random(minY + radius, maxY - radius),
+      r: radius,
+
+      age: 0,
+      life: targetLifetime(type),
+
+      vx: 0,
+      vy: 0,
+
+      pulse: random(0, Math.PI * 2),
+      hit: false
+    };
+
+    if (type === 'moving') {
+      const angle = random(0, Math.PI * 2);
+      const speed = 25 + getDifficulty() * 65;
+
+      target.vx = Math.cos(angle) * speed;
+      target.vy = Math.sin(angle) * speed * 0.7;
+    }
+
+    targets.push(target);
+  }
+
+  function spawnBurst() {
+    /*
+     * En la fase final ocasionalmente aparecen dos objetivos
+     * para crear decisiones rápidas.
+     */
+    createTarget();
+
+    if (getDifficulty() > 0.68 && Math.random() < 0.18) {
+      createTarget();
+    }
+  }
+
+  function addParticles(x, y, type, success = true) {
+    const count = success ? 12 : 8;
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = random(40, 145);
+
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+
+        life: random(.28, .55),
+        maxLife: .55,
+
+        size: random(2, 5),
+        type
+      });
+    }
+  }
+
+  function addShotFx(x, y, hit) {
+    shotsFx.push({
+      x,
+      y,
+      life: .18,
+      maxLife: .18,
+      hit
+    });
+  }
+
+  function getPoints(type) {
+    switch (type) {
+      case 'small': return 50;
+      case 'bonus': return 100;
+      case 'moving': return 35;
+      default: return 25;
+    }
+  }
+
+  function comboMultiplier() {
+    if (combo >= 15) return 4;
+    if (combo >= 10) return 3;
+    if (combo >= 5) return 2;
+    return 1;
+  }
+
+  function hitTarget(target) {
+    target.hit = true;
+
+    hits++;
+    combo++;
+
+    maxCombo = Math.max(maxCombo, combo);
+
+    const multiplier = comboMultiplier();
+    const base = getPoints(target.type);
+    const points = base * multiplier;
+
+    score += points;
+
+    if (target.type === 'bonus') {
+      score += 25 * multiplier;
+      showToast('BONUS +' + (points + 25 * multiplier));
+      Companion.gesture('surprise');
+    } else if (combo === 5) {
+      showToast('🔥 RACHA x2');
+      Companion.gesture('cheer');
+    } else if (combo === 10) {
+      showToast('🔥🔥 RACHA x3');
+      Companion.gesture('cheer');
+    } else if (combo === 15) {
+      showToast('🔥🔥🔥 MODO BLIP');
+      Companion.gesture('cheer');
+    } else if (target.type === 'small') {
+      showToast('PRECISIÓN +' + points);
+    } else {
+      showToast('+' + points);
+    }
+
+    addParticles(
+      target.x,
+      target.y,
+      target.type,
+      true
+    );
+
+    addShotFx(
+      target.x,
+      target.y,
+      true
+    );
+
+    sfxHit(target.type);
+
+    targets = targets.filter(t => t !== target);
+
+    updateHud();
+  }
+
+  function hitBomb(target) {
+    lives--;
+
+    combo = 0;
+
+    target.hit = true;
+
+    addParticles(
+      target.x,
+      target.y,
+      'bomb',
+      false
+    );
+
+    addShotFx(
+      target.x,
+      target.y,
+      false
+    );
+
+    sfxBomb();
+
+    showToast(
+      lives > 0
+        ? '💥 ¡BOMBA!  VIDA -1'
+        : '💥 ¡ÚLTIMA VIDA!'
+    );
+
+    Companion.gesture(
+      lives > 0 ? 'surprise' : 'sad'
+    );
+
+    targets = targets.filter(t => t !== target);
+
+    updateHud();
+
+    if (lives <= 0) {
+      endGame('SIN VIDAS');
+    }
+  }
+
+  function registerMiss() {
+    shots++;
+
+    combo = 0;
+
+    sfxMiss();
+
+    showToast('MISS');
+
+    updateHud();
+  }
+
+  function fireAt(x, y) {
+    if (!running || gameEnded) return;
+
+    shots++;
+
+    addShotFx(x, y, false);
+
+    /*
+     * Buscamos el objetivo más cercano al punto tocado.
+     */
+    let candidate = null;
+    let bestDistance = Infinity;
+
+    for (const target of targets) {
+      if (target.hit) continue;
+
+      const dx = x - target.x;
+      const dy = y - target.y;
+
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance <= target.r && distance < bestDistance) {
+        bestDistance = distance;
+        candidate = target;
+      }
+    }
+
+    if (!candidate) {
+      registerMiss();
+      return;
+    }
+
+    if (candidate.type === 'bomb') {
+      hitBomb(candidate);
+      return;
+    }
+
+    hitTarget(candidate);
+  }
+
+  function update(dt) {
+    if (!running) return;
+
+    elapsed += dt;
+
+    if (elapsed >= 45) {
+      elapsed = 45;
+      updateHud();
+      endGame('TIEMPO');
+      return;
+    }
+
+    spawnTimer += dt;
+
+    if (spawnTimer >= nextSpawn) {
+      spawnTimer = 0;
+      nextSpawn = getSpawnInterval();
+      spawnBurst();
+    }
+
+    for (const target of targets) {
+      target.age += dt;
+
+      if (target.type === 'moving') {
+        target.x += target.vx * dt;
+        target.y += target.vy * dt;
+
+        const margin = target.r + 8;
+
+        if (target.x < margin) {
+          target.x = margin;
+          target.vx *= -1;
+        }
+
+        if (target.x > W - margin) {
+          target.x = W - margin;
+          target.vx *= -1;
+        }
+
+        if (target.y < H * .08 + target.r) {
+          target.y = H * .08 + target.r;
+          target.vy *= -1;
+        }
+
+        if (target.y > H * .68 - target.r) {
+          target.y = H * .68 - target.r;
+          target.vy *= -1;
+        }
+      }
+    }
+
+    /*
+     * Los objetivos que expiran cuentan como fallo:
+     * pierdes la racha, pero no una vida.
+     */
+    const expired = [];
+
+    for (const target of targets) {
+      if (target.age >= target.life) {
+        expired.push(target);
+      }
+    }
+
+    for (const target of expired) {
+      if (!target.hit) {
+        combo = 0;
+      }
+
+      targets = targets.filter(t => t !== target);
+    }
+
+    for (const p of particles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      p.vx *= Math.pow(.08, dt);
+      p.vy *= Math.pow(.08, dt);
+
+      p.life -= dt;
+    }
+
+    particles = particles.filter(p => p.life > 0);
+
+    for (const fx of shotsFx) {
+      fx.life -= dt;
+    }
+
+    shotsFx = shotsFx.filter(fx => fx.life > 0);
+
+    updateHud();
+  }
+
+  function updateHud() {
+    scoreEl.textContent = formatScore(score);
+
+    const remaining = Math.max(
+      0,
+      Math.ceil(45 - elapsed)
+    );
+
+    timeEl.textContent = remaining;
+
+    comboEl.textContent =
+      'x' + comboMultiplier();
+
+    if (remaining <= 10) {
+      timeEl.style.color = 'var(--c1)';
+    } else {
+      timeEl.style.color = 'var(--ink)';
+    }
+  }
+
+  function drawBackground() {
+    ctx.clearRect(0, 0, W, H);
+
+    /*
+     * Zona superior ligeramente más oscura.
+     */
+    const gradient = ctx.createLinearGradient(
+      0, 0,
+      0, H
+    );
+
+    gradient.addColorStop(0, 'rgba(157,123,255,.035)');
+    gradient.addColorStop(0.65, 'rgba(20,18,31,0)');
+    gradient.addColorStop(1, 'rgba(61,218,215,.035)');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, W, H);
+
+    /*
+     * Línea que separa la zona de juego de BLIP.
+     */
+    ctx.save();
+
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 7]);
+
+    ctx.beginPath();
+    ctx.moveTo(12, H * .74);
+    ctx.lineTo(W - 12, H * .74);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawTarget(target, now) {
+    const pulse =
+      Math.sin(now * .006 + target.pulse) * 0.08 + 1;
+
+    const r = target.r * pulse;
+
+    let color = 'var(--c2)';
+
+    if (target.type === 'small') {
+      color = 'var(--c4)';
+    } else if (target.type === 'bonus') {
+      color = 'var(--c3)';
+    } else if (target.type === 'bomb') {
+      color = 'var(--c1)';
+    }
+
+    ctx.save();
+
+    /*
+     * Desaparición progresiva al final de la vida.
+     */
+    const remaining = 1 - target.age / tar
