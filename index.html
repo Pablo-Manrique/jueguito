@@ -186,7 +186,29 @@
   .icon-siempre-arriba .sa-blip{position:absolute;left:45px;bottom:28px;width:20px;height:21px;background:var(--c4);border:2px solid rgba(0,0,0,.4);border-radius:34% 34% 40% 40% / 40% 40% 34% 34%;box-shadow:2px 2px 0 rgba(0,0,0,.22)}
   .icon-siempre-arriba .sa-blip::before{content:"";position:absolute;left:26%;right:26%;bottom:14%;height:22%;background:var(--c3);border-radius:50% 50% 40% 40%;opacity:.9}
   .icon-siempre-arriba .sa-blip::after{content:"••";position:absolute;left:3px;top:5px;color:#14121f;font-size:6px;letter-spacing:4px;line-height:1}
+.icon-punteria{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
 
+.icon-punteria:before{
+  content:'◎  ●  ◎';
+  font-size:15px;
+  color:var(--c3);
+  letter-spacing:3px;
+}
+
+.icon-punteria:after{
+  content:'✦';
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  font-size:8px;
+  color:var(--c1);
+}
   .icon-meteor{position:absolute;width:7px;height:7px;background:var(--c1);transform:rotate(45deg);opacity:.75}
   .icon-meteor.m1{right:15px;top:10px}.icon-meteor.m2{right:33px;top:28px;width:5px;height:5px;background:var(--c3)}
   .icon-ritmo{
@@ -311,6 +333,27 @@
       <div class="tag-row"><span class="tag">reflejos</span><span class="tag">contrarreloj</span></div>
       <a class="play-btn" href="juegos/toca-rapido.html">JUGAR →</a>
     </div>
+<div class="game-card">
+  <div class="icon-box icon-punteria"></div>
+
+  <h2>PUNTERÍA BLIP</h2>
+
+  <p>
+    Apunta y dispara a los objetivos. Encadena aciertos,
+    busca los bonus y no toques las bombas.
+  </p>
+
+  <div class="tag-row">
+    <span class="tag">precisión</span>
+    <span class="tag">reflejos</span>
+    <span class="tag">contrarreloj</span>
+  </div>
+
+  <a class="play-btn" href="juegos/punteria-blip.html">
+    JUGAR →
+  </a>
+</div>
+
 <div class="game-card" data-category="reflejos">
   <div class="icon-box icon-ritmo">
     <div class="rhythm-line"></div>
@@ -448,7 +491,8 @@
         ['apila','Apila sin Parar'],['2048','2048'],['siempreArriba','Siempre Arriba'],
         ['tocarapido','Toca Rápido'],['ritmo','Sigue el Ritmo'],['conecta','Conecta sin Cruzar'],['encaja','Encaja y Despeja'],
         ['combina','Combina el Objetivo'],['salto','Salto sin Fin'],['desliza','Desliza y Esquiva'],
-        ['atrapa','Atrapa con BLIP'],['rompe','Rompe los Bloques'],['repele','Repele la Invasión'],['pinball','Pinball de BLIP']
+        ['atrapa','Atrapa con BLIP'],['rompe','Rompe los Bloques'],['repele','Repele la Invasión'],['pinball','Pinball de BLIP'],
+['punteria','Puntería BLIP']
       ];
       const list = document.getElementById('session-list');
       let played = 0;
