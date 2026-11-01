@@ -14,344 +14,82 @@
 <link rel="stylesheet" href="../assets/theme.css">
 <link rel="stylesheet" href="../assets/companion.css">
 <style>
-  #game-root{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    width:100%;
-  }
+  #game-root{display:flex;flex-direction:column;align-items:center;width:100%;}
+  #hud2{width:100%;max-width:400px;display:flex;justify-content:flex-end;gap:6px;margin-bottom:10px;}
+  .mini-btn{font-family:inherit;font-size:clamp(7px,2.2vw,9px);background:transparent;color:var(--dim);border:1px solid var(--grid);padding:8px 9px;min-height:36px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+  .mini-btn:hover:not(:disabled){color:var(--ink);border-color:var(--dim);}
+  .mini-btn:active:not(:disabled){transform:translate(1px,1px);}
+  .mini-btn:disabled{opacity:.38;cursor:default;}
 
-  #hud2{
-    width:100%;
-    max-width:400px;
-    display:flex;
-    justify-content:flex-end;
-    gap:6px;
-    margin-bottom:10px;
-  }
+  #cabinet{width:min(94vw,420px);background:linear-gradient(180deg,#201c38,#14121f);border:4px solid var(--grid);border-radius:10px;padding:clamp(9px,2.7vw,16px);box-shadow:0 0 0 4px var(--bg),8px 8px 0 rgba(0,0,0,.4);}
+  .board-row{display:flex;gap:clamp(6px,2vw,10px);align-items:stretch;}
+  #canvas-wrap{position:relative;flex:1 1 auto;min-width:0;border:3px solid var(--grid);background:var(--panel);box-shadow:0 0 0 3px var(--bg);overflow:hidden;}
+  canvas{display:block;width:100%;touch-action:none;-webkit-user-select:none;user-select:none;}
+  #game-canvas{aspect-ratio:1/2;}
 
-  .mini-btn{
-    font-family:inherit;
-    font-size:clamp(7px, 2.2vw, 9px);
-    background:transparent;
-    color:var(--dim);
-    border:1px solid var(--grid);
-    padding:8px 9px;
-    min-height:36px;
-    white-space:nowrap;
-    cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
-    touch-action:manipulation;
-  }
-  .mini-btn:hover:not(:disabled){ color:var(--ink); border-color:var(--dim); }
-  .mini-btn:active:not(:disabled){ transform:translate(1px,1px); }
-  .mini-btn:disabled{ opacity:.38; cursor:default; }
+  #flash-overlay{position:absolute;inset:0;opacity:0;pointer-events:none;mix-blend-mode:screen;}
+  #flash-overlay.flash{animation:flash-fade .35s ease-out;}
+  #banner{position:absolute;top:8px;left:50%;transform:translate(-50%,-10px);font-size:9px;color:var(--ink);background:rgba(20,18,31,.88);border:1px solid var(--grid);padding:6px 8px;opacity:0;pointer-events:none;white-space:nowrap;z-index:3;}
+  #banner.show{animation:banner-in 1.1s ease;}
 
-  /* ---------- cabina arcade ---------- */
-  #cabinet{
-    width:min(94vw, 420px);
-    background:linear-gradient(180deg, #201c38, #14121f);
-    border:4px solid var(--grid);
-    border-radius:10px;
-    padding:clamp(9px, 2.7vw, 16px);
-    box-shadow:0 0 0 4px var(--bg), 8px 8px 0 rgba(0,0,0,.4);
-  }
+  #overlay{position:absolute;inset:0;background:rgba(20,18,31,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;z-index:5;}
+  #overlay h2{font-size:clamp(10px,3.6vw,12px);margin:0;color:var(--c3);line-height:1.7;}
+  #overlay.lost h2{color:var(--c1);}
+  #overlay p{font-size:clamp(7px,2.4vw,8px);color:var(--dim);line-height:1.9;margin:0;max-width:340px;}
+  #overlay-score{display:none;font-size:clamp(8px,2.6vw,9px);color:var(--ink);line-height:1.8;}
+  #overlay button{font-family:inherit;font-size:clamp(9px,2.8vw,10px);background:var(--c2);color:#14121f;border:none;padding:12px 17px;min-height:44px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+  #overlay button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4);}
 
-  .board-row{
-    display:flex;
-    gap:clamp(6px, 2vw, 10px);
-    align-items:flex-start;
-  }
+  .side-panel{flex:0 0 clamp(74px,24vw,108px);display:flex;flex-direction:column;gap:clamp(5px,1.5vw,8px);min-width:0;}
+  .side-box{border:2px solid var(--grid);background:var(--panel);padding:clamp(4px,1.5vw,6px);text-align:center;}
+  .side-box .stat{display:block;font-size:clamp(5.5px,1.8vw,6.5px);letter-spacing:.5px;color:var(--dim);}
+  .side-box .val{display:block;font-size:clamp(10px,3.2vw,13px);color:var(--ink);margin-top:3px;}
+  .side-box .val.pop{animation:pop-scale .45s ease;}
+  #combo-mult{color:var(--c3);}
+  #next-canvas{width:100%;aspect-ratio:1;margin-top:4px;display:block;}
+  .blip-mascot{margin-top:auto;min-height:clamp(66px,12vw,92px);display:flex;align-items:center;justify-content:center;pointer-events:none;}
 
-  #canvas-wrap{
-    position:relative;
-    flex:1 1 auto;
-    min-width:0;
-    border:3px solid var(--grid);
-    background:var(--panel);
-    box-shadow:0 0 0 3px var(--bg);
-    overflow:hidden;
-  }
+  /* Controles separados por mano: izquierda = desplazamiento/caída suave; derecha = rotar/caída instantánea. */
+  .controls-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(12px,4vw,20px);margin-top:14px;padding:clamp(10px,3vw,15px) clamp(5px,1.5vw,9px) 8px;background:rgba(0,0,0,.18);border-radius:8px;align-items:stretch;}
+  .left-control-zone,.right-control-zone{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:9px;}
+  .move-cluster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .move-btn{height:64px;min-width:0;background:var(--panel);border:2px solid var(--grid);border-radius:8px;color:var(--ink);font-size:clamp(24px,7vw,30px);line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .soft-drop-btn{height:52px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--panel);border:2px solid var(--grid);border-radius:8px;color:var(--c3);font-family:inherit;font-size:clamp(10px,2.7vw,12px);letter-spacing:.2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .soft-drop-btn .arrow{font-size:22px;line-height:1;}
+  .soft-drop-btn small{font-family:inherit;font-size:6px;color:var(--dim);}
+  .rotate-btn{align-self:center;width:76px;height:76px;border-radius:50%;background:var(--c2);color:#14121f;border:2px solid rgba(0,0,0,.4);font-size:clamp(26px,7vw,32px);cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;touch-action:none;}
+  .drop-btn{width:100%;height:52px;border-radius:8px;background:var(--c1);color:#14121f;border:2px solid rgba(0,0,0,.4);font-size:clamp(9px,2.6vw,11px);font-family:inherit;letter-spacing:.2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+  .move-btn:active,.soft-drop-btn:active,.move-btn.is-pressed,.soft-drop-btn.is-pressed{transform:translate(1px,1px);background:#29243d;border-color:var(--c2);box-shadow:1px 1px 0 rgba(0,0,0,.3);}
+  .rotate-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4);}
+  .drop-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4);}
+  .controls-label{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:6px;color:var(--dim);text-align:center;line-height:1.8;letter-spacing:.1px;}
+  .controls-label span{display:block;}
+  #foot-note{margin-top:12px;font-size:clamp(7px,2vw,8px);color:var(--dim);text-align:center;max-width:480px;line-height:1.8;}
 
-  canvas{
-    display:block;
-    width:100%;
-    touch-action:none;
-    -webkit-user-select:none;
-    user-select:none;
-  }
-  #game-canvas{ aspect-ratio:1 / 2; }
-
-  #flash-overlay{
-    position:absolute;
-    inset:0;
-    opacity:0;
-    pointer-events:none;
-    mix-blend-mode:screen;
-  }
-  #flash-overlay.flash{ animation:flash-fade .35s ease-out; }
-
-  #banner{
-    position:absolute;
-    top:8px;
-    left:50%;
-    transform:translate(-50%,-10px);
-    font-size:9px;
-    color:var(--ink);
-    background:rgba(20,18,31,.88);
-    border:1px solid var(--grid);
-    padding:6px 8px;
-    opacity:0;
-    pointer-events:none;
-    white-space:nowrap;
-    z-index:3;
-  }
-  #banner.show{ animation:banner-in 1.1s ease; }
-
-  #overlay{
-    position:absolute;
-    inset:0;
-    background:rgba(20,18,31,.94);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    text-align:center;
-    padding:14px;
-    z-index:5;
-  }
-  #overlay h2{
-    font-size:clamp(10px, 3.6vw, 12px);
-    margin:0;
-    color:var(--c3);
-    line-height:1.7;
-  }
-  #overlay.lost h2{ color:var(--c1); }
-  #overlay p{
-    font-size:clamp(7px, 2.4vw, 8px);
-    color:var(--dim);
-    line-height:1.9;
-    margin:0;
-    max-width:340px;
-  }
-  #overlay-score{
-    display:none;
-    font-size:clamp(8px, 2.6vw, 9px);
-    color:var(--ink);
-    line-height:1.8;
-  }
-  #overlay button{
-    font-family:inherit;
-    font-size:clamp(9px, 2.8vw, 10px);
-    background:var(--c2);
-    color:#14121f;
-    border:none;
-    padding:12px 17px;
-    min-height:42px;
-    cursor:pointer;
-    box-shadow:3px 3px 0 rgba(0,0,0,.4);
-    -webkit-tap-highlight-color:transparent;
-    touch-action:manipulation;
-  }
-  #overlay button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
-
-  .side-panel{
-    flex:0 0 clamp(74px, 24vw, 108px);
-    display:flex;
-    flex-direction:column;
-    gap:clamp(5px, 1.5vw, 8px);
-    min-width:0;
-  }
-  .side-box{
-    border:2px solid var(--grid);
-    background:var(--panel);
-    padding:clamp(4px, 1.5vw, 6px);
-    text-align:center;
-  }
-  .side-box .stat{
-    display:block;
-    font-size:clamp(5.5px, 1.8vw, 6.5px);
-    letter-spacing:.5px;
-    color:var(--dim);
-  }
-  .side-box .val{
-    display:block;
-    font-size:clamp(10px, 3.2vw, 13px);
-    color:var(--ink);
-    margin-top:3px;
-  }
-  .side-box .val.pop{ animation:pop-scale .45s ease; }
-  #combo-mult{ color:var(--c3); }
-  #next-canvas{
-    width:100%;
-    aspect-ratio:1;
-    margin-top:4px;
-    display:block;
-  }
-
-  /* ---------- controles táctiles ---------- */
-  .controls-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    gap:5px;
-    margin-top:14px;
-    padding:clamp(9px, 2.6vw, 13px) clamp(4px, 1.5vw, 8px) 6px;
-    background:rgba(0,0,0,.18);
-    border-radius:8px;
-  }
-
-  .move-cluster{
-    display:flex;
-    align-items:center;
-    gap:5px;
-    flex:0 0 auto;
-  }
-
-  .move-btn,
-  .soft-drop-btn{
-    width:clamp(42px, 12.3vw, 56px);
-    height:clamp(52px, 14.5vw, 62px);
-    background:var(--panel);
-    border:2px solid var(--grid);
-    color:var(--ink);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
-    touch-action:none;
-    user-select:none;
-    -webkit-user-select:none;
-    box-shadow:2px 2px 0 rgba(0,0,0,.3);
-  }
-  .move-btn{
-    font-size:clamp(20px, 6vw, 25px);
-    line-height:1;
-  }
-  .soft-drop-btn{
-    flex-direction:column;
-    gap:4px;
-    color:var(--c3);
-    font-size:clamp(15px, 4.4vw, 18px);
-  }
-  .soft-drop-btn small{
-    font-family:inherit;
-    font-size:5px;
-    color:var(--dim);
-    letter-spacing:-.2px;
-  }
-  .move-btn:active,
-  .soft-drop-btn:active,
-  .move-btn.is-pressed,
-  .soft-drop-btn.is-pressed{
-    transform:translate(1px,1px);
-    background:#29243d;
-    border-color:var(--c2);
-    box-shadow:1px 1px 0 rgba(0,0,0,.3);
-  }
-
-  .blip-mascot{
-    flex:1 1 auto;
-    min-width:22px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding-bottom:clamp(2px, 1vw, 6px);
-    pointer-events:none;
-  }
-
-  .action-cluster{
-    display:flex;
-    flex:0 0 auto;
-    flex-direction:column;
-    align-items:center;
-    gap:clamp(6px, 1.8vw, 8px);
-  }
-  .rotate-btn{
-    width:clamp(52px, 15vw, 66px);
-    height:clamp(52px, 15vw, 66px);
-    border-radius:50%;
-    background:var(--c2);
-    color:#14121f;
-    border:2px solid rgba(0,0,0,.4);
-    font-size:clamp(20px, 6.2vw, 27px);
-    cursor:pointer;
-    box-shadow:3px 3px 0 rgba(0,0,0,.4);
-    -webkit-tap-highlight-color:transparent;
-    touch-action:none;
-  }
-  .rotate-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
-
-  .drop-btn{
-    width:clamp(62px, 18vw, 78px);
-    min-height:36px;
-    border-radius:8px;
-    background:var(--c1);
-    color:#14121f;
-    border:2px solid rgba(0,0,0,.4);
-    font-size:clamp(8px, 2.4vw, 10px);
-    font-family:inherit;
-    letter-spacing:.2px;
-    cursor:pointer;
-    box-shadow:3px 3px 0 rgba(0,0,0,.4);
-    -webkit-tap-highlight-color:transparent;
-    touch-action:manipulation;
-  }
-  .drop-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,.4); }
-
-  .controls-label{
-    font-size:6px;
-    color:var(--dim);
-    text-align:center;
-    margin-top:7px;
-    line-height:1.9;
-    letter-spacing:.1px;
-  }
-
-  #foot-note{
-    margin-top:12px;
-    font-size:clamp(7px, 2vw, 8px);
-    color:var(--dim);
-    text-align:center;
-    max-width:480px;
-    line-height:1.8;
-  }
-
-  @keyframes pop-scale{
-    0%{ transform:scale(1); }
-    40%{ transform:scale(1.5) rotate(-6deg); }
-    70%{ transform:scale(.92); }
-    100%{ transform:scale(1); }
-  }
-  @keyframes flash-fade{
-    0%{ opacity:.35; }
-    100%{ opacity:0; }
-  }
-  @keyframes banner-in{
-    0%{ opacity:0; transform:translate(-50%,-10px); }
-    15%{ opacity:1; transform:translate(-50%,0); }
-    82%{ opacity:1; transform:translate(-50%,0); }
-    100%{ opacity:0; transform:translate(-50%,-10px); }
-  }
+  @keyframes pop-scale{0%{transform:scale(1);}40%{transform:scale(1.5) rotate(-6deg);}70%{transform:scale(.92);}100%{transform:scale(1);}}
+  @keyframes flash-fade{0%{opacity:.35;}100%{opacity:0;}}
+  @keyframes banner-in{0%{opacity:0;transform:translate(-50%,-10px);}15%{opacity:1;transform:translate(-50%,0);}82%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,-10px);}}
 
   @media (max-width:360px){
-    #cabinet{ padding:8px; }
-    .board-row{ gap:5px; }
-    .side-panel{ flex-basis:72px; }
-    .move-cluster{ gap:4px; }
-    .move-btn,.soft-drop-btn{ width:39px; height:50px; }
-    .rotate-btn{ width:49px; height:49px; }
-    .drop-btn{ width:59px; min-height:34px; }
-    .blip-mascot{ min-width:16px; }
-    #hud2{ gap:4px; }
-    .mini-btn{ padding:7px 7px; }
+    #cabinet{padding:8px;}
+    .board-row{gap:5px;}
+    .side-panel{flex-basis:70px;}
+    .controls-row{gap:10px;padding-left:4px;padding-right:4px;}
+    .move-cluster{gap:6px;}
+    .move-btn{height:60px;font-size:25px;}
+    .soft-drop-btn,.drop-btn{height:50px;}
+    .rotate-btn{width:68px;height:68px;}
+    .mini-btn{padding:7px 7px;}
+  }
+  @media (max-height:700px) and (orientation:landscape){
+    body{padding-top:8px;padding-bottom:12px;}
+    #cabinet{width:min(94vw,600px);}
+    #game-canvas{aspect-ratio:1/1.55;}
+    .controls-row{margin-top:8px;}
   }
 </style>
 </head>
 <body>
-
   <div class="top-nav">
     <a class="back-link" href="../index.html">← MENÚ</a>
     <span class="page-title">APILA SIN PARAR</span>
@@ -383,53 +121,37 @@
             <span class="stat">SIGUIENTE</span>
             <canvas id="next-canvas"></canvas>
           </div>
-          <div class="side-box">
-            <span class="stat">PUNTOS</span>
-            <span class="val" id="score-val">0</span>
-          </div>
-          <div class="side-box">
-            <span class="stat">NIVEL</span>
-            <span class="val" id="level-val">1</span>
-          </div>
-          <div class="side-box">
-            <span class="stat">LÍNEAS</span>
-            <span class="val" id="lines-val">0</span>
-          </div>
-          <div class="side-box">
-            <span class="stat">COMBO</span>
-            <span class="val" id="combo-val">0</span>
-            <span class="val" id="combo-mult"></span>
-          </div>
-          <div class="side-box">
-            <span class="stat">MEJOR</span>
-            <span class="val" id="best-val">0</span>
-          </div>
+          <div class="side-box"><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+          <div class="side-box"><span class="stat">NIVEL</span><span class="val" id="level-val">1</span></div>
+          <div class="side-box"><span class="stat">LÍNEAS</span><span class="val" id="lines-val">0</span></div>
+          <div class="side-box"><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
+          <div class="side-box"><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+          <div class="blip-mascot" id="blip-slot" aria-label="BLIP"></div>
         </div>
       </div>
 
-      <div class="controls-row">
-        <div class="move-cluster">
-          <button class="move-btn" id="btn-left" aria-label="Mover a la izquierda">‹</button>
-          <button class="move-btn" id="btn-right" aria-label="Mover a la derecha">›</button>
-          <button class="soft-drop-btn" id="btn-soft-drop" aria-label="Mantener para bajar suavemente">
-            ▼<small>BAJAR</small>
-          </button>
+      <div class="controls-row" aria-label="Controles táctiles">
+        <div class="left-control-zone" aria-label="Movimiento y caída suave">
+          <div class="move-cluster">
+            <button class="move-btn" id="btn-left" aria-label="Mover a la izquierda">‹</button>
+            <button class="move-btn" id="btn-right" aria-label="Mover a la derecha">›</button>
+          </div>
+          <button class="soft-drop-btn" id="btn-soft-drop" aria-label="Mantener para bajar suavemente"><span class="arrow">▼</span><span>BAJAR<br><small>MANTENER</small></span></button>
         </div>
 
-        <div class="blip-mascot" id="blip-slot"></div>
-
-        <div class="action-cluster">
+        <div class="right-control-zone" aria-label="Rotación y caída instantánea">
           <button class="rotate-btn" id="btn-rotate" aria-label="Rotar pieza">⟳</button>
           <button class="drop-btn" id="btn-down" aria-label="Caída instantánea">▾ CAER</button>
         </div>
       </div>
-      <div class="controls-label">◂ / ▸ MOVER &nbsp; · &nbsp; ▼ MANTENER PARA BAJAR &nbsp; · &nbsp; ⟳ ROTAR &nbsp; · &nbsp; CAER INSTANTÁNEAMENTE</div>
+      <div class="controls-label"><span>IZQUIERDA · DERECHA · BAJAR MANTENIENDO</span><span>ROTAR · CAÍDA INSTANTÁNEA</span></div>
     </div>
 
-    <div id="foot-note">Controles táctiles optimizados para móvil · teclado: ← → mover, ↑ rotar, ↓ bajar, espacio caer y P pausar</div>
+    <div id="foot-note">Controles táctiles para dos pulgares · teclado: ← → mover, ↑ rotar, ↓ bajar, espacio caer y P pausar</div>
   </div>
 
 <script>
+
 (function(){
   'use strict';
 
@@ -1413,14 +1135,13 @@
     }
   });
 })();
-</script>
 
+</script>
 <script src="../assets/companion.js"></script>
 <script>
   if(window.Companion && typeof window.Companion.mount === 'function'){
-    window.Companion.mount(document.getElementById('blip-slot'),{size:34});
+    window.Companion.mount(document.getElementById('blip-slot'),{size:36});
   }
 </script>
-
 </body>
 </html>
