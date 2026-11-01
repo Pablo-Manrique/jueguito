@@ -40,15 +40,23 @@
   #overlay button{font-family:inherit;font-size:clamp(9px,2.8vw,10px);background:var(--c2);color:#14121f;border:none;padding:12px 17px;min-height:44px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
   #overlay button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4);}
 
-  .side-panel{flex:0 0 clamp(74px,24vw,108px);display:flex;flex-direction:column;gap:clamp(5px,1.5vw,8px);min-width:0;}
-  .side-box{border:2px solid var(--grid);background:var(--panel);padding:clamp(4px,1.5vw,6px);text-align:center;}
-  .side-box .stat{display:block;font-size:clamp(5.5px,1.8vw,6.5px);letter-spacing:.5px;color:var(--dim);}
-  .side-box .val{display:block;font-size:clamp(10px,3.2vw,13px);color:var(--ink);margin-top:3px;}
+  /* Panel lateral compacto: las estadísticas ocupan dos columnas para no alargar la cabina. */
+  .side-panel{flex:0 0 clamp(96px,26vw,112px);display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .side-box{border:2px solid var(--grid);background:var(--panel);padding:4px;text-align:center;min-width:0;}
+  .side-box .stat{display:block;font-size:clamp(5px,1.45vw,6px);letter-spacing:.2px;color:var(--dim);white-space:nowrap;}
+  .side-box .val{display:block;font-size:clamp(8px,2.3vw,10px);color:var(--ink);margin-top:2px;line-height:1.15;overflow-wrap:anywhere;}
   .side-box .val.pop{animation:pop-scale .45s ease;}
   #combo-mult{color:var(--c3);}
-  #next-canvas{width:100%;height:112px;margin-top:4px;display:block;}
-  #hold-canvas{width:100%;aspect-ratio:1;margin-top:4px;display:block;}
-  .blip-mascot{margin-top:auto;min-height:clamp(66px,12vw,92px);display:flex;align-items:center;justify-content:center;pointer-events:none;}
+  .hold-box{height:62px;flex:0 0 62px;}
+  #hold-canvas{width:100%;height:39px;margin-top:2px;display:block;}
+  .next-box{height:94px;flex:0 0 94px;}
+  #next-canvas{width:100%;height:70px;margin-top:2px;display:block;}
+  .stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+  .stats-grid .side-box{min-height:38px;padding:4px 2px;display:flex;flex-direction:column;justify-content:center;}
+  .stats-grid .stat-score{grid-column:1 / -1;}
+  .stats-grid .side-box .val{font-size:clamp(8px,2.2vw,9px);}
+  .blip-mascot{margin-top:auto;min-height:44px;height:44px;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+  .blip-mascot .blip{--blip-size:32px !important;}
 
   /* Controles separados por mano: izquierda = desplazamiento/caída suave; derecha = rotar/caída instantánea. */
   .controls-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(12px,4vw,20px);margin-top:14px;padding:clamp(10px,3vw,15px) clamp(5px,1.5vw,9px) 8px;background:rgba(0,0,0,.18);border-radius:8px;align-items:stretch;}
@@ -76,24 +84,63 @@
   @keyframes flash-fade{0%{opacity:.35;}100%{opacity:0;}}
   @keyframes banner-in{0%{opacity:0;transform:translate(-50%,-10px);}15%{opacity:1;transform:translate(-50%,0);}82%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,-10px);}}
 
-  @media (max-width:360px){
-    #cabinet{padding:8px;}
-    .board-row{gap:5px;}
-    .side-panel{flex-basis:70px;}
-    .controls-row{gap:10px;padding-left:4px;padding-right:4px;}
+  /* En móvil priorizamos que tablero y botonera entren juntos en la pantalla. */
+  @media (max-width:480px){
+    body{padding:6px 8px max(8px,env(safe-area-inset-bottom));}
+    .top-nav{margin-bottom:7px;}
+    #hud2{margin-bottom:6px;gap:5px;}
+    #cabinet{width:96vw;padding:8px;}
+    .board-row{gap:6px;}
+    .side-panel{flex-basis:clamp(94px,25vw,104px);gap:4px;}
+    .hold-box{height:56px;flex-basis:56px;}
+    #hold-canvas{height:34px;}
+    .next-box{height:82px;flex-basis:82px;}
+    #next-canvas{height:60px;}
+    .stats-grid{gap:3px;}
+    .stats-grid .side-box{min-height:34px;padding:3px 1px;}
+    .stats-grid .side-box .val{font-size:clamp(7px,2vw,8.5px);}
+    .blip-mascot{min-height:36px;height:36px;}
+    .blip-mascot .blip{--blip-size:28px !important;}
+    .controls-row{margin-top:8px;gap:8px;padding:8px 5px 6px;}
+    .left-control-zone,.right-control-zone{gap:6px;}
     .move-cluster{gap:6px;}
-    .move-btn{height:60px;font-size:25px;}
-    .soft-drop-btn,.drop-btn{height:50px;}
-    .action-top{grid-template-columns:minmax(0,1fr) 68px;gap:6px;}
-    .rotate-btn{width:68px;height:68px;}
-    .hold-btn{height:60px;}
-    #next-canvas{height:104px;}
-    .mini-btn{padding:7px 7px;}
+    .move-btn{height:54px;font-size:25px;}
+    .soft-drop-btn,.drop-btn{height:46px;}
+    .soft-drop-btn{font-size:10px;gap:6px;}
+    .soft-drop-btn .arrow{font-size:19px;}
+    .action-top{grid-template-columns:minmax(0,1fr) 62px;gap:6px;}
+    .rotate-btn{width:62px;height:62px;font-size:26px;}
+    .hold-btn{height:54px;gap:3px;font-size:8px;}
+    .drop-btn{font-size:9px;}
+    .controls-label{display:none;}
+    #foot-note{display:none;}
+  }
+  @media (max-width:360px){
+    #cabinet{padding:7px;}
+    .board-row{gap:5px;}
+    .side-panel{flex-basis:92px;}
+    .controls-row{gap:7px;padding-left:4px;padding-right:4px;}
+    .move-cluster{gap:5px;}
+    .move-btn{height:50px;font-size:23px;}
+    .soft-drop-btn,.drop-btn{height:43px;}
+    .action-top{grid-template-columns:minmax(0,1fr) 56px;gap:5px;}
+    .rotate-btn{width:56px;height:56px;}
+    .hold-btn{height:50px;}
+    .hold-box{height:52px;flex-basis:52px;}
+    #hold-canvas{height:30px;}
+    .next-box{height:76px;flex-basis:76px;}
+    #next-canvas{height:54px;}
+  }
+  @media (max-height:820px) and (orientation:portrait){
+    body{padding-top:4px;padding-bottom:max(6px,env(safe-area-inset-bottom));}
+    .top-nav{margin-bottom:5px;}
+    #hud2{margin-bottom:5px;}
+    #cabinet{padding-top:6px;padding-bottom:6px;}
+    .controls-row{margin-top:7px;padding-top:6px;padding-bottom:5px;}
   }
   @media (max-height:700px) and (orientation:landscape){
     body{padding-top:8px;padding-bottom:12px;}
     #cabinet{width:min(94vw,600px);}
-    #game-canvas{aspect-ratio:1/1.55;}
     .controls-row{margin-top:8px;}
   }
 </style>
@@ -134,11 +181,13 @@
             <span class="stat">PRÓXIMAS 3</span>
             <canvas id="next-canvas" aria-label="Próximas tres piezas"></canvas>
           </div>
-          <div class="side-box"><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
-          <div class="side-box"><span class="stat">NIVEL</span><span class="val" id="level-val">1</span></div>
-          <div class="side-box"><span class="stat">LÍNEAS</span><span class="val" id="lines-val">0</span></div>
-          <div class="side-box"><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
-          <div class="side-box"><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+          <div class="stats-grid" aria-label="Estadísticas de partida">
+            <div class="side-box stat-score"><span class="stat">PUNTOS</span><span class="val" id="score-val">0</span></div>
+            <div class="side-box"><span class="stat">NIVEL</span><span class="val" id="level-val">1</span></div>
+            <div class="side-box"><span class="stat">LÍNEAS</span><span class="val" id="lines-val">0</span></div>
+            <div class="side-box"><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
+            <div class="side-box"><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+          </div>
           <div class="blip-mascot" id="blip-slot" aria-label="BLIP"></div>
         </div>
       </div>
