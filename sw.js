@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mini-arcade-v19';
+const CACHE_NAME = 'mini-arcade-v20';
 
 const ASSETS = [
   './',
