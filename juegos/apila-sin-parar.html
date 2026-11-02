@@ -53,7 +53,8 @@
   #next-canvas{width:100%;height:70px;margin-top:2px;display:block;}
   .stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
   .stats-grid .side-box{min-height:38px;padding:4px 2px;display:flex;flex-direction:column;justify-content:center;}
-  .stats-grid .stat-score{grid-column:1 / -1;}
+  .stats-grid .stat-score,.stats-grid .stat-best{grid-column:1 / -1;}
+  #best-val{white-space:nowrap;overflow-wrap:normal;letter-spacing:-.35px;font-size:clamp(7px,1.9vw,8px);font-variant-numeric:tabular-nums;}
   .stats-grid .side-box .val{font-size:clamp(8px,2.2vw,9px);}
   .blip-mascot{margin-top:auto;min-height:44px;height:44px;display:flex;align-items:center;justify-content:center;pointer-events:none;}
   .blip-mascot .blip{--blip-size:32px !important;}
@@ -104,14 +105,15 @@
     .controls-row{margin-top:8px;gap:8px;padding:8px 5px 6px;}
     .left-control-zone,.right-control-zone{gap:6px;}
     .move-cluster{gap:6px;}
-    .move-btn{height:54px;font-size:25px;}
-    .soft-drop-btn,.drop-btn{height:46px;}
-    .soft-drop-btn{font-size:10px;gap:6px;}
-    .soft-drop-btn .arrow{font-size:19px;}
-    .action-top{grid-template-columns:minmax(0,1fr) 62px;gap:6px;}
-    .rotate-btn{width:62px;height:62px;font-size:26px;}
-    .hold-btn{height:54px;gap:3px;font-size:8px;}
-    .drop-btn{font-size:9px;}
+    /* Los controles escalan con anchura y altura útil del viewport. */
+    .move-btn{height:clamp(48px,min(13.5vw,6.5vh),56px);font-size:clamp(22px,6.2vw,26px);}
+    .soft-drop-btn,.drop-btn{height:clamp(43px,min(11.5vw,5.5vh),48px);}
+    .soft-drop-btn{font-size:clamp(9px,2.5vw,10px);gap:6px;}
+    .soft-drop-btn .arrow{font-size:clamp(18px,4.8vw,20px);}
+    .action-top{grid-template-columns:minmax(0,1fr) clamp(56px,min(15.5vw,7.2vh),66px);gap:6px;}
+    .rotate-btn{width:clamp(56px,min(15.5vw,7.2vh),66px);height:clamp(56px,min(15.5vw,7.2vh),66px);font-size:clamp(24px,6.2vw,28px);}
+    .hold-btn{height:clamp(48px,min(13.5vw,6.5vh),56px);gap:3px;font-size:clamp(7px,2vw,8px);}
+    .drop-btn{font-size:clamp(8px,2.3vw,9px);}
     .controls-label{display:none;}
     #foot-note{display:none;}
   }
@@ -121,11 +123,11 @@
     .side-panel{flex-basis:92px;}
     .controls-row{gap:7px;padding-left:4px;padding-right:4px;}
     .move-cluster{gap:5px;}
-    .move-btn{height:50px;font-size:23px;}
-    .soft-drop-btn,.drop-btn{height:43px;}
-    .action-top{grid-template-columns:minmax(0,1fr) 56px;gap:5px;}
-    .rotate-btn{width:56px;height:56px;}
-    .hold-btn{height:50px;}
+    .move-btn{height:clamp(47px,min(13.2vw,6.2vh),52px);font-size:23px;}
+    .soft-drop-btn,.drop-btn{height:clamp(42px,min(11.2vw,5.2vh),46px);}
+    .action-top{grid-template-columns:minmax(0,1fr) clamp(53px,min(15vw,6.8vh),59px);gap:5px;}
+    .rotate-btn{width:clamp(53px,min(15vw,6.8vh),59px);height:clamp(53px,min(15vw,6.8vh),59px);}
+    .hold-btn{height:clamp(47px,min(13.2vw,6.2vh),52px);}
     .hold-box{height:52px;flex-basis:52px;}
     #hold-canvas{height:30px;}
     .next-box{height:76px;flex-basis:76px;}
@@ -186,7 +188,7 @@
             <div class="side-box"><span class="stat">NIVEL</span><span class="val" id="level-val">1</span></div>
             <div class="side-box"><span class="stat">LÍNEAS</span><span class="val" id="lines-val">0</span></div>
             <div class="side-box"><span class="stat">COMBO</span><span class="val" id="combo-val">0</span><span class="val" id="combo-mult"></span></div>
-            <div class="side-box"><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
+            <div class="side-box stat-best"><span class="stat">MEJOR</span><span class="val" id="best-val">0</span></div>
           </div>
           <div class="blip-mascot" id="blip-slot" aria-label="BLIP"></div>
         </div>
@@ -342,6 +344,21 @@
   };
   const PIECE_TYPES = ['I','O','T','S','Z','J','L'];
 
+  /* SRS: desplazamientos de pared para rotación horaria.
+     Cada pareja es [desplazamientoX, desplazamientoY hacia arriba]. */
+  const JLSTZ_KICKS = {
+    '0>1':[[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+    '1>2':[[0,0],[1,0],[1,-1],[0,2],[1,2]],
+    '2>3':[[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+    '3>0':[[0,0],[-1,0],[-1,-1],[0,2],[-1,2]]
+  };
+  const I_KICKS = {
+    '0>1':[[0,0],[-2,0],[1,0],[-2,-1],[1,2]],
+    '1>2':[[0,0],[-1,0],[2,0],[-1,2],[2,-1]],
+    '2>3':[[0,0],[2,0],[-1,0],[2,1],[-1,-2]],
+    '3>0':[[0,0],[1,0],[-2,0],[1,-2],[-2,1]]
+  };
+
   let W = 0;
   let H = 0;
   let NW = 0;
@@ -413,7 +430,9 @@
   const SOFT_DROP_INTERVAL = 42;
 
   let lockAccum = 0;
+  let lockResets = 0;
   const LOCK_DELAY = 450;
+  const MAX_LOCK_RESETS = 15;
 
   let combo = 0;
   let lastComboMult = 1;
@@ -517,6 +536,11 @@
   function spawnSpecificPiece(type){
     const col = Math.floor((COLS-pieceWidth(type))/2);
     piece = { type, rot:0, row:0, col };
+    dropAccum = 0;
+    softDropAccum = 0;
+    softDropping = false;
+    lockAccum = 0;
+    lockResets = 0;
 
     if(!canPlace(piece.type,piece.rot,piece.row,piece.col)){
       triggerGameOver();
@@ -572,31 +596,56 @@
   }
 
   /* ---------- movimiento ---------- */
+  function isGrounded(){
+    return !!piece && !canPlace(piece.type,piece.rot,piece.row+1,piece.col);
+  }
+
+  function refreshLockDelayAfterManipulation(wasGrounded){
+    if(!piece) return;
+    const groundedNow = isGrounded();
+    if((wasGrounded || groundedNow) && lockResets < MAX_LOCK_RESETS){
+      lockAccum = 0;
+      lockResets++;
+    }
+  }
+
   function movePiece(dx){
     if(!running || paused || !piece || lineClearState) return;
     const newCol = piece.col+dx;
     if(canPlace(piece.type,piece.rot,piece.row,newCol)){
+      const wasGrounded = isGrounded();
       piece.col = newCol;
+      refreshLockDelayAfterManipulation(wasGrounded);
       sfxMove();
-      if(!canPlace(piece.type,piece.rot,piece.row+1,piece.col)) lockAccum = 0;
     }
   }
 
   function rotatePiece(){
     if(!running || paused || !piece || lineClearState) return;
-    const newRot = (piece.rot+1)%4;
-    const kicks = [
-      [0,0],[-1,0],[1,0],[-2,0],[2,0],
-      [0,-1],[-1,-1],[1,-1],[0,1]
-    ];
 
-    for(const [dc,dr] of kicks){
-      if(canPlace(piece.type,newRot,piece.row+dr,piece.col+dc)){
-        piece.rot = newRot;
-        piece.col += dc;
-        piece.row += dr;
+    // El cuadrado O es simétrico: rotarlo no debe desplazarlo.
+    if(piece.type === 'O') return;
+
+    const from = piece.rot;
+    const to = (from+1)%4;
+    const key = from+'>'+to;
+    const table = piece.type === 'I' ? I_KICKS : JLSTZ_KICKS;
+    const tests = table[key];
+    if(!tests) return;
+
+    const wasGrounded = isGrounded();
+
+    for(const [dc,dyUp] of tests){
+      // SRS expresa Y hacia arriba; el tablero Canvas crece hacia abajo.
+      const candidateRow = piece.row-dyUp;
+      const candidateCol = piece.col+dc;
+
+      if(canPlace(piece.type,to,candidateRow,candidateCol)){
+        piece.rot = to;
+        piece.col = candidateCol;
+        piece.row = candidateRow;
+        refreshLockDelayAfterManipulation(wasGrounded);
         sfxRotate();
-        if(!canPlace(piece.type,piece.rot,piece.row+1,piece.col)) lockAccum = 0;
         return;
       }
     }
@@ -623,6 +672,7 @@
     }
 
     score += dist*2;
+    lockAccum = 0;
     sfxDrop();
     lockPiece();
     updateHUD();
@@ -983,6 +1033,7 @@
     softDropAccum = 0;
     softDropping = false;
     lockAccum = 0;
+    lockResets = 0;
     lineClearState = null;
     particles = [];
     lastTime = null;
@@ -1105,7 +1156,7 @@
     if(lineClearState){
       updateLineClear(dt/1000);
     }else if(piece){
-      const grounded = !canPlace(piece.type,piece.rot,piece.row+1,piece.col);
+      const grounded = isGrounded();
 
       if(grounded){
         lockAccum += dt;
