@@ -102,7 +102,8 @@
     .stats-grid .side-box .val{font-size:clamp(7px,2vw,8.5px);}
     .blip-mascot{min-height:36px;height:36px;}
     .blip-mascot .blip{--blip-size:28px !important;}
-    .controls-row{margin-top:8px;gap:8px;padding:8px 5px 6px;}
+    /* Se deja un poco más de aire sobre la botonera para acercarla a la posición natural de los pulgares. */
+    .controls-row{margin-top:12px;gap:8px;padding:10px 5px 6px;}
     .left-control-zone,.right-control-zone{gap:6px;}
     .move-cluster{gap:6px;}
     /* Los controles escalan con anchura y altura útil del viewport. */
@@ -138,7 +139,8 @@
     .top-nav{margin-bottom:5px;}
     #hud2{margin-bottom:5px;}
     #cabinet{padding-top:6px;padding-bottom:6px;}
-    .controls-row{margin-top:7px;padding-top:6px;padding-bottom:5px;}
+    /* En móviles bajos el desplazamiento se adapta al alto real del viewport y evita un salto fijo excesivo. */
+    .controls-row{margin-top:clamp(9px,1.4dvh,12px);padding-top:clamp(7px,.9dvh,8px);padding-bottom:4px;}
   }
   @media (max-height:700px) and (orientation:landscape){
     body{padding-top:8px;padding-bottom:12px;}
